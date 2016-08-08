@@ -65,10 +65,13 @@ namespace Share_Across_Devices
         {
             deviceList = new ObservableCollection<RemoteSystem>();
             RemoteSystemAccessStatus accessStatus = await RemoteSystem.RequestAccessAsync();
-            await RemoteSystem.RequestAccessAsync();
-            deviceWatcher = RemoteSystem.CreateWatcher();
-            deviceWatcher.RemoteSystemAdded += DeviceWatcher_RemoteSystemAdded;
-            deviceWatcher.Start();
+
+            if (accessStatus == RemoteSystemAccessStatus.Allowed)
+            {
+                deviceWatcher = RemoteSystem.CreateWatcher();
+                deviceWatcher.RemoteSystemAdded += DeviceWatcher_RemoteSystemAdded;
+                deviceWatcher.Start();
+            }
         }
 
         private async void DeviceWatcher_RemoteSystemAdded(RemoteSystemWatcher sender, RemoteSystemAddedEventArgs args)
