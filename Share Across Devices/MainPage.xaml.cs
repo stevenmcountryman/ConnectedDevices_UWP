@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
@@ -9,8 +8,6 @@ using Windows.Foundation.Collections;
 using Windows.System.RemoteSystems;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Navigation;
 
 namespace Share_Across_Devices
 {
@@ -33,26 +30,31 @@ namespace Share_Across_Devices
         public MainPage()
         {
             this.InitializeComponent();
-
-            this.setupClipboardText();
-
+            deviceList = new ObservableCollection<RemoteSystem>();
             this.setUpDevicesList();
+            this.setupClipboardText();
         }
 
         private async void setupClipboardText()
         {
-            DataPackageView dataPackageView = Clipboard.GetContent();
-            if (dataPackageView.Contains(StandardDataFormats.Text))
+            try
             {
-                string text = await dataPackageView.GetTextAsync();
+                DataPackageView dataPackageView = Clipboard.GetContent();
+                if (dataPackageView.Contains(StandardDataFormats.Text))
+                {
+                    string text = await dataPackageView.GetTextAsync();
 
-                this.ClipboardText.Text = text;
+                    this.ClipboardText.Text = text;
+                }
+            }
+            catch
+            {
+
             }
         }
 
         private async void setUpDevicesList()
         {
-            deviceList = new ObservableCollection<RemoteSystem>();
             RemoteSystemAccessStatus accessStatus = await RemoteSystem.RequestAccessAsync();
 
             if (accessStatus == RemoteSystemAccessStatus.Allowed)
@@ -79,31 +81,33 @@ namespace Share_Across_Devices
         private async void ShareButton_Click(object sender, RoutedEventArgs e)
         {
             RemoteSystem selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
-            if (selectedDevice != null)
+            this.openRemoteConnectionAsync(selectedDevice);
+            
+        }
+        private async void openRemoteConnectionAsync(RemoteSystem remotesys)
+        {
+            AppServiceConnection connection = new AppServiceConnection
+            {
+                AppServiceName = "com.simplisidy.appservice",
+                PackageFamilyName = "Simplisidy.UWP.ShareAcrossDevices.CS_wtkr3v20s86d8"
+            };
+
+            if (remotesys != null)
             {
                 // Create a remote system connection request.
-                RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(selectedDevice);
+                RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(remotesys);
 
-                // Set up a new app service connection. The following app service name and package family name
-                // are used in this sample to work with AppServices provider SDK sample on a remote system.
-                using (AppServiceConnection connection = new AppServiceConnection
-                {
-                    AppServiceName = "com.simplisidy.appservice",
-                    PackageFamilyName = "Simplisidy.UWP.ShareAcrossDevices.CS_wtkr3v20s86d8"
-                }) 
-                {
-                    NotifyUser("Opening connection to " + selectedDevice.DisplayName + "...", NotifyType.StatusMessage);
-                    AppServiceConnectionStatus status = await connection.OpenRemoteAsync(connectionRequest);
+                NotifyUser("Opening connection to " + remotesys.DisplayName + "...", NotifyType.StatusMessage);
+                AppServiceConnectionStatus status = await connection.OpenRemoteAsync(connectionRequest);
 
-                    if (status == AppServiceConnectionStatus.Success)
-                    {
-                        NotifyUser("Successfully connected to " + selectedDevice.DisplayName + "...", NotifyType.StatusMessage);
-                        await SendMessageToRemoteAppServiceAsync(connection);
-                    }
-                    else
-                    {
-                        NotifyUser("Attempt to open a remote app service connection failed with error - " + status.ToString(), NotifyType.ErrorMessage);
-                    }
+                if (status == AppServiceConnectionStatus.Success)
+                {
+                    NotifyUser("Successfully connected to " + remotesys.DisplayName + "...", NotifyType.StatusMessage);
+                    await SendMessageToRemoteAppServiceAsync(connection);
+                }
+                else
+                {
+                    NotifyUser("Attempt to open a remote app service connection failed with error - " + status.ToString(), NotifyType.ErrorMessage);
                 }
             }
             else
