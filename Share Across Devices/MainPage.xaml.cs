@@ -78,7 +78,7 @@ namespace Share_Across_Devices
             });
         }
 
-        private async void ShareButton_Click(object sender, RoutedEventArgs e)
+        private void ShareButton_Click(object sender, RoutedEventArgs e)
         {
             RemoteSystem selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
             this.openRemoteConnectionAsync(selectedDevice);
@@ -88,7 +88,7 @@ namespace Share_Across_Devices
         {
             AppServiceConnection connection = new AppServiceConnection
             {
-                AppServiceName = "com.simplisidy.appservice",
+                AppServiceName = "simplisidy.appservice",
                 PackageFamilyName = "Simplisidy.UWP.ShareAcrossDevices.CS_wtkr3v20s86d8"
             };
 
