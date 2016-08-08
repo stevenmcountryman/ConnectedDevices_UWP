@@ -34,7 +34,7 @@
             <uap:DataFormat>Text</uap:DataFormat>
           </uap:ShareTarget>
         </uap:Extension>
-        <uap:Extension Category="windows.appService" EntryPoint="Simplisidy.UWP.ShareAcrossDevices.CS_wtkr3v20s86d8">
+        <uap:Extension Category="windows.appService" EntryPoint="ShareAcrossAppService.AppService">
           <uap3:AppService Name="simplisidy.appservice" SupportsRemoteSystems="true"/>
         </uap:Extension>
       </Extensions>

@@ -1,8 +1,10 @@
 ﻿using System;
 using Windows.ApplicationModel.AppService;
 using Windows.ApplicationModel.Background;
+using Windows.ApplicationModel.Core;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation.Collections;
+using Windows.UI.Core;
 
 namespace ShareAcrossAppService
 {
@@ -40,10 +42,12 @@ namespace ShareAcrossAppService
             {
                 var input = args.Request.Message;
                 string clipboard = (string)input["clipboard"];
+
                 DataPackage dataPackage = new DataPackage();
                 dataPackage.RequestedOperation = DataPackageOperation.Copy;
                 dataPackage.SetText(clipboard);
                 Clipboard.SetContent(dataPackage);
+                
                 //Create the response
                 var result = new ValueSet();
                 result.Add("result", "Copied to clipboard!");
@@ -54,7 +58,6 @@ namespace ShareAcrossAppService
             }
             finally
             {
-                //Complete the message deferral so the platform knows we're done responding
                 messageDeferral.Complete();
             }
         }
