@@ -115,7 +115,7 @@ namespace Share_Across_Devices
                     }
                     catch (Exception ex)
                     {
-                        NotifyUserBackgroundThread("Failed GetWebLinkAsync - " + ex.Message, NotifyType.ErrorMessage);
+                        NotifyUserBackgroundThread("Failed GetWebLinkAsync - " + ex.Message);
                     }
                 }
                 if (this.shareOperation.Data.Contains(StandardDataFormats.ApplicationLink))
@@ -126,7 +126,7 @@ namespace Share_Across_Devices
                     }
                     catch (Exception ex)
                     {
-                        NotifyUserBackgroundThread("Failed GetApplicationLinkAsync - " + ex.Message, NotifyType.ErrorMessage);
+                        NotifyUserBackgroundThread("Failed GetApplicationLinkAsync - " + ex.Message);
                     }
                 }
                 if (this.shareOperation.Data.Contains(StandardDataFormats.Text))
@@ -137,7 +137,7 @@ namespace Share_Across_Devices
                     }
                     catch (Exception ex)
                     {
-                        NotifyUserBackgroundThread("Failed GetTextAsync - " + ex.Message, NotifyType.ErrorMessage);
+                        NotifyUserBackgroundThread("Failed GetTextAsync - " + ex.Message);
                     }
                 }
                 if (this.shareOperation.Data.Contains(StandardDataFormats.StorageItems))
@@ -148,7 +148,7 @@ namespace Share_Across_Devices
                     }
                     catch (Exception ex)
                     {
-                        NotifyUserBackgroundThread("Failed GetStorageItemsAsync - " + ex.Message, NotifyType.ErrorMessage);
+                        NotifyUserBackgroundThread("Failed GetStorageItemsAsync - " + ex.Message);
                     }
                 }
                 if (this.shareOperation.Data.Contains(dataFormatName))
@@ -159,7 +159,7 @@ namespace Share_Across_Devices
                     }
                     catch (Exception ex)
                     {
-                        NotifyUserBackgroundThread("Failed GetTextAsync(" + dataFormatName + ") - " + ex.Message, NotifyType.ErrorMessage);
+                        NotifyUserBackgroundThread("Failed GetTextAsync(" + dataFormatName + ") - " + ex.Message);
                     }
                 }
                 if (this.shareOperation.Data.Contains(StandardDataFormats.Html))
@@ -170,7 +170,7 @@ namespace Share_Across_Devices
                     }
                     catch (Exception ex)
                     {
-                        NotifyUserBackgroundThread("Failed GetHtmlFormatAsync - " + ex.Message, NotifyType.ErrorMessage);
+                        NotifyUserBackgroundThread("Failed GetHtmlFormatAsync - " + ex.Message);
                     }
 
                     try
@@ -179,7 +179,7 @@ namespace Share_Across_Devices
                     }
                     catch (Exception ex)
                     {
-                        NotifyUserBackgroundThread("Failed GetResourceMapAsync - " + ex.Message, NotifyType.ErrorMessage);
+                        NotifyUserBackgroundThread("Failed GetResourceMapAsync - " + ex.Message);
                     }
                 }
                 if (this.shareOperation.Data.Contains(StandardDataFormats.Bitmap))
@@ -190,7 +190,7 @@ namespace Share_Across_Devices
                     }
                     catch (Exception ex)
                     {
-                        NotifyUserBackgroundThread("Failed GetBitmapAsync - " + ex.Message, NotifyType.ErrorMessage);
+                        NotifyUserBackgroundThread("Failed GetBitmapAsync - " + ex.Message);
                     }
                 }
 
@@ -242,7 +242,7 @@ namespace Share_Across_Devices
             StatusBlock.Text = strMessage;
         }
 
-        async private void NotifyUserBackgroundThread(string message, NotifyType type)
+        async private void NotifyUserBackgroundThread(string message)
         {
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {

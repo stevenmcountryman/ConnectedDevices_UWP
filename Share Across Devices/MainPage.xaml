@@ -7,26 +7,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Page.Resources>
-        <local:ScenarioBindingConverter x:Key="ScenarioConverter"></local:ScenarioBindingConverter>
-    </Page.Resources>
-
-    <RelativePanel Background="#9A87E8">
-        <ListBox x:Name="ScenarioControl" SelectionChanged="ScenarioControl_SelectionChanged"
-                 SelectionMode="Single" HorizontalAlignment="Left" Background="Transparent" BorderThickness="0"
-                 VerticalAlignment="Top" Margin="0,10,0,0">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Converter={StaticResource ScenarioConverter}}"/>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-        <TextBlock x:Name="StatusBlock" TextWrapping="Wrap" HorizontalAlignment="Left" MaxWidth="500" />
-
-        <Frame x:Name="ScenarioFrame"
-               RelativePanel.AlignTopWithPanel="True" 
-               RelativePanel.AlignRightWithPanel="True" 
-               RelativePanel.AlignLeftWithPanel="True"
-               RelativePanel.AlignBottomWithPanel="True"/>
-    </RelativePanel>
+    <Grid Background="SlateGray">
+        <TextBlock TextWrapping="WrapWholeWords"
+                   VerticalAlignment="Center"
+                   Margin="8"
+                   Foreground="White"
+                   FontWeight="Bold"
+                   FontSize="22"
+                   TextAlignment="Center"
+                   Text="Welcome! You can now share any web link from any app to any of your existing Windows 10 devices. You do not need to keep this app open or install this app on any other device (unless you also want to share from that device)" />
+    </Grid>
 </Page>

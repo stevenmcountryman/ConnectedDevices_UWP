@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -19,68 +20,15 @@ namespace Share_Across_Devices
             this.InitializeComponent();
             Current = this;
         }
-        private void ScenarioControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // Clear the status block when navigating scenarios.
-            NotifyUser(String.Empty);
-
-            ListBox scenarioListBox = sender as ListBox;
-            Scenario s = scenarioListBox.SelectedItem as Scenario;
-            if (s != null)
-            {
-                ScenarioFrame.Navigate(s.ClassType);
-            }
-        }
-
-        /// <summary>
-        /// Used to display messages to the user
-        /// </summary>
-        /// <param name="strMessage"></param>
-        /// <param name="type"></param>
-        public void NotifyUser(string strMessage)
-        {
-            StatusBlock.Text = strMessage;
-        }
-
-        public List<Scenario> Scenarios
-        {
-            get { return this.scenarios; }
-        }
-
-
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            // Populate the scenario list from the SampleConfiguration.cs file
-            ScenarioControl.ItemsSource = scenarios;
-            if (Window.Current.Bounds.Width < 640)
-            {
-                ScenarioControl.SelectedIndex = -1;
-            }
-            else
-            {
-                ScenarioControl.SelectedIndex = 0;
-            }
-        }
-
-        public enum NotifyType
-        {
-            StatusMessage,
-            ErrorMessage
-        };
     }
 
-    public class ScenarioBindingConverter : IValueConverter
+    sealed partial class App : Application
     {
-
-        public object Convert(object value, Type targetType, object parameter, string language)
+        protected override void OnShareTargetActivated(ShareTargetActivatedEventArgs args)
         {
-            Scenario s = value as Scenario;
-            return (MainPage.Current.Scenarios.IndexOf(s) + 1) + ") " + s.Title;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
-        {
-            return true;
+            var rootFrame = CreateRootFrame();
+            rootFrame.Navigate(typeof(ShareWebLink), args.ShareOperation);
+            Window.Current.Activate();
         }
     }
 }

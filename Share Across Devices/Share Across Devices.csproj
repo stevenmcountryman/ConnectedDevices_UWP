@@ -103,12 +103,8 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ShareConfiguation.cs" />
     <Compile Include="ShareWebLink.xaml.cs">
       <DependentUpon>ShareWebLink.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Welcome.xaml.cs">
-      <DependentUpon>Welcome.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -154,10 +150,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="ShareWebLink.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Welcome.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
