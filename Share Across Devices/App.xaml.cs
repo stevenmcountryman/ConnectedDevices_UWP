@@ -1,6 +1,7 @@
 ﻿using System;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -33,9 +34,9 @@ namespace Share_Across_Devices
             }
 
             // Code specific to launch for results
-            var protocolActivatedEventArgs = (ProtocolActivatedEventArgs)args;
+            var protocolArgs = args as ProtocolActivatedEventArgs;
             // Open the page that we created to handle activation for results.
-            rootFrame.Navigate(typeof(MainPage), protocolActivatedEventArgs);
+            rootFrame.Navigate(typeof(MainPage), protocolArgs);
 
             // Ensure the current window is active.
             Window.Current.Activate();

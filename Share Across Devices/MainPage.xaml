@@ -34,11 +34,20 @@
                      TextChanged="ClipboardText_TextChanged"
                      Margin="8"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button x:Name="CopyToLocalClipboardButton" 
+                    Visibility="Collapsed"
+                    Content="copy" 
+                    Margin="8"
+                    Foreground="White"
+                    FontSize="12"
+                    HorizontalAlignment="Right"
+                    Click="CopyToLocalClipboardButton_Click" BorderBrush="{x:Null}" />
                 <Button x:Name="LaunchInBrowserButton" 
                     IsEnabled="False" 
                     Content="share to browser" 
                     Margin="8"
                     Foreground="White"
+                    FontSize="12"
                     HorizontalAlignment="Right"
                     Click="LaunchInBrowserButton_Click" BorderBrush="{x:Null}" />
                 <Button x:Name="CopyToClipboardButton" 
@@ -46,6 +55,7 @@
                     Content="share to clipboard" 
                     Margin="8"
                     Foreground="White"
+                    FontSize="12"
                     HorizontalAlignment="Right"
                     Click="CopyToClipboardButton_Click" BorderBrush="{x:Null}" />
             </StackPanel>

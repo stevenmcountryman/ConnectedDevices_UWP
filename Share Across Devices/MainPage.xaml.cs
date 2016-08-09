@@ -10,10 +10,15 @@ using Windows.Foundation.Metadata;
 using Windows.System;
 using Windows.System.RemoteSystems;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
+using System.Threading;
+using Windows.Storage.Pickers;
+using Windows.Storage.AccessCache;
+using Windows.Foundation;
 
 namespace Share_Across_Devices
 {
@@ -71,18 +76,36 @@ namespace Share_Across_Devices
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            var protocolActivatedEventArgs = e.Parameter as ProtocolActivatedEventArgs;
+            base.OnNavigatedTo(e);
+            var protocolArgs = e.Parameter as ProtocolActivatedEventArgs;
+
+
             // Set the ProtocolForResultsOperation field.
-            if (protocolActivatedEventArgs != null) {
-                var uri = protocolActivatedEventArgs.Uri.Query.Remove(0, 6).Replace("%20", " ");
-                this.ClipboardText.Text = uri;
-                DataPackage package = new DataPackage()
+            if (protocolArgs != null)
+            {
+                var queryStrings = new WwwFormUrlDecoder(protocolArgs.Uri.Query);
+                string textToCopy = "";
+                try
                 {
-                    RequestedOperation = DataPackageOperation.Copy
-                };
-                package.SetText(uri);
-                Clipboard.SetContent(package);
-                NotifyUser("Copied!", NotifyType.StatusMessage);
+                    textToCopy = queryStrings.GetFirstValueByName("Text");
+                    if (textToCopy.Length > 0)
+                    {
+                        DataPackage package = new DataPackage()
+                        {
+                            RequestedOperation = DataPackageOperation.Copy
+                        };
+                        package.SetText(textToCopy);
+                        Clipboard.SetContent(package);
+                        Clipboard.Flush();
+                        NotifyUser("Copied!", NotifyType.StatusMessage);
+                    }
+                }
+                catch
+                {
+                    NotifyUser("Manual copy required", NotifyType.StatusMessage);
+                    this.ClipboardText.Text = textToCopy;
+                    this.CopyToLocalClipboardButton.Visibility = Visibility.Visible;
+                }
             }
         }
 
@@ -101,7 +124,7 @@ namespace Share_Across_Devices
         private async void DeviceWatcher_RemoteSystemAdded(RemoteSystemWatcher sender, RemoteSystemAddedEventArgs args)
         {
             var remoteSystem = args.RemoteSystem;
-            await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 if (!this.deviceList.Contains(remoteSystem))
                 {
@@ -120,7 +143,7 @@ namespace Share_Across_Devices
                 this.LoadingBar.IsEnabled = true;
                 this.LoadingBar.Visibility = Visibility.Visible;
                 NotifyUser("Sharing to " + remotesys.DisplayName + "...", NotifyType.StatusMessage);
-                var status = await RemoteLauncher.LaunchUriAsync(connectionRequest, new Uri("share-app:?Data=" + this.ClipboardText.Text));
+                var status = await RemoteLauncher.LaunchUriAsync(connectionRequest, new Uri("share-app:?Text=" + this.ClipboardText.Text));
                 NotifyUser(status.ToString(), NotifyType.StatusMessage);
                 this.LoadingBar.IsEnabled = false;
                 this.LoadingBar.Visibility = Visibility.Collapsed;
@@ -193,6 +216,19 @@ namespace Share_Across_Devices
         {
             RemoteSystem selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
             this.openRemoteConnectionAsync(selectedDevice);
+        }
+
+        private void CopyToLocalClipboardButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataPackage package = new DataPackage()
+            {
+                RequestedOperation = DataPackageOperation.Copy
+            };
+            package.SetText(this.ClipboardText.Text);
+            Clipboard.SetContent(package);
+            Clipboard.Flush();
+            this.CopyToLocalClipboardButton.Visibility = Visibility.Collapsed;
+            NotifyUser("Copied!", NotifyType.StatusMessage);
         }
     }
     public enum NotifyType
