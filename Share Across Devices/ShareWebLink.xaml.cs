@@ -310,7 +310,7 @@ namespace Share_Across_Devices
         {
             if (this.ClipboardText.Text.Length > 0 && this.DeviceListBox.SelectedItem != null)
             {
-                if (this.ClipboardText.Text.StartsWith("http://") || this.ClipboardText.Text.StartsWith("https://"))
+                if (this.ClipboardText.Text.ToLower().StartsWith("http://") || this.ClipboardText.Text.ToLower().StartsWith("https://"))
                 {
                     this.LaunchInBrowserButton.IsEnabled = true;
                 }
@@ -327,7 +327,7 @@ namespace Share_Across_Devices
         {
             if (this.ClipboardText.Text.Length > 0 && this.DeviceListBox.SelectedItem != null)
             {
-                if (this.ClipboardText.Text.StartsWith("http://") || this.ClipboardText.Text.StartsWith("https://"))
+                if (this.ClipboardText.Text.ToLower().StartsWith("http://") || this.ClipboardText.Text.ToLower().StartsWith("https://"))
                 {
                     this.LaunchInBrowserButton.IsEnabled = true;
                 }
