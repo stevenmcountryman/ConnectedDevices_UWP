@@ -116,9 +116,14 @@ namespace Share_Across_Devices
             {
                 // Create a remote system connection request.
                 RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(remotesys);
-                NotifyUser("Launching app on " + remotesys.DisplayName + "...", NotifyType.StatusMessage);
+
+                this.LoadingBar.IsEnabled = true;
+                this.LoadingBar.Visibility = Visibility.Visible;
+                NotifyUser("Sharing to " + remotesys.DisplayName + "...", NotifyType.StatusMessage);
                 var status = await RemoteLauncher.LaunchUriAsync(connectionRequest, new Uri("share-app:?Data=" + this.ClipboardText.Text));
                 NotifyUser(status.ToString(), NotifyType.StatusMessage);
+                this.LoadingBar.IsEnabled = false;
+                this.LoadingBar.Visibility = Visibility.Collapsed;
             }
             else
             {
