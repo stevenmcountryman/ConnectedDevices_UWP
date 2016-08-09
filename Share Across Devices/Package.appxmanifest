@@ -1,9 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
-         xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
-         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-         xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" 
-         IgnorableNamespaces="uap mp uap3">
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" IgnorableNamespaces="uap mp uap3">
   <Identity Name="Simplisidy.UWP.ShareAcrossDevices.CS" Publisher="CN=AD864502-9B74-44CD-B022-F1C5BD79601C" Version="1.1.0.0" />
   <mp:PhoneIdentity PhoneProductId="138677de-9188-4cce-9412-cc9a377c0fd8" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
@@ -28,6 +24,11 @@
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
       <Extensions>
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="share-app" >
+            <uap:DisplayName>Share App Protocol</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
         <uap:Extension Category="windows.shareTarget">
           <uap:ShareTarget Description="Share to other Windows 10 devices that you own">
             <uap:DataFormat>WebLink</uap:DataFormat>

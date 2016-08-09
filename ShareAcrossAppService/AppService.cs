@@ -1,10 +1,8 @@
 ﻿using System;
 using Windows.ApplicationModel.AppService;
 using Windows.ApplicationModel.Background;
-using Windows.ApplicationModel.Core;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation.Collections;
-using Windows.UI.Core;
+using Windows.Foundation.Metadata;
 
 namespace ShareAcrossAppService
 {
@@ -33,33 +31,21 @@ namespace ShareAcrossAppService
             }
         }
 
-        async void OnRequestReceived(AppServiceConnection sender, AppServiceRequestReceivedEventArgs args)
+        private async void OnRequestReceived(AppServiceConnection sender, AppServiceRequestReceivedEventArgs args)
         {
-            //Get a deferral so we can use an awaitable API to respond to the message
+            // Get a deferral because we use an awaitable API below to respond to the message
+            // and we don't want this call to get cancelled while we are waiting.
             var messageDeferral = args.GetDeferral();
 
-            try
-            {
-                var input = args.Request.Message;
-                string clipboard = (string)input["clipboard"];
+            ValueSet message = args.Request.Message;
+            ValueSet returnData = new ValueSet();
 
-                DataPackage dataPackage = new DataPackage();
-                dataPackage.RequestedOperation = DataPackageOperation.Copy;
-                dataPackage.SetText(clipboard);
-                Clipboard.SetContent(dataPackage);
-                
-                //Create the response
-                var result = new ValueSet();
-                result.Add("result", "Copied to clipboard!");
+            string command = message["clipboard"] as string;
 
-                //Send the response
-                await args.Request.SendResponseAsync(result);
 
-            }
-            finally
-            {
-                messageDeferral.Complete();
-            }
+            returnData.Add("result", "Clipboard Sent!");
+
+            await args.Request.SendResponseAsync(returnData); // Return the data to the caller.// Complete the deferral so that the platform knows that we're done responding to the app service call.
         }
     }
 }

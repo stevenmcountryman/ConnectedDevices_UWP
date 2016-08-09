@@ -4,10 +4,16 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.AppService;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.ApplicationModel.DataTransfer.ShareTarget;
 using Windows.Foundation.Collections;
+using Windows.Foundation.Metadata;
+using Windows.System;
 using Windows.System.RemoteSystems;
+using Windows.UI;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
 
 namespace Share_Across_Devices
 {
@@ -32,24 +38,51 @@ namespace Share_Across_Devices
             this.InitializeComponent();
             deviceList = new ObservableCollection<RemoteSystem>();
             this.setUpDevicesList();
-            this.setupClipboardText();
+            this.setTitleBar();
         }
 
-        private async void setupClipboardText()
+        private void setTitleBar()
         {
-            try
-            {
-                DataPackageView dataPackageView = Clipboard.GetContent();
-                if (dataPackageView.Contains(StandardDataFormats.Text))
-                {
-                    string text = await dataPackageView.GetTextAsync();
 
-                    this.ClipboardText.Text = text;
-                }
+            if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.ApplicationView"))
+            {
+                ApplicationView AppView = ApplicationView.GetForCurrentView();
+                AppView.TitleBar.BackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.ButtonInactiveBackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.ButtonInactiveForegroundColor = Colors.White;
+                AppView.TitleBar.ButtonBackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.ButtonForegroundColor = Colors.White;
+                AppView.TitleBar.ButtonHoverBackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.ButtonHoverForegroundColor = Colors.White;
+                AppView.TitleBar.ButtonPressedBackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.ButtonPressedForegroundColor = Colors.White;
+                AppView.TitleBar.ForegroundColor = Colors.White;
+                AppView.TitleBar.InactiveBackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.InactiveForegroundColor = Colors.White;
             }
-            catch
+            if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
             {
+                var statusBar = StatusBar.GetForCurrentView();
+                statusBar.BackgroundOpacity = 1;
+                statusBar.BackgroundColor = Colors.SlateGray;
+                statusBar.ForegroundColor = Colors.White;
+            }
+        }
 
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            var protocolActivatedEventArgs = e.Parameter as ProtocolActivatedEventArgs;
+            // Set the ProtocolForResultsOperation field.
+            if (protocolActivatedEventArgs != null) {
+                var uri = protocolActivatedEventArgs.Uri.Query.Remove(0, 6).Replace("%20", " ");
+                this.ClipboardText.Text = uri;
+                DataPackage package = new DataPackage()
+                {
+                    RequestedOperation = DataPackageOperation.Copy
+                };
+                package.SetText(uri);
+                Clipboard.SetContent(package);
+                NotifyUser("Copied!", NotifyType.StatusMessage);
             }
         }
 
@@ -77,82 +110,19 @@ namespace Share_Across_Devices
                 this.DeviceListBox.ItemsSource = this.deviceList;
             });
         }
-
-        private void ShareButton_Click(object sender, RoutedEventArgs e)
-        {
-            RemoteSystem selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
-            this.openRemoteConnectionAsync(selectedDevice);
-            
-        }
         private async void openRemoteConnectionAsync(RemoteSystem remotesys)
         {
-            AppServiceConnection connection = new AppServiceConnection
-            {
-                AppServiceName = "simplisidy.appservice",
-                PackageFamilyName = "Simplisidy.UWP.ShareAcrossDevices.CS_wtkr3v20s86d8"
-            };
-
             if (remotesys != null)
             {
                 // Create a remote system connection request.
                 RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(remotesys);
-
-                NotifyUser("Opening connection to " + remotesys.DisplayName + "...", NotifyType.StatusMessage);
-                AppServiceConnectionStatus status = await connection.OpenRemoteAsync(connectionRequest);
-
-                if (status == AppServiceConnectionStatus.Success)
-                {
-                    NotifyUser("Successfully connected to " + remotesys.DisplayName + "...", NotifyType.StatusMessage);
-                    await SendMessageToRemoteAppServiceAsync(connection);
-                }
-                else
-                {
-                    NotifyUser("Attempt to open a remote app service connection failed with error - " + status.ToString(), NotifyType.ErrorMessage);
-                }
+                NotifyUser("Launching app on " + remotesys.DisplayName + "...", NotifyType.StatusMessage);
+                var status = await RemoteLauncher.LaunchUriAsync(connectionRequest, new Uri("share-app:?Data=" + this.ClipboardText.Text));
+                NotifyUser(status.ToString(), NotifyType.StatusMessage);
             }
             else
             {
                 NotifyUser("Select a device for remote connection.", NotifyType.ErrorMessage);
-            }
-        }
-        private async Task SendMessageToRemoteAppServiceAsync(AppServiceConnection connection)
-        {
-            // Send message if connection to the remote app service is open.
-            if (connection != null)
-            {
-                //Set up the inputs and send a message to the service.
-                ValueSet inputs = new ValueSet();
-                inputs.Add("clipboard", this.ClipboardText.Text);
-                NotifyUser("Sent clipboard to " + (this.DeviceListBox.SelectedItem as RemoteSystem).DisplayName + ". Waiting for a response...", NotifyType.StatusMessage);
-                AppServiceResponse response = await connection.SendMessageAsync(inputs);
-
-                if (response.Status == AppServiceResponseStatus.Success)
-                {
-                    if (response.Message.ContainsKey("result"))
-                    {
-                        string resultText = response.Message["result"].ToString();
-                        if (string.IsNullOrEmpty(resultText))
-                        {
-                            NotifyUser("Remote app service did not respond with a result.", NotifyType.ErrorMessage);
-                        }
-                        else
-                        {
-                            NotifyUser("Result = " + resultText, NotifyType.StatusMessage);
-                        }
-                    }
-                    else
-                    {
-                        NotifyUser("Response from remote app service does not contain a result.", NotifyType.ErrorMessage);
-                    }
-                }
-                else
-                {
-                    NotifyUser("Sending message to remote app service failed with error - " + response.Status.ToString(), NotifyType.ErrorMessage);
-                }
-            }
-            else
-            {
-                NotifyUser("Not connected to any app service. Select a device to open a connection.", NotifyType.ErrorMessage);
             }
         }
         public void NotifyUser(string strMessage, NotifyType type)
@@ -162,22 +132,62 @@ namespace Share_Across_Devices
 
         private void ClipboardText_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (this.ClipboardText.Text.Length > 0)
+            if (this.ClipboardText.Text.Length > 0 && this.DeviceListBox.SelectedItem != null)
             {
-                this.ShareButton.IsEnabled = true;
+                if (this.ClipboardText.Text.StartsWith("http://") || this.ClipboardText.Text.StartsWith("https://"))
+                {
+                    this.LaunchInBrowserButton.IsEnabled = true;
+                }
+                this.CopyToClipboardButton.IsEnabled = true;
             }
             else
             {
-                this.ShareButton.IsEnabled = false;
+                this.LaunchInBrowserButton.IsEnabled = false;
+                this.CopyToClipboardButton.IsEnabled = false;
             }
         }
 
         private void DeviceListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (this.DeviceListBox.SelectedIndex >= 0)
+            if (this.ClipboardText.Text.Length > 0 && this.DeviceListBox.SelectedItem != null)
             {
-                this.ShareButton.IsEnabled = true;
+                if (this.ClipboardText.Text.StartsWith("http://") || this.ClipboardText.Text.StartsWith("https://"))
+                {
+                    this.LaunchInBrowserButton.IsEnabled = true;
+                }
+                this.CopyToClipboardButton.IsEnabled = true;
             }
+            else
+            {
+                this.LaunchInBrowserButton.IsEnabled = false;
+                this.CopyToClipboardButton.IsEnabled = false;
+            }
+        }
+
+        private async void LaunchInBrowserButton_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedDevice = this.deviceList[this.DeviceListBox.SelectedIndex];
+
+            if (selectedDevice != null)
+            {
+                Uri uri;
+                if (Uri.TryCreate(this.ClipboardText.Text, UriKind.Absolute, out uri))
+                {
+                    this.LoadingBar.IsEnabled = true;
+                    this.LoadingBar.Visibility = Visibility.Visible;
+                    NotifyUser("Sharing to " + selectedDevice.DisplayName + "...", NotifyType.StatusMessage);
+                    RemoteLaunchUriStatus launchUriStatus = await RemoteLauncher.LaunchUriAsync(new RemoteSystemConnectionRequest(selectedDevice), uri);
+                    NotifyUser(launchUriStatus.ToString(), NotifyType.StatusMessage);
+                    this.LoadingBar.IsEnabled = false;
+                    this.LoadingBar.Visibility = Visibility.Collapsed;
+                }
+            }
+        }
+
+        private void CopyToClipboardButton_Click(object sender, RoutedEventArgs e)
+        {
+            RemoteSystem selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
+            this.openRemoteConnectionAsync(selectedDevice);
         }
     }
     public enum NotifyType

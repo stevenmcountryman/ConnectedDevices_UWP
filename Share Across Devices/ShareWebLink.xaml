@@ -7,35 +7,17 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid x:Name="LayoutRoot" Background="SlateGray">
-        <StackPanel x:Name="Description">
-            <TextBlock Margin="8" 
-                       FontSize="22"
-                       Text="Share this web page to another Windows 10 device!"
-                       TextWrapping="WrapWholeWords"
-                       TextAlignment="Center"
+    <Grid Background="SlateGray">
+        <StackPanel VerticalAlignment="Center">
+            <TextBlock Margin="8"
+                       Text="Devices: "
                        Foreground="White"
-                       FontWeight="Bold"/>
-            <TextBlock x:Name="ContentValue" 
-                       Margin="8" 
-                       TextWrapping="Wrap" 
-                       FontSize="18"
-                       Foreground="White"
-                       HorizontalAlignment="Center" 
-                       MaxWidth="500" />
-
-            <!-- Share Operation Methods -->
-            <TextBlock Margin="8" 
-                       Text="Devices"
-                       FontSize="18"
-                       Foreground="White"
-                       HorizontalAlignment="Center"
-                       FontWeight="Bold"/>
-
+                       FontSize="18"/>
             <ListBox ItemsSource="{Binding DeviceList}" 
                      Margin="8" 
                      x:Name="DeviceListBox" 
-                     HorizontalAlignment="Stretch"
+                     HorizontalAlignment="Center"
+                     HorizontalContentAlignment="Center"
                      SelectionChanged="DeviceListBox_SelectionChanged" 
                      Background="Transparent" BorderBrush="{x:Null}" Foreground="White">
                 <ListBox.ItemTemplate>
@@ -43,20 +25,34 @@
                         <TextBlock Text="{Binding DisplayName}"
                                    FontWeight="Bold"
                                    Foreground="White"
-                                   FontSize="20"
+                                   FontSize="18"
                                    TextAlignment="Center"/>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-
-            <Button x:Name="DismissUI" 
+            <TextBlock x:Name="ClipboardText" 
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       Margin="8"
+                       FontSize="18"
+                       Foreground="White"
+                       FontWeight="Bold"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button x:Name="LaunchInBrowserButton" 
                     IsEnabled="False" 
-                    Content="Share" 
+                    Content="share to browser" 
                     Margin="8"
                     Foreground="White"
                     HorizontalAlignment="Right"
-                    Click="DismissUI_Click"
-                    AutomationProperties.AutomationId="DismissUI" />
+                    Click="LaunchInBrowserButton_Click" BorderBrush="{x:Null}" />
+                <Button x:Name="CopyToClipboardButton" 
+                    IsEnabled="False" 
+                    Content="share to clipboard" 
+                    Margin="8"
+                    Foreground="White"
+                    HorizontalAlignment="Right"
+                    Click="CopyToClipboardButton_Click" BorderBrush="{x:Null}" />
+            </StackPanel>
             <ProgressBar x:Name="LoadingBar" 
                          Margin="8" 
                          Visibility="Collapsed" 
@@ -65,7 +61,8 @@
                          Height="4" 
                          Foreground="White" 
                          Background="{x:Null}"/>
-            <TextBlock x:Name="StatusBlock" TextWrapping="Wrap" HorizontalAlignment="Left" MaxWidth="500" />
+            <TextBlock x:Name="StatusBlock" FontWeight="Bold" 
+                                   MaxWidth="{Binding ElementName=Splitter, Path=ActualWidth}" Margin="10,10,10,20" TextWrapping="Wrap"  />
         </StackPanel>
-    </Grid>
+     </Grid>
 </Page>

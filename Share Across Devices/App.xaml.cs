@@ -22,6 +22,25 @@ namespace Share_Across_Devices
             this.Construct();
         }
 
+        protected override void OnActivated(IActivatedEventArgs args)
+        {
+            // Window management
+            Frame rootFrame = Window.Current.Content as Frame;
+            if (rootFrame == null)
+            {
+                rootFrame = new Frame();
+                Window.Current.Content = rootFrame;
+            }
+
+            // Code specific to launch for results
+            var protocolActivatedEventArgs = (ProtocolActivatedEventArgs)args;
+            // Open the page that we created to handle activation for results.
+            rootFrame.Navigate(typeof(MainPage), protocolActivatedEventArgs);
+
+            // Ensure the current window is active.
+            Window.Current.Activate();
+        }
+
         /// <summary>
         /// Invoked when the application is launched normally by the end user.  Other entry points
         /// will be used such as when the application is launched to open a specific file.

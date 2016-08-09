@@ -8,27 +8,16 @@
     mc:Ignorable="d">
 
     <Grid Background="SlateGray">
-        <TextBlock TextWrapping="WrapWholeWords"
-                   VerticalAlignment="Top"
-                   Margin="8"
-                   Foreground="White"
-                   FontWeight="Bold"
-                   FontSize="18"
-                   TextAlignment="Center"
-                   Text="Welcome! You can now share any web link from any app to any of your existing Windows 10 devices. You do not need to keep this app open or install this app on any other device (unless you also want to share from that device)" />
-        <StackPanel VerticalAlignment="Bottom">
-            <TextBlock TextWrapping="WrapWholeWords"
-                   VerticalAlignment="Top"
-                   Margin="8"
-                   Foreground="White"
-                   FontWeight="Bold"
-                   FontSize="18"
-                   TextAlignment="Left"
-                   Text="Share clipboard text:" />
+        <StackPanel VerticalAlignment="Center">
+            <TextBlock Margin="8"
+                       Text="Devices: "
+                       Foreground="White"
+                       FontSize="18"/>
             <ListBox ItemsSource="{Binding DeviceList}" 
                      Margin="8" 
                      x:Name="DeviceListBox" 
-                     HorizontalAlignment="Stretch"
+                     HorizontalAlignment="Center"
+                     HorizontalContentAlignment="Center"
                      SelectionChanged="DeviceListBox_SelectionChanged" 
                      Background="Transparent" BorderBrush="{x:Null}" Foreground="White">
                 <ListBox.ItemTemplate>
@@ -36,20 +25,38 @@
                         <TextBlock Text="{Binding DisplayName}"
                                    FontWeight="Bold"
                                    Foreground="White"
-                                   FontSize="20"
+                                   FontSize="18"
                                    TextAlignment="Center"/>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <TextBox x:Name="ClipboardText" TextChanged="ClipboardText_TextChanged" />            
-            <Button x:Name="ShareButton" 
+            <TextBox x:Name="ClipboardText" 
+                     TextChanged="ClipboardText_TextChanged"
+                     Margin="8"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button x:Name="LaunchInBrowserButton" 
                     IsEnabled="False" 
-                    Content="Share" 
+                    Content="share to browser" 
                     Margin="8"
                     Foreground="White"
                     HorizontalAlignment="Right"
-                    Click="ShareButton_Click"
-                    AutomationProperties.AutomationId="DismissUI" />
+                    Click="LaunchInBrowserButton_Click" BorderBrush="{x:Null}" />
+                <Button x:Name="CopyToClipboardButton" 
+                    IsEnabled="False" 
+                    Content="share to clipboard" 
+                    Margin="8"
+                    Foreground="White"
+                    HorizontalAlignment="Right"
+                    Click="CopyToClipboardButton_Click" BorderBrush="{x:Null}" />
+            </StackPanel>
+            <ProgressBar x:Name="LoadingBar" 
+                         Margin="8" 
+                         Visibility="Collapsed" 
+                         IsEnabled="False" 
+                         IsIndeterminate="true" 
+                         Height="4" 
+                         Foreground="White" 
+                         Background="{x:Null}"/>
             <TextBlock x:Name="StatusBlock" FontWeight="Bold" 
                                    MaxWidth="{Binding ElementName=Splitter, Path=ActualWidth}" Margin="10,10,10,20" TextWrapping="Wrap"  />
         </StackPanel>

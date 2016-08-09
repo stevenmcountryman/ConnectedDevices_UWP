@@ -14,6 +14,7 @@ using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Documents;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using static Share_Across_Devices.MainPage;
 
@@ -118,7 +119,7 @@ namespace Share_Across_Devices
                     }
                     catch (Exception ex)
                     {
-                        NotifyUserBackgroundThread("Failed GetWebLinkAsync - " + ex.Message);
+                        NotifyUser("Failed GetWebLinkAsync - " + ex.Message, NotifyType.ErrorMessage);
                     }
                 }
                 if (this.shareOperation.Data.Contains(StandardDataFormats.ApplicationLink))
@@ -129,7 +130,7 @@ namespace Share_Across_Devices
                     }
                     catch (Exception ex)
                     {
-                        NotifyUserBackgroundThread("Failed GetApplicationLinkAsync - " + ex.Message);
+                        NotifyUser("Failed GetApplicationLinkAsync - " + ex.Message, NotifyType.ErrorMessage);
                     }
                 }
                 if (this.shareOperation.Data.Contains(StandardDataFormats.Text))
@@ -140,7 +141,7 @@ namespace Share_Across_Devices
                     }
                     catch (Exception ex)
                     {
-                        NotifyUserBackgroundThread("Failed GetTextAsync - " + ex.Message);
+                        NotifyUser("Failed GetTextAsync - " + ex.Message, NotifyType.ErrorMessage);
                     }
                 }
                 if (this.shareOperation.Data.Contains(StandardDataFormats.StorageItems))
@@ -151,7 +152,7 @@ namespace Share_Across_Devices
                     }
                     catch (Exception ex)
                     {
-                        NotifyUserBackgroundThread("Failed GetStorageItemsAsync - " + ex.Message);
+                        NotifyUser("Failed GetStorageItemsAsync - " + ex.Message, NotifyType.ErrorMessage);
                     }
                 }
                 if (this.shareOperation.Data.Contains(dataFormatName))
@@ -162,7 +163,7 @@ namespace Share_Across_Devices
                     }
                     catch (Exception ex)
                     {
-                        NotifyUserBackgroundThread("Failed GetTextAsync(" + dataFormatName + ") - " + ex.Message);
+                        NotifyUser("Failed GetTextAsync(" + dataFormatName + ") - " + ex.Message, NotifyType.ErrorMessage);
                     }
                 }
                 if (this.shareOperation.Data.Contains(StandardDataFormats.Html))
@@ -173,7 +174,7 @@ namespace Share_Across_Devices
                     }
                     catch (Exception ex)
                     {
-                        NotifyUserBackgroundThread("Failed GetHtmlFormatAsync - " + ex.Message);
+                        NotifyUser("Failed GetHtmlFormatAsync - " + ex.Message, NotifyType.ErrorMessage);
                     }
 
                     try
@@ -182,7 +183,7 @@ namespace Share_Across_Devices
                     }
                     catch (Exception ex)
                     {
-                        NotifyUserBackgroundThread("Failed GetResourceMapAsync - " + ex.Message);
+                        NotifyUser("Failed GetResourceMapAsync - " + ex.Message, NotifyType.ErrorMessage);
                     }
                 }
                 if (this.shareOperation.Data.Contains(StandardDataFormats.Bitmap))
@@ -193,7 +194,7 @@ namespace Share_Across_Devices
                     }
                     catch (Exception ex)
                     {
-                        NotifyUserBackgroundThread("Failed GetBitmapAsync - " + ex.Message);
+                        NotifyUser("Failed GetBitmapAsync - " + ex.Message, NotifyType.ErrorMessage);
                     }
                 }
 
@@ -204,24 +205,64 @@ namespace Share_Across_Devices
                 {
                     if (this.sharedWebLink != null)
                     {
-                        AddContentValue("WebLink: ", this.sharedWebLink.AbsoluteUri);
+                        AddContentValue("", this.sharedWebLink.AbsoluteUri);
                     }
                 });
             });
         }
 
-        private async void DismissUI_Click(object sender, RoutedEventArgs e)
+        public void NotifyUser(string strMessage, NotifyType type)
+        {
+            StatusBlock.Text = strMessage;
+        }
+
+        private void AddContentValue(string title, string description = null)
+        {
+            Run contentType = new Run();
+            contentType.Foreground = new SolidColorBrush(Colors.White);
+            contentType.FontSize = 18;
+            contentType.FontWeight = FontWeights.Bold;
+            contentType.Text = title;
+            ClipboardText.Inlines.Add(contentType);
+
+            if (description != null)
+            {
+                Run contentValue = new Run();
+                contentValue.Text = description + Environment.NewLine;
+                ClipboardText.Inlines.Add(contentValue);
+            }
+        }
+        private async void openRemoteConnectionAsync(RemoteSystem remotesys)
+        {
+            if (remotesys != null)
+            {
+                // Create a remote system connection request.
+                RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(remotesys);
+                NotifyUser("Sharing to " + remotesys.DisplayName + "...", NotifyType.StatusMessage);
+                var status = await RemoteLauncher.LaunchUriAsync(connectionRequest, new Uri("share-app:?Data=" + this.ClipboardText.Text));
+                NotifyUser(status.ToString(), NotifyType.StatusMessage);
+                this.shareOperation.DismissUI();
+            }
+            else
+            {
+                NotifyUser("Select a device for remote connection.", NotifyType.ErrorMessage);
+            }
+        }
+
+        private async void LaunchInBrowserButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedDevice = this.deviceList[this.DeviceListBox.SelectedIndex];
 
             if (selectedDevice != null)
             {
                 Uri uri;
-                if (Uri.TryCreate(this.sharedWebLink.AbsoluteUri, UriKind.Absolute, out uri))
+                if (Uri.TryCreate(this.ClipboardText.Text, UriKind.Absolute, out uri))
                 {
                     this.LoadingBar.IsEnabled = true;
                     this.LoadingBar.Visibility = Visibility.Visible;
+                    NotifyUser("Sharing to " + selectedDevice.DisplayName + "...", NotifyType.StatusMessage);
                     RemoteLaunchUriStatus launchUriStatus = await RemoteLauncher.LaunchUriAsync(new RemoteSystemConnectionRequest(selectedDevice), uri);
+                    NotifyUser(launchUriStatus.ToString(), NotifyType.StatusMessage);
                     this.LoadingBar.IsEnabled = false;
                     this.LoadingBar.Visibility = Visibility.Collapsed;
                     this.shareOperation.DismissUI();
@@ -229,50 +270,42 @@ namespace Share_Across_Devices
             }
         }
 
-        private void ReportDataRetrieved_Click(object sender, RoutedEventArgs e)
+        private void CopyToClipboardButton_Click(object sender, RoutedEventArgs e)
         {
-            this.shareOperation.ReportDataRetrieved();
-            this.NotifyUser("Data retrieved...");
+            RemoteSystem selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
+            this.openRemoteConnectionAsync(selectedDevice);
         }
-
-        async private void Footer_Click(object sender, RoutedEventArgs e)
+        private void ClipboardText_TextChanged(object sender, TextChangedEventArgs e)
         {
-            await Windows.System.Launcher.LaunchUriAsync(new Uri(((HyperlinkButton)sender).Tag.ToString()));
-        }
-
-        private void NotifyUser(string strMessage)
-        {
-            StatusBlock.Text = strMessage;
-        }
-
-        async private void NotifyUserBackgroundThread(string message)
-        {
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            if (this.ClipboardText.Text.Length > 0 && this.DeviceListBox.SelectedItem != null)
             {
-                NotifyUser(message);
-            });
-        }
-
-        private void AddContentValue(string title, string description = null)
-        {
-            Run contentType = new Run();
-            contentType.FontWeight = FontWeights.Bold;
-            contentType.Text = title;
-            ContentValue.Inlines.Add(contentType);
-
-            if (description != null)
+                if (this.ClipboardText.Text.StartsWith("http://") || this.ClipboardText.Text.StartsWith("https://"))
+                {
+                    this.LaunchInBrowserButton.IsEnabled = true;
+                }
+                this.CopyToClipboardButton.IsEnabled = true;
+            }
+            else
             {
-                Run contentValue = new Run();
-                contentValue.Text = description + Environment.NewLine;
-                ContentValue.Inlines.Add(contentValue);
+                this.LaunchInBrowserButton.IsEnabled = false;
+                this.CopyToClipboardButton.IsEnabled = false;
             }
         }
 
         private void DeviceListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (this.DeviceListBox.SelectedIndex >= 0)
+            if (this.ClipboardText.Text.Length > 0 && this.DeviceListBox.SelectedItem != null)
             {
-                this.DismissUI.IsEnabled = true;
+                if (this.ClipboardText.Text.StartsWith("http://") || this.ClipboardText.Text.StartsWith("https://"))
+                {
+                    this.LaunchInBrowserButton.IsEnabled = true;
+                }
+                this.CopyToClipboardButton.IsEnabled = true;
+            }
+            else
+            {
+                this.LaunchInBrowserButton.IsEnabled = false;
+                this.CopyToClipboardButton.IsEnabled = false;
             }
         }
     }
