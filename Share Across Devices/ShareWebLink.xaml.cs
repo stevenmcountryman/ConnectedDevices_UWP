@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.ApplicationModel.DataTransfer.ShareTarget;
+using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System;
@@ -11,6 +12,7 @@ using Windows.System.RemoteSystems;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Text;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Documents;
@@ -60,7 +62,36 @@ namespace Share_Across_Devices
             this.InitializeComponent();
 
             this.setUpDevicesList();
+            this.setTitleBar();
         }
+
+        private void setTitleBar()
+        {
+
+            if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.ApplicationView"))
+            {
+                ApplicationView AppView = ApplicationView.GetForCurrentView();
+                AppView.TitleBar.BackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.ButtonInactiveBackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.ButtonInactiveForegroundColor = Colors.White;
+                AppView.TitleBar.ButtonBackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.ButtonForegroundColor = Colors.White;
+                AppView.TitleBar.ButtonHoverBackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.ButtonHoverForegroundColor = Colors.White;
+                AppView.TitleBar.ButtonPressedBackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.ButtonPressedForegroundColor = Colors.White;
+                AppView.TitleBar.ForegroundColor = Colors.White;
+                AppView.TitleBar.InactiveBackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.InactiveForegroundColor = Colors.White;
+            }
+            if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+            {
+                var statusBar = StatusBar.GetForCurrentView();
+                statusBar.BackgroundOpacity = 1;
+                statusBar.BackgroundColor = Colors.SlateGray;
+                statusBar.ForegroundColor = Colors.White;
+
+
 
         private async void setUpDevicesList()
         {
