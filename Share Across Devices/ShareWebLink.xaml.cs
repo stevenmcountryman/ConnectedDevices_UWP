@@ -90,8 +90,8 @@ namespace Share_Across_Devices
                 statusBar.BackgroundOpacity = 1;
                 statusBar.BackgroundColor = Colors.SlateGray;
                 statusBar.ForegroundColor = Colors.White;
-
-
+            }
+        }
 
         private async void setUpDevicesList()
         {
