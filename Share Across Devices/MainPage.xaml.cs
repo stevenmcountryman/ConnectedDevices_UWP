@@ -32,6 +32,25 @@ namespace Share_Across_Devices
             _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
             this.setUpDevicesList();
             this.setTitleBar();
+            InputPane.GetForCurrentView().Showing += InputPane_Showing;
+            InputPane.GetForCurrentView().Hiding += InputPane_Hiding;
+        }
+
+        private void InputPane_Hiding(InputPane sender, InputPaneVisibilityEventArgs args)
+        {
+            var trans = new TranslateTransform();
+            trans.Y = 0;
+            this.RenderTransform = trans;
+            args.EnsuredFocusedElementInView = false;
+        }
+
+        private void InputPane_Showing(InputPane sender, InputPaneVisibilityEventArgs args)
+        {
+            var _offSet = (int)args.OccludedRect.Height;
+            args.EnsuredFocusedElementInView = true;
+            var trans = new TranslateTransform();
+            trans.Y = -_offSet;
+            this.RenderTransform = trans;
         }
 
         private void setTitleBar()
