@@ -6,53 +6,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-
-    <Grid Background="SlateGray">
-        <StackPanel VerticalAlignment="Center">
-            <TextBlock Margin="8"
-                       Text="Devices: "
-                       Foreground="White"
-                       FontSize="18"/>
-            <ListBox ItemsSource="{Binding DeviceList}" 
-                     Margin="8" 
-                     x:Name="DeviceListBox" 
-                     HorizontalAlignment="Center"
-                     HorizontalContentAlignment="Center"
-                     SelectionChanged="DeviceListBox_SelectionChanged" 
-                     Background="Transparent" BorderBrush="{x:Null}" Foreground="White">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding DisplayName}"
-                                   FontWeight="Bold"
-                                   Foreground="White"
-                                   FontSize="18"
-                                   TextAlignment="Center"/>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-            <TextBlock x:Name="ClipboardText" 
-                       HorizontalAlignment="Center"
-                       TextAlignment="Center"
-                       Margin="8"
-                       FontSize="18"
-                       Foreground="White"
-                       FontWeight="Bold"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button x:Name="LaunchInBrowserButton" 
-                    IsEnabled="False" 
-                    Content="share to browser" 
-                    Margin="8"
-                    Foreground="White"
-                    HorizontalAlignment="Right"
-                    Click="LaunchInBrowserButton_Click" BorderBrush="{x:Null}" />
-                <Button x:Name="CopyToClipboardButton" 
-                    IsEnabled="False" 
-                    Content="share to clipboard" 
-                    Margin="8"
-                    Foreground="White"
-                    HorizontalAlignment="Right"
-                    Click="CopyToClipboardButton_Click" BorderBrush="{x:Null}" />
-            </StackPanel>
+    <RelativePanel x:Name="MainPanel" 
+                   Background="SlateGray"
+                   Padding="8">
+        <StackPanel RelativePanel.Above="MainStackPanel"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.AlignRightWithPanel="True">
             <ProgressBar x:Name="LoadingBar" 
                          Margin="8" 
                          Visibility="Collapsed" 
@@ -64,5 +23,64 @@
             <TextBlock x:Name="StatusBlock" FontWeight="Bold" 
                                    MaxWidth="{Binding ElementName=Splitter, Path=ActualWidth}" Margin="10,10,10,20" TextWrapping="Wrap"  />
         </StackPanel>
-     </Grid>
+        
+        <StackPanel x:Name="MainStackPanel"
+            VerticalAlignment="Center"
+                    RelativePanel.AlignBottomWithPanel="True"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.AlignRightWithPanel="True">
+            <TextBlock Margin="8"
+                       Text="Devices: "
+                       Foreground="White"
+                       FontSize="18"/>
+            <ListView ItemsSource="{Binding DeviceList}" 
+                     Margin="8" 
+                     x:Name="DeviceListBox" 
+                     HorizontalAlignment="Stretch"
+                     HorizontalContentAlignment="Left"
+                     SelectionChanged="DeviceListBox_SelectionChanged"
+                     Background="Transparent" 
+                     BorderBrush="{x:Null}" 
+                     Foreground="White">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding DisplayName}"
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   FontSize="18"
+                                   TextAlignment="Left"/>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <TextBlock x:Name="ClipboardText" 
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       Margin="8"
+                       FontSize="18"
+                       Foreground="White"
+                       FontWeight="Bold"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="LaunchInBrowserButton" 
+                    IsEnabled="False" 
+                    Content="share to browser" 
+                    Margin="4,8,4,8"
+                    Foreground="White"
+                    FontSize="12"
+                    HorizontalAlignment="Right"
+                    Click="LaunchInBrowserButton_Click" 
+                    BorderBrush="{x:Null}" 
+                    IsEnabledChanged="LaunchInBrowserButton_IsEnabledChanged" />
+                <Button x:Name="CopyToClipboardButton" 
+                    IsEnabled="False" 
+                    Content="share to clipboard" 
+                    Margin="4,8,8,8"
+                    Foreground="White"
+                    FontSize="12"
+                    HorizontalAlignment="Right"
+                    Click="CopyToClipboardButton_Click" 
+                    BorderBrush="{x:Null}" 
+                    IsEnabledChanged="CopyToClipboardButton_IsEnabledChanged"/>
+            </StackPanel>
+        </StackPanel>
+    </RelativePanel>
 </Page>

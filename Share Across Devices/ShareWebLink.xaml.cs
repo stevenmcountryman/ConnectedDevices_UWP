@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Numerics;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.ApplicationModel.DataTransfer.ShareTarget;
@@ -10,12 +11,14 @@ using Windows.Storage.Streams;
 using Windows.System;
 using Windows.System.RemoteSystems;
 using Windows.UI;
+using Windows.UI.Composition;
 using Windows.UI.Core;
 using Windows.UI.Text;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Documents;
+using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using static Share_Across_Devices.MainPage;
@@ -48,6 +51,7 @@ namespace Share_Across_Devices
         private const string dataFormatName = "http://schema.org/Book";
         private ObservableCollection<RemoteSystem> deviceList;
         private RemoteSystemWatcher deviceWatcher;
+        private Compositor _compositor;
 
         public ObservableCollection<RemoteSystem> DeviceList
         {
@@ -60,7 +64,7 @@ namespace Share_Across_Devices
         public ShareWebLink()
         {
             this.InitializeComponent();
-
+            _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
             this.setUpDevicesList();
             this.setTitleBar();
         }
@@ -273,7 +277,7 @@ namespace Share_Across_Devices
                 this.LoadingBar.IsEnabled = true;
                 this.LoadingBar.Visibility = Visibility.Visible;
                 NotifyUser("Sharing to " + remotesys.DisplayName + "...", NotifyType.StatusMessage);
-                var status = await RemoteLauncher.LaunchUriAsync(connectionRequest, new Uri("share-app:?Data=" + this.ClipboardText.Text));
+                var status = await RemoteLauncher.LaunchUriAsync(connectionRequest, new Uri("share-app:?Text=" + this.ClipboardText.Text));
                 NotifyUser(status.ToString(), NotifyType.StatusMessage);
                 this.LoadingBar.IsEnabled = false;
                 this.LoadingBar.Visibility = Visibility.Collapsed;
@@ -343,6 +347,42 @@ namespace Share_Across_Devices
                 this.LaunchInBrowserButton.IsEnabled = false;
                 this.CopyToClipboardButton.IsEnabled = false;
             }
+        }
+
+        private void LaunchInBrowserButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var button = sender as Button;
+            this.animateButtonEnabled(button);
+        }
+
+        private void CopyToClipboardButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var button = sender as Button;
+            this.animateButtonEnabled(button);
+        }
+
+        private void animateButtonEnabled(Button button)
+        {
+            var itemVisual = ElementCompositionPreview.GetElementVisual(button);
+            float width = (float)button.RenderSize.Width;
+            float height = (float)button.RenderSize.Height;
+            itemVisual.CenterPoint = new Vector3(width / 2, height / 2, 0f);
+
+            Vector3KeyFrameAnimation scaleAnimation = _compositor.CreateVector3KeyFrameAnimation();
+            scaleAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+            scaleAnimation.InsertKeyFrame(0f, new Vector3(1f, 1f, 1f));
+
+            if (button.IsEnabled)
+            {
+                scaleAnimation.InsertKeyFrame(0.1f, new Vector3(1.1f, 1.1f, 1.1f));
+            }
+            else
+            {
+                scaleAnimation.InsertKeyFrame(0.1f, new Vector3(0.9f, 0.9f, 0.9f));
+            }
+
+            scaleAnimation.InsertKeyFrame(1f, new Vector3(1f, 1f, 1f));
+            itemVisual.StartAnimation("Scale", scaleAnimation);
         }
     }
 }

@@ -72,10 +72,9 @@ namespace Share_Across_Devices
             if (protocolArgs != null)
             {
                 var queryStrings = new WwwFormUrlDecoder(protocolArgs.Uri.Query);
-                string textToCopy = "";
+                string textToCopy = queryStrings.GetFirstValueByName("Text");
                 try
                 {
-                    textToCopy = queryStrings.GetFirstValueByName("Text");
                     if (textToCopy.Length > 0)
                     {
                         DataPackage package = new DataPackage()
@@ -241,6 +240,9 @@ namespace Share_Across_Devices
         private void animateButtonEnabled(Button button)
         {
             var itemVisual = ElementCompositionPreview.GetElementVisual(button);
+            float width = (float)button.RenderSize.Width;
+            float height = (float)button.RenderSize.Height;
+            itemVisual.CenterPoint = new Vector3(width / 2, height / 2, 0f);
 
             Vector3KeyFrameAnimation scaleAnimation = _compositor.CreateVector3KeyFrameAnimation();
             scaleAnimation.Duration = TimeSpan.FromMilliseconds(1000);
@@ -248,27 +250,14 @@ namespace Share_Across_Devices
 
             if (button.IsEnabled)
             {
-                scaleAnimation.InsertKeyFrame(0.1f, new Vector3(1.2f, 1.2f, 1.2f));
+                scaleAnimation.InsertKeyFrame(0.1f, new Vector3(1.1f, 1.1f, 1.1f));
             }
             else
             {
-                scaleAnimation.InsertKeyFrame(0.1f, new Vector3(0.8f, 0.8f, 0.8f));
+                scaleAnimation.InsertKeyFrame(0.1f, new Vector3(0.9f, 0.9f, 0.9f));
             }
 
             scaleAnimation.InsertKeyFrame(1f, new Vector3(1f, 1f, 1f));
-            itemVisual.StartAnimation("Scale", scaleAnimation);
-        }
-
-        private void animateListView()
-        {
-            var itemVisual = ElementCompositionPreview.GetElementVisual(this.DeviceListBox);
-
-            Vector3KeyFrameAnimation scaleAnimation = _compositor.CreateVector3KeyFrameAnimation();
-            scaleAnimation.InsertKeyFrame(0f, new Vector3(1f, 1f, 1f));
-            scaleAnimation.InsertKeyFrame(0.1f, new Vector3(0.8f, 0.8f, 0.8f));
-            scaleAnimation.InsertKeyFrame(1f, new Vector3(1f, 1f, 1f));
-            scaleAnimation.Duration = TimeSpan.FromMilliseconds(1000);
-
             itemVisual.StartAnimation("Scale", scaleAnimation);
         }
     }

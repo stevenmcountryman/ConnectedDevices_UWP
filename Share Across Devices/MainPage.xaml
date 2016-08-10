@@ -7,9 +7,25 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <RelativePanel x:Name="MainPanel" Background="SlateGray">
+    <RelativePanel x:Name="MainPanel" 
+                   Background="SlateGray"
+                   Padding="8">
+        <StackPanel RelativePanel.Above="MainStackPanel"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.AlignRightWithPanel="True">
+            <ProgressBar x:Name="LoadingBar" 
+                         Margin="8" 
+                         Visibility="Collapsed" 
+                         IsEnabled="False" 
+                         IsIndeterminate="true" 
+                         Height="4" 
+                         Foreground="White" 
+                         Background="{x:Null}"/>
+            <TextBlock x:Name="StatusBlock" FontWeight="Bold" 
+                                   MaxWidth="{Binding ElementName=Splitter, Path=ActualWidth}" Margin="10,10,10,20" TextWrapping="Wrap"  />
+        </StackPanel>
+        
         <StackPanel x:Name="MainStackPanel"
-            VerticalAlignment="Center"
                     RelativePanel.AlignBottomWithPanel="True"
                     RelativePanel.AlignLeftWithPanel="True"
                     RelativePanel.AlignRightWithPanel="True">
@@ -39,12 +55,12 @@
             <TextBox x:Name="ClipboardText" 
                      TextChanged="ClipboardText_TextChanged"
                      Margin="8"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button x:Name="CopyToLocalClipboardButton" 
                     Visibility="Collapsed"
                     IsEnabled="False"
                     Content="copy" 
-                    Margin="8"
+                    Margin="8,8,4,8"
                     Foreground="White"
                     FontSize="12"
                     HorizontalAlignment="Right"
@@ -54,7 +70,7 @@
                 <Button x:Name="LaunchInBrowserButton" 
                     IsEnabled="False" 
                     Content="share to browser" 
-                    Margin="8"
+                    Margin="4,8,4,8"
                     Foreground="White"
                     FontSize="12"
                     HorizontalAlignment="Right"
@@ -64,24 +80,14 @@
                 <Button x:Name="CopyToClipboardButton" 
                     IsEnabled="False" 
                     Content="share to clipboard" 
-                    Margin="8"
+                    Margin="4,8,8,8"
                     Foreground="White"
                     FontSize="12"
                     HorizontalAlignment="Right"
                     Click="CopyToClipboardButton_Click" 
                     BorderBrush="{x:Null}" 
                     IsEnabledChanged="CopyToClipboardButton_IsEnabledChanged"/>
-            </StackPanel>
-            <ProgressBar x:Name="LoadingBar" 
-                         Margin="8" 
-                         Visibility="Collapsed" 
-                         IsEnabled="False" 
-                         IsIndeterminate="true" 
-                         Height="4" 
-                         Foreground="White" 
-                         Background="{x:Null}"/>
-            <TextBlock x:Name="StatusBlock" FontWeight="Bold" 
-                                   MaxWidth="{Binding ElementName=Splitter, Path=ActualWidth}" Margin="10,10,10,20" TextWrapping="Wrap"  />
+            </StackPanel>            
         </StackPanel>
      </RelativePanel>
 </Page>
