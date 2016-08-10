@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
-using Windows.ApplicationModel.AppService;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.ApplicationModel.DataTransfer.ShareTarget;
-using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
 using Windows.System;
 using Windows.System.RemoteSystems;
@@ -15,10 +10,11 @@ using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
-using System.Threading;
-using Windows.Storage.Pickers;
-using Windows.Storage.AccessCache;
 using Windows.Foundation;
+using Windows.UI.Composition;
+using Windows.UI.Xaml.Hosting;
+using System.Numerics;
+using Windows.UI.Xaml.Media;
 
 namespace Share_Across_Devices
 {
@@ -27,21 +23,13 @@ namespace Share_Across_Devices
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private ObservableCollection<RemoteSystem> deviceList;
         private RemoteSystemWatcher deviceWatcher;
-
-        public ObservableCollection<RemoteSystem> DeviceList
-        {
-            get
-            {
-                return this.deviceList;
-            }
-        }
+        private Compositor _compositor;
 
         public MainPage()
         {
             this.InitializeComponent();
-            deviceList = new ObservableCollection<RemoteSystem>();
+            _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
             this.setUpDevicesList();
             this.setTitleBar();
         }
@@ -105,6 +93,7 @@ namespace Share_Across_Devices
                     NotifyUser("Manual copy required", NotifyType.StatusMessage);
                     this.ClipboardText.Text = textToCopy;
                     this.CopyToLocalClipboardButton.Visibility = Visibility.Visible;
+                    this.CopyToLocalClipboardButton.IsEnabled = true;
                 }
             }
         }
@@ -126,11 +115,10 @@ namespace Share_Across_Devices
             var remoteSystem = args.RemoteSystem;
             await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                if (!this.deviceList.Contains(remoteSystem))
+                if (!this.DeviceListBox.Items.Contains(remoteSystem))
                 {
-                    this.deviceList.Add(remoteSystem);
+                    this.DeviceListBox.Items.Add(remoteSystem);
                 }
-                this.DeviceListBox.ItemsSource = this.deviceList;
             });
         }
         private async void openRemoteConnectionAsync(RemoteSystem remotesys)
@@ -194,7 +182,7 @@ namespace Share_Across_Devices
 
         private async void LaunchInBrowserButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedDevice = this.deviceList[this.DeviceListBox.SelectedIndex];
+            var selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
 
             if (selectedDevice != null)
             {
@@ -228,7 +216,60 @@ namespace Share_Across_Devices
             Clipboard.SetContent(package);
             Clipboard.Flush();
             this.CopyToLocalClipboardButton.Visibility = Visibility.Collapsed;
+            this.CopyToLocalClipboardButton.IsEnabled = true;
             NotifyUser("Copied!", NotifyType.StatusMessage);
+        }
+
+        private void LaunchInBrowserButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var button = sender as Button;
+            this.animateButtonEnabled(button);
+        }
+
+        private void CopyToClipboardButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var button = sender as Button;
+            this.animateButtonEnabled(button);
+        }
+
+        private void CopyToLocalClipboardButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var button = sender as Button;
+            this.animateButtonEnabled(button);
+        }
+
+        private void animateButtonEnabled(Button button)
+        {
+            var itemVisual = ElementCompositionPreview.GetElementVisual(button);
+
+            Vector3KeyFrameAnimation scaleAnimation = _compositor.CreateVector3KeyFrameAnimation();
+            scaleAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+            scaleAnimation.InsertKeyFrame(0f, new Vector3(1f, 1f, 1f));
+
+            if (button.IsEnabled)
+            {
+                scaleAnimation.InsertKeyFrame(0.1f, new Vector3(1.2f, 1.2f, 1.2f));
+            }
+            else
+            {
+                scaleAnimation.InsertKeyFrame(0.1f, new Vector3(0.8f, 0.8f, 0.8f));
+            }
+
+            scaleAnimation.InsertKeyFrame(1f, new Vector3(1f, 1f, 1f));
+            itemVisual.StartAnimation("Scale", scaleAnimation);
+        }
+
+        private void animateListView()
+        {
+            var itemVisual = ElementCompositionPreview.GetElementVisual(this.DeviceListBox);
+
+            Vector3KeyFrameAnimation scaleAnimation = _compositor.CreateVector3KeyFrameAnimation();
+            scaleAnimation.InsertKeyFrame(0f, new Vector3(1f, 1f, 1f));
+            scaleAnimation.InsertKeyFrame(0.1f, new Vector3(0.8f, 0.8f, 0.8f));
+            scaleAnimation.InsertKeyFrame(1f, new Vector3(1f, 1f, 1f));
+            scaleAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+
+            itemVisual.StartAnimation("Scale", scaleAnimation);
         }
     }
     public enum NotifyType

@@ -7,41 +7,50 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="SlateGray">
-        <StackPanel VerticalAlignment="Center">
+    <RelativePanel x:Name="MainPanel" Background="SlateGray">
+        <StackPanel x:Name="MainStackPanel"
+            VerticalAlignment="Center"
+                    RelativePanel.AlignBottomWithPanel="True"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.AlignRightWithPanel="True">
             <TextBlock Margin="8"
                        Text="Devices: "
                        Foreground="White"
                        FontSize="18"/>
-            <ListBox ItemsSource="{Binding DeviceList}" 
+            <ListView ItemsSource="{Binding DeviceList}" 
                      Margin="8" 
                      x:Name="DeviceListBox" 
-                     HorizontalAlignment="Center"
-                     HorizontalContentAlignment="Center"
-                     SelectionChanged="DeviceListBox_SelectionChanged" 
-                     Background="Transparent" BorderBrush="{x:Null}" Foreground="White">
-                <ListBox.ItemTemplate>
+                     HorizontalAlignment="Stretch"
+                     HorizontalContentAlignment="Left"
+                     SelectionChanged="DeviceListBox_SelectionChanged"
+                     Background="Transparent" 
+                     BorderBrush="{x:Null}" 
+                     Foreground="White">
+                <ListView.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding DisplayName}"
                                    FontWeight="Bold"
                                    Foreground="White"
                                    FontSize="18"
-                                   TextAlignment="Center"/>
+                                   TextAlignment="Left"/>
                     </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                </ListView.ItemTemplate>
+            </ListView>
             <TextBox x:Name="ClipboardText" 
                      TextChanged="ClipboardText_TextChanged"
                      Margin="8"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button x:Name="CopyToLocalClipboardButton" 
                     Visibility="Collapsed"
+                    IsEnabled="False"
                     Content="copy" 
                     Margin="8"
                     Foreground="White"
                     FontSize="12"
                     HorizontalAlignment="Right"
-                    Click="CopyToLocalClipboardButton_Click" BorderBrush="{x:Null}" />
+                    Click="CopyToLocalClipboardButton_Click" 
+                    BorderBrush="{x:Null}" 
+                    IsEnabledChanged="CopyToLocalClipboardButton_IsEnabledChanged" />
                 <Button x:Name="LaunchInBrowserButton" 
                     IsEnabled="False" 
                     Content="share to browser" 
@@ -49,7 +58,9 @@
                     Foreground="White"
                     FontSize="12"
                     HorizontalAlignment="Right"
-                    Click="LaunchInBrowserButton_Click" BorderBrush="{x:Null}" />
+                    Click="LaunchInBrowserButton_Click" 
+                    BorderBrush="{x:Null}" 
+                    IsEnabledChanged="LaunchInBrowserButton_IsEnabledChanged" />
                 <Button x:Name="CopyToClipboardButton" 
                     IsEnabled="False" 
                     Content="share to clipboard" 
@@ -57,7 +68,9 @@
                     Foreground="White"
                     FontSize="12"
                     HorizontalAlignment="Right"
-                    Click="CopyToClipboardButton_Click" BorderBrush="{x:Null}" />
+                    Click="CopyToClipboardButton_Click" 
+                    BorderBrush="{x:Null}" 
+                    IsEnabledChanged="CopyToClipboardButton_IsEnabledChanged"/>
             </StackPanel>
             <ProgressBar x:Name="LoadingBar" 
                          Margin="8" 
@@ -70,5 +83,5 @@
             <TextBlock x:Name="StatusBlock" FontWeight="Bold" 
                                    MaxWidth="{Binding ElementName=Splitter, Path=ActualWidth}" Margin="10,10,10,20" TextWrapping="Wrap"  />
         </StackPanel>
-     </Grid>
+     </RelativePanel>
 </Page>
