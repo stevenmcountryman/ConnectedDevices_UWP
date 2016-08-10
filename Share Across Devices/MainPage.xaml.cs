@@ -205,6 +205,53 @@ namespace Share_Across_Devices
             this.openRemoteConnectionAsync(selectedDevice);
         }
 
+        private void animateLocalClipButton(Button button)
+        {
+            var itemVisual = ElementCompositionPreview.GetElementVisual(button);
+            float width = (float)button.RenderSize.Width;
+            float height = (float)button.RenderSize.Height;
+            itemVisual.CenterPoint = new Vector3(width / 2, height / 2, 0f);
+
+            Vector3KeyFrameAnimation scaleAnimation = _compositor.CreateVector3KeyFrameAnimation();
+            scaleAnimation.Duration = TimeSpan.FromMilliseconds(500);
+
+            ScalarKeyFrameAnimation opacityAnimation = _compositor.CreateScalarKeyFrameAnimation();
+            opacityAnimation.Duration = TimeSpan.FromMilliseconds(500);
+
+            if (button.IsEnabled)
+            {
+                itemVisual.Opacity = 0f;
+                scaleAnimation.InsertKeyFrame(0f, new Vector3(0f, 0f, 0f));
+                scaleAnimation.InsertKeyFrame(0.1f, new Vector3(1f, 1.1f, 1.1f));
+                scaleAnimation.InsertKeyFrame(1f, new Vector3(1f, 1f, 1f));
+
+                opacityAnimation.InsertKeyFrame(1f, 1f);
+            }
+            else
+            {
+                itemVisual.Opacity = 1f;
+                scaleAnimation.InsertKeyFrame(0f, new Vector3(1f, 1f, 1f));
+                scaleAnimation.InsertKeyFrame(0.1f, new Vector3(1f, 1.1f, 1.1f));
+                scaleAnimation.InsertKeyFrame(1f, new Vector3(0f, 0f, 0f));
+
+                opacityAnimation.InsertKeyFrame(1f, 0f);
+            }
+
+            CompositionScopedBatch myScopedBatch = _compositor.CreateScopedBatch(CompositionBatchTypes.Animation);
+            myScopedBatch.Completed += OnBatchCompleted;
+            itemVisual.StartAnimation("Scale", scaleAnimation);
+            itemVisual.StartAnimation("Opacity", opacityAnimation);
+            myScopedBatch.End();
+        }
+
+        private void OnBatchCompleted(object sender, CompositionBatchCompletedEventArgs args)
+        {
+            if (!this.CopyToLocalClipboardButton.IsEnabled)
+            {
+                this.CopyToLocalClipboardButton.Visibility = Visibility.Collapsed;
+            }
+        }
+
         private void CopyToLocalClipboardButton_Click(object sender, RoutedEventArgs e)
         {
             DataPackage package = new DataPackage()
@@ -214,9 +261,8 @@ namespace Share_Across_Devices
             package.SetText(this.ClipboardText.Text);
             Clipboard.SetContent(package);
             Clipboard.Flush();
-            this.CopyToLocalClipboardButton.Visibility = Visibility.Collapsed;
-            this.CopyToLocalClipboardButton.IsEnabled = true;
             NotifyUser("Copied!", NotifyType.StatusMessage);
+            this.CopyToLocalClipboardButton.IsEnabled = false;            
         }
 
         private void LaunchInBrowserButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -234,7 +280,7 @@ namespace Share_Across_Devices
         private void CopyToLocalClipboardButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             var button = sender as Button;
-            this.animateButtonEnabled(button);
+            this.animateLocalClipButton(button);
         }
 
         private void animateButtonEnabled(Button button)
