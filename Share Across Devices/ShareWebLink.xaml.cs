@@ -355,6 +355,7 @@ namespace Share_Across_Devices
                     this.OpenInTubeCastButton.IsEnabled = true;
                     this.OpenInMyTubeButton.Visibility = Visibility.Visible;
                     this.OpenInMyTubeButton.IsEnabled = true;
+                    this.LaunchText.Visibility = Visibility.Visible;
                 }
                 else
                 {
@@ -491,6 +492,7 @@ namespace Share_Across_Devices
             }
             else
             {
+                this.LaunchText.Visibility = Visibility.Collapsed;
                 itemVisual.Opacity = 1f;
                 scaleAnimation.InsertKeyFrame(0f, new Vector3(1f, 1f, 1f));
                 scaleAnimation.InsertKeyFrame(0.1f, new Vector3(1f, 1.1f, 1.1f));

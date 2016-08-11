@@ -29,7 +29,14 @@
                     RelativePanel.AlignBottomWithPanel="True"
                     RelativePanel.AlignLeftWithPanel="True"
                     RelativePanel.AlignRightWithPanel="True">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock x:Name="LaunchText"
+                           Foreground="White"
+                           Text="Launch in: "
+                           Margin="8"
+                           Padding="12"
+                           FontWeight="Bold"
+                           Visibility="Collapsed"/>
                 <Button x:Name="OpenInTubeCastButton" 
                     Visibility="Collapsed"
                     IsEnabled="False"
