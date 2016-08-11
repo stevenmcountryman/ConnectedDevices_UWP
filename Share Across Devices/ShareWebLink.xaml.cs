@@ -362,6 +362,7 @@ namespace Share_Across_Devices
             else
             {
                 this.LaunchInBrowserButton.IsEnabled = false;
+                this.OpenInTubeCastButton.IsEnabled = false;
             }
         }
 
