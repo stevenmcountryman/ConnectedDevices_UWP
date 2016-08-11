@@ -29,10 +29,11 @@
                     RelativePanel.AlignBottomWithPanel="True"
                     RelativePanel.AlignLeftWithPanel="True"
                     RelativePanel.AlignRightWithPanel="True">
-            <Button x:Name="OpenInTubeCastButton" 
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button x:Name="OpenInTubeCastButton" 
                     Visibility="Collapsed"
                     IsEnabled="False"
-                    Content="share to TubeCast!" 
+                    Content="TubeCast" 
                     Margin="8,8,8,8"
                     Padding="12"
                     Foreground="White"
@@ -42,6 +43,21 @@
                     Click="OpenInTubeCastButton_Click" 
                     BorderBrush="{x:Null}" 
                     IsEnabledChanged="OpenInTubeCastButton_IsEnabledChanged" />
+                <Button x:Name="OpenInMyTubeButton" 
+                    Visibility="Collapsed"
+                    IsEnabled="False"
+                    Content="myTube!" 
+                    Margin="8,8,8,8"
+                    Padding="12"
+                    Foreground="White"
+                    FontWeight="Bold"
+                    FontSize="16"
+                    HorizontalAlignment="Center"
+                    Click="OpenInMyTubeButton_Click" 
+                    BorderBrush="{x:Null}" 
+                    IsEnabledChanged="OpenInTubeCastButton_IsEnabledChanged" />
+            </StackPanel>
+            
             <TextBlock Margin="8"
                        Text="Devices: "
                        Foreground="White"

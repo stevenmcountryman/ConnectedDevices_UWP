@@ -201,16 +201,20 @@ namespace Share_Across_Devices
                 {
                     this.OpenInTubeCastButton.Visibility = Visibility.Visible;
                     this.OpenInTubeCastButton.IsEnabled = true;
+                    this.OpenInMyTubeButton.Visibility = Visibility.Visible;
+                    this.OpenInMyTubeButton.IsEnabled = true;
                 }
                 else
                 {
                     this.OpenInTubeCastButton.IsEnabled = false;
+                    this.OpenInMyTubeButton.IsEnabled = false;
                 }
             }
             else
             {
                 this.LaunchInBrowserButton.IsEnabled = false;
                 this.OpenInTubeCastButton.IsEnabled = false;
+                this.OpenInMyTubeButton.IsEnabled = false;
             }
         }
 
@@ -289,6 +293,10 @@ namespace Share_Across_Devices
             {
                 this.OpenInTubeCastButton.Visibility = Visibility.Collapsed;
             }
+            if (!this.OpenInMyTubeButton.IsEnabled)
+            {
+                this.OpenInMyTubeButton.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void CopyToLocalClipboardButton_Click(object sender, RoutedEventArgs e)
@@ -342,12 +350,37 @@ namespace Share_Across_Devices
             }
         }
 
+        private async void OpenInMyTubeButton_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
+
+            if (selectedDevice != null)
+            {
+                Uri uri;
+                if (Uri.TryCreate(this.convertYoutubeLinkToMyTubeUri(), UriKind.Absolute, out uri))
+                {
+                    this.LoadingBar.IsEnabled = true;
+                    this.LoadingBar.Visibility = Visibility.Visible;
+                    NotifyUser("Sharing to " + selectedDevice.DisplayName + "...", NotifyType.StatusMessage);
+                    RemoteLaunchUriStatus launchUriStatus = await RemoteLauncher.LaunchUriAsync(new RemoteSystemConnectionRequest(selectedDevice), uri);
+                    NotifyUser(launchUriStatus.ToString(), NotifyType.StatusMessage);
+                    this.LoadingBar.IsEnabled = false;
+                    this.LoadingBar.Visibility = Visibility.Collapsed;
+                }
+            }
+        }
+
         private string convertYoutubeLinkToTubeCastUri()
         {
             var uri = new Uri(this.ClipboardText.Text);
             var queryStrings = new WwwFormUrlDecoder(uri.Query);
             string videoString = queryStrings.GetFirstValueByName("v");
             return "tubecast:VideoID=" + videoString;
+        }
+
+        private string convertYoutubeLinkToMyTubeUri()
+        {
+            return "mytube:link=" + this.ClipboardText.Text;
         }
 
         private void animateButtonEnabled(Button button)
