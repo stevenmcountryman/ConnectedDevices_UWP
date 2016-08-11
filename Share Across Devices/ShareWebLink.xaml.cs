@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.ApplicationModel.DataTransfer.ShareTarget;
+using Windows.Foundation;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Streams;
@@ -319,10 +320,7 @@ namespace Share_Across_Devices
         {
             if (this.ClipboardText.Text.Length > 0 && this.DeviceListBox.SelectedItem != null)
             {
-                if (this.ClipboardText.Text.ToLower().StartsWith("http://") || this.ClipboardText.Text.ToLower().StartsWith("https://"))
-                {
-                    this.LaunchInBrowserButton.IsEnabled = true;
-                }
+                this.checkIfWebLink();
                 this.CopyToClipboardButton.IsEnabled = true;
             }
             else
@@ -336,16 +334,34 @@ namespace Share_Across_Devices
         {
             if (this.ClipboardText.Text.Length > 0 && this.DeviceListBox.SelectedItem != null)
             {
-                if (this.ClipboardText.Text.ToLower().StartsWith("http://") || this.ClipboardText.Text.ToLower().StartsWith("https://"))
-                {
-                    this.LaunchInBrowserButton.IsEnabled = true;
-                }
+                this.checkIfWebLink();
                 this.CopyToClipboardButton.IsEnabled = true;
             }
             else
             {
                 this.LaunchInBrowserButton.IsEnabled = false;
                 this.CopyToClipboardButton.IsEnabled = false;
+            }
+        }
+
+        private void checkIfWebLink()
+        {
+            if (this.ClipboardText.Text.ToLower().StartsWith("http://") || this.ClipboardText.Text.ToLower().StartsWith("https://"))
+            {
+                this.LaunchInBrowserButton.IsEnabled = true;
+                if (this.ClipboardText.Text.ToLower().StartsWith("https://www.youtube.com/watch?"))
+                {
+                    this.OpenInTubeCastButton.Visibility = Visibility.Visible;
+                    this.OpenInTubeCastButton.IsEnabled = true;
+                }
+                else
+                {
+                    this.OpenInTubeCastButton.IsEnabled = false;
+                }
+            }
+            else
+            {
+                this.LaunchInBrowserButton.IsEnabled = false;
             }
         }
 
@@ -383,6 +399,88 @@ namespace Share_Across_Devices
 
             scaleAnimation.InsertKeyFrame(1f, new Vector3(1f, 1f, 1f));
             itemVisual.StartAnimation("Scale", scaleAnimation);
+        }
+
+        private async void OpenInTubeCastButton_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
+
+            if (selectedDevice != null)
+            {
+                Uri uri;
+                if (Uri.TryCreate(this.convertYoutubeLinkToTubeCastUri(), UriKind.Absolute, out uri))
+                {
+                    this.LoadingBar.IsEnabled = true;
+                    this.LoadingBar.Visibility = Visibility.Visible;
+                    NotifyUser("Sharing to " + selectedDevice.DisplayName + "...", NotifyType.StatusMessage);
+                    RemoteLaunchUriStatus launchUriStatus = await RemoteLauncher.LaunchUriAsync(new RemoteSystemConnectionRequest(selectedDevice), uri);
+                    NotifyUser(launchUriStatus.ToString(), NotifyType.StatusMessage);
+                    this.LoadingBar.IsEnabled = false;
+                    this.LoadingBar.Visibility = Visibility.Collapsed;
+                    this.shareOperation.DismissUI();
+                }
+            }
+        }
+
+        private string convertYoutubeLinkToTubeCastUri()
+        {
+            var uri = new Uri(this.ClipboardText.Text);
+            var queryStrings = new WwwFormUrlDecoder(uri.Query);
+            string videoString = queryStrings.GetFirstValueByName("v");
+            return "tubecast:VideoID=" + videoString;
+        }
+
+        private void OpenInTubeCastButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var button = sender as Button;
+            this.animateLocalClipButton(button);
+        }
+
+        private void animateLocalClipButton(Button button)
+        {
+            var itemVisual = ElementCompositionPreview.GetElementVisual(button);
+            float width = (float)button.RenderSize.Width;
+            float height = (float)button.RenderSize.Height;
+            itemVisual.CenterPoint = new Vector3(width / 2, height / 2, 0f);
+
+            Vector3KeyFrameAnimation scaleAnimation = _compositor.CreateVector3KeyFrameAnimation();
+            scaleAnimation.Duration = TimeSpan.FromMilliseconds(500);
+
+            ScalarKeyFrameAnimation opacityAnimation = _compositor.CreateScalarKeyFrameAnimation();
+            opacityAnimation.Duration = TimeSpan.FromMilliseconds(500);
+
+            if (button.IsEnabled)
+            {
+                itemVisual.Opacity = 0f;
+                scaleAnimation.InsertKeyFrame(0f, new Vector3(0f, 0f, 0f));
+                scaleAnimation.InsertKeyFrame(0.1f, new Vector3(1f, 1.1f, 1.1f));
+                scaleAnimation.InsertKeyFrame(1f, new Vector3(1f, 1f, 1f));
+
+                opacityAnimation.InsertKeyFrame(1f, 1f);
+            }
+            else
+            {
+                itemVisual.Opacity = 1f;
+                scaleAnimation.InsertKeyFrame(0f, new Vector3(1f, 1f, 1f));
+                scaleAnimation.InsertKeyFrame(0.1f, new Vector3(1f, 1.1f, 1.1f));
+                scaleAnimation.InsertKeyFrame(1f, new Vector3(0f, 0f, 0f));
+
+                opacityAnimation.InsertKeyFrame(1f, 0f);
+            }
+
+            CompositionScopedBatch myScopedBatch = _compositor.CreateScopedBatch(CompositionBatchTypes.Animation);
+            myScopedBatch.Completed += OnBatchCompleted;
+            itemVisual.StartAnimation("Scale", scaleAnimation);
+            itemVisual.StartAnimation("Opacity", opacityAnimation);
+            myScopedBatch.End();
+        }
+
+        private void OnBatchCompleted(object sender, CompositionBatchCompletedEventArgs args)
+        {
+            if (!this.OpenInTubeCastButton.IsEnabled)
+            {
+                this.OpenInTubeCastButton.Visibility = Visibility.Collapsed;
+            }
         }
     }
 }

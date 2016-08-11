@@ -168,10 +168,7 @@ namespace Share_Across_Devices
         {
             if (this.ClipboardText.Text.Length > 0 && this.DeviceListBox.SelectedItem != null)
             {
-                if (this.ClipboardText.Text.ToLower().StartsWith("http://") || this.ClipboardText.Text.ToLower().StartsWith("https://"))
-                {
-                    this.LaunchInBrowserButton.IsEnabled = true;
-                }
+                this.checkIfWebLink();
                 this.CopyToClipboardButton.IsEnabled = true;
             }
             else
@@ -185,16 +182,34 @@ namespace Share_Across_Devices
         {
             if (this.ClipboardText.Text.Length > 0 && this.DeviceListBox.SelectedItem != null)
             {
-                if (this.ClipboardText.Text.ToLower().StartsWith("http://") || this.ClipboardText.Text.ToLower().StartsWith("https://"))
-                {
-                    this.LaunchInBrowserButton.IsEnabled = true;
-                }
+                this.checkIfWebLink();
                 this.CopyToClipboardButton.IsEnabled = true;
             }
             else
             {
                 this.LaunchInBrowserButton.IsEnabled = false;
                 this.CopyToClipboardButton.IsEnabled = false;
+            }
+        }
+
+        private void checkIfWebLink()
+        {
+            if (this.ClipboardText.Text.ToLower().StartsWith("http://") || this.ClipboardText.Text.ToLower().StartsWith("https://"))
+            {
+                this.LaunchInBrowserButton.IsEnabled = true;
+                if (this.ClipboardText.Text.ToLower().StartsWith("https://www.youtube.com/watch?"))
+                {
+                    this.OpenInTubeCastButton.Visibility = Visibility.Visible;
+                    this.OpenInTubeCastButton.IsEnabled = true;
+                }
+                else
+                {
+                    this.OpenInTubeCastButton.IsEnabled = false;
+                }
+            }
+            else
+            {
+                this.LaunchInBrowserButton.IsEnabled = false;
             }
         }
 
@@ -269,6 +284,10 @@ namespace Share_Across_Devices
             {
                 this.CopyToLocalClipboardButton.Visibility = Visibility.Collapsed;
             }
+            if (!this.OpenInTubeCastButton.IsEnabled)
+            {
+                this.OpenInTubeCastButton.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void CopyToLocalClipboardButton_Click(object sender, RoutedEventArgs e)
@@ -302,6 +321,34 @@ namespace Share_Across_Devices
             this.animateLocalClipButton(button);
         }
 
+        private async void OpenInTubeCastButton_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
+
+            if (selectedDevice != null)
+            {
+                Uri uri;
+                if (Uri.TryCreate(this.convertYoutubeLinkToTubeCastUri(), UriKind.Absolute, out uri))
+                {
+                    this.LoadingBar.IsEnabled = true;
+                    this.LoadingBar.Visibility = Visibility.Visible;
+                    NotifyUser("Sharing to " + selectedDevice.DisplayName + "...", NotifyType.StatusMessage);
+                    RemoteLaunchUriStatus launchUriStatus = await RemoteLauncher.LaunchUriAsync(new RemoteSystemConnectionRequest(selectedDevice), uri);
+                    NotifyUser(launchUriStatus.ToString(), NotifyType.StatusMessage);
+                    this.LoadingBar.IsEnabled = false;
+                    this.LoadingBar.Visibility = Visibility.Collapsed;
+                }
+            }
+        }
+
+        private string convertYoutubeLinkToTubeCastUri()
+        {
+            var uri = new Uri(this.ClipboardText.Text);
+            var queryStrings = new WwwFormUrlDecoder(uri.Query);
+            string videoString = queryStrings.GetFirstValueByName("v");
+            return "tubecast:VideoID=" + videoString;
+        }
+
         private void animateButtonEnabled(Button button)
         {
             var itemVisual = ElementCompositionPreview.GetElementVisual(button);
@@ -324,6 +371,12 @@ namespace Share_Across_Devices
 
             scaleAnimation.InsertKeyFrame(1f, new Vector3(1f, 1f, 1f));
             itemVisual.StartAnimation("Scale", scaleAnimation);
+        }
+
+        private void OpenInTubeCastButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var button = sender as Button;
+            this.animateLocalClipButton(button);
         }
     }
     public enum NotifyType
