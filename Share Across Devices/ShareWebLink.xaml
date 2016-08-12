@@ -36,8 +36,7 @@
                            Margin="8"
                            Padding="12"
                            FontWeight="Bold"
-                           Visibility="Collapsed"
-                           TextWrapping="Wrap"/>
+                           Visibility="Collapsed"/>
                 <Button x:Name="OpenInTubeCastButton" 
                     Visibility="Collapsed"
                     IsEnabled="False"
@@ -94,7 +93,9 @@
                        Margin="8"
                        FontSize="18"
                        Foreground="White"
-                       FontWeight="Bold"/>
+                       FontWeight="Bold"
+                       TextWrapping="Wrap"
+                       MaxLines="3"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button x:Name="LaunchInBrowserButton" 
                     IsEnabled="False" 
