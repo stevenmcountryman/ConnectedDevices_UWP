@@ -1,12 +1,11 @@
 ﻿<Page
-    x:Class="Share_Across_Devices.MainPage"
+    x:Class="Share_Across_Devices.ShareWebLink"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Share_Across_Devices"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-
     <RelativePanel x:Name="MainPanel" 
                    Background="SlateGray"
                    Padding="8">
@@ -21,11 +20,18 @@
                          Height="4" 
                          Foreground="White" 
                          Background="{x:Null}"/>
-            <TextBlock x:Name="StatusBlock" FontWeight="Bold" 
-                                   MaxWidth="{Binding ElementName=Splitter, Path=ActualWidth}" Margin="10,10,10,20" TextWrapping="Wrap"  />
+            <TextBlock x:Name="StatusBlock" 
+                       FontWeight="Bold" 
+                       Foreground="White"
+                       FontSize="20"
+                       Margin="10,10,10,20" 
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"/>
         </StackPanel>
         
         <StackPanel x:Name="MainStackPanel"
+            VerticalAlignment="Center"
                     RelativePanel.AlignBottomWithPanel="True"
                     RelativePanel.AlignLeftWithPanel="True"
                     RelativePanel.AlignRightWithPanel="True">
@@ -64,7 +70,6 @@
                     BorderBrush="{x:Null}" 
                     IsEnabledChanged="OpenInTubeCastButton_IsEnabledChanged" />
             </StackPanel>
-            
             <TextBlock Margin="8"
                        Text="Devices: "
                        Foreground="White"
@@ -88,23 +93,16 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <TextBox x:Name="ClipboardText" 
-                     TextChanged="ClipboardText_TextChanged"
-                     Margin="8"/>
+            <TextBlock x:Name="ClipboardText" 
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       Margin="8"
+                       FontSize="18"
+                       Foreground="White"
+                       FontWeight="Bold"
+                       TextWrapping="Wrap"
+                       MaxLines="3"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button x:Name="CopyToLocalClipboardButton" 
-                    Visibility="Collapsed"
-                    IsEnabled="False"
-                    Content="copy" 
-                    Margin="8,8,4,8"
-                    Padding="8"
-                    Foreground="White"
-                    FontWeight="Bold"
-                    FontSize="12"
-                    HorizontalAlignment="Right"
-                    Click="CopyToLocalClipboardButton_Click" 
-                    BorderBrush="{x:Null}" 
-                    IsEnabledChanged="CopyToLocalClipboardButton_IsEnabledChanged" />
                 <Button x:Name="LaunchInBrowserButton" 
                     IsEnabled="False" 
                     Content="share to browser" 
@@ -129,7 +127,7 @@
                     Click="CopyToClipboardButton_Click" 
                     BorderBrush="{x:Null}" 
                     IsEnabledChanged="CopyToClipboardButton_IsEnabledChanged"/>
-            </StackPanel>            
+            </StackPanel>
         </StackPanel>
-     </RelativePanel>
+    </RelativePanel>
 </Page>
