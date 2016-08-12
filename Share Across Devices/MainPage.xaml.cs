@@ -175,6 +175,8 @@ namespace Share_Across_Devices
             {
                 this.LaunchInBrowserButton.IsEnabled = false;
                 this.CopyToClipboardButton.IsEnabled = false;
+                this.OpenInTubeCastButton.IsEnabled = false;
+                this.OpenInMyTubeButton.IsEnabled = false;
             }
         }
 
@@ -189,6 +191,8 @@ namespace Share_Across_Devices
             {
                 this.LaunchInBrowserButton.IsEnabled = false;
                 this.CopyToClipboardButton.IsEnabled = false;
+                this.OpenInTubeCastButton.IsEnabled = false;
+                this.OpenInMyTubeButton.IsEnabled = false;
             }
         }
 
@@ -197,7 +201,9 @@ namespace Share_Across_Devices
             if (this.ClipboardText.Text.ToLower().StartsWith("http://") || this.ClipboardText.Text.ToLower().StartsWith("https://"))
             {
                 this.LaunchInBrowserButton.IsEnabled = true;
-                if (this.ClipboardText.Text.ToLower().StartsWith("https://www.youtube.com/watch?"))
+                if (this.ClipboardText.Text.ToLower().StartsWith("https://www.youtube.com/watch?") ||
+                    this.ClipboardText.Text.ToLower().StartsWith("https://m.youtube.com/watch?") ||
+                    this.ClipboardText.Text.ToLower().StartsWith("https://youtube.com/watch?"))
                 {
                     this.OpenInTubeCastButton.Visibility = Visibility.Visible;
                     this.OpenInTubeCastButton.IsEnabled = true;

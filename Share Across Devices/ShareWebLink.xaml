@@ -36,7 +36,8 @@
                            Margin="8"
                            Padding="12"
                            FontWeight="Bold"
-                           Visibility="Collapsed"/>
+                           Visibility="Collapsed"
+                           TextWrapping="Wrap"/>
                 <Button x:Name="OpenInTubeCastButton" 
                     Visibility="Collapsed"
                     IsEnabled="False"
