@@ -293,16 +293,10 @@ namespace Share_Across_Devices
             this.animateButtonEnabled(button);
         }
 
-        private void CopyToLocalClipboardButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            var button = sender as Button;
-            this.animateLocalClipButton(button);
-        }
-
         private void OpenInTubeCastButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             var button = sender as Button;
-            this.animateLocalClipButton(button);
+            this.animateYoutubeButtons(button);
         }
         #endregion
 
@@ -420,7 +414,7 @@ namespace Share_Across_Devices
         #endregion
 
         #region Animations
-        private void animateLocalClipButton(Button button)
+        private void animateYoutubeButtons(Button button)
         {
             var itemVisual = ElementCompositionPreview.GetElementVisual(button);
             float width = (float)button.RenderSize.Width;
