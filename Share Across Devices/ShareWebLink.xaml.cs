@@ -50,17 +50,8 @@ namespace Share_Across_Devices
         private IRandomAccessStreamReference sharedBitmapStreamRef;
         private IRandomAccessStreamReference sharedThumbnailStreamRef;
         private const string dataFormatName = "http://schema.org/Book";
-        private ObservableCollection<RemoteSystem> deviceList;
         private RemoteSystemWatcher deviceWatcher;
         private Compositor _compositor;
-
-        public ObservableCollection<RemoteSystem> DeviceList
-        {
-            get
-            {
-                return this.deviceList;
-            }
-        }
 
         public ShareWebLink()
         {
@@ -100,7 +91,6 @@ namespace Share_Across_Devices
 
         private async void setUpDevicesList()
         {
-            deviceList = new ObservableCollection<RemoteSystem>();
             RemoteSystemAccessStatus accessStatus = await RemoteSystem.RequestAccessAsync();
 
             if (accessStatus == RemoteSystemAccessStatus.Allowed)
@@ -116,11 +106,10 @@ namespace Share_Across_Devices
             var remoteSystem = args.RemoteSystem;
             await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
-                if (!this.deviceList.Contains(remoteSystem))
+                if (!this.DeviceListBox.Items.Contains(remoteSystem))
                 {
-                    this.deviceList.Add(remoteSystem);
+                    this.DeviceListBox.Items.Add(remoteSystem);
                 }
-                this.DeviceListBox.ItemsSource = this.deviceList;
             });
         }
 
@@ -282,7 +271,6 @@ namespace Share_Across_Devices
                 NotifyUser(status.ToString(), NotifyType.StatusMessage);
                 this.LoadingBar.IsEnabled = false;
                 this.LoadingBar.Visibility = Visibility.Collapsed;
-                this.shareOperation.DismissUI();
             }
             else
             {
@@ -292,7 +280,7 @@ namespace Share_Across_Devices
 
         private async void LaunchInBrowserButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedDevice = this.deviceList[this.DeviceListBox.SelectedIndex];
+            var selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
 
             if (selectedDevice != null)
             {
@@ -306,7 +294,6 @@ namespace Share_Across_Devices
                     NotifyUser(launchUriStatus.ToString(), NotifyType.StatusMessage);
                     this.LoadingBar.IsEnabled = false;
                     this.LoadingBar.Visibility = Visibility.Collapsed;
-                    this.shareOperation.DismissUI();
                 }
             }
         }
@@ -353,9 +340,7 @@ namespace Share_Across_Devices
             if (this.ClipboardText.Text.ToLower().StartsWith("http://") || this.ClipboardText.Text.ToLower().StartsWith("https://"))
             {
                 this.LaunchInBrowserButton.IsEnabled = true;
-                if (this.ClipboardText.Text.ToLower().StartsWith("https://www.youtube.com/watch?") ||
-                    this.ClipboardText.Text.ToLower().StartsWith("https://m.youtube.com/watch?") ||
-                    this.ClipboardText.Text.ToLower().StartsWith("https://youtube.com/watch?"))
+                if (this.ClipboardText.Text.ToLower().Contains("youtube.com/watch?"))
                 {
                     this.OpenInTubeCastButton.Visibility = Visibility.Visible;
                     this.OpenInTubeCastButton.IsEnabled = true;
@@ -429,7 +414,6 @@ namespace Share_Across_Devices
                     NotifyUser(launchUriStatus.ToString(), NotifyType.StatusMessage);
                     this.LoadingBar.IsEnabled = false;
                     this.LoadingBar.Visibility = Visibility.Collapsed;
-                    this.shareOperation.DismissUI();
                 }
             }
         }
@@ -450,7 +434,6 @@ namespace Share_Across_Devices
                     NotifyUser(launchUriStatus.ToString(), NotifyType.StatusMessage);
                     this.LoadingBar.IsEnabled = false;
                     this.LoadingBar.Visibility = Visibility.Collapsed;
-                    this.shareOperation.DismissUI();
                 }
             }
         }
