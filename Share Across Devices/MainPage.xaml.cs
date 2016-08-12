@@ -15,6 +15,7 @@ using Windows.UI.Composition;
 using Windows.UI.Xaml.Hosting;
 using System.Numerics;
 using Windows.UI.Xaml.Media;
+using Share_Across_Devices.Helpers;
 
 namespace Share_Across_Devices
 {
@@ -36,6 +37,42 @@ namespace Share_Across_Devices
             InputPane.GetForCurrentView().Hiding += InputPane_Hiding;
         }
 
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            var protocolArgs = e.Parameter as ProtocolActivatedEventArgs;
+
+
+            // Set the ProtocolForResultsOperation field.
+            if (protocolArgs != null)
+            {
+                var queryStrings = new WwwFormUrlDecoder(protocolArgs.Uri.Query);
+                string textToCopy = queryStrings.GetFirstValueByName("Text");
+                try
+                {
+                    if (textToCopy.Length > 0)
+                    {
+                        DataPackage package = new DataPackage()
+                        {
+                            RequestedOperation = DataPackageOperation.Copy
+                        };
+                        package.SetText(textToCopy);
+                        Clipboard.SetContent(package);
+                        Clipboard.Flush();
+                        NotifyUser("Copied!");
+                    }
+                }
+                catch
+                {
+                    NotifyUser("Manual copy required");
+                    this.ClipboardText.Text = textToCopy;
+                    this.CopyToLocalClipboardButton.Visibility = Visibility.Visible;
+                    this.CopyToLocalClipboardButton.IsEnabled = true;
+                }
+            }
+        }
+
+        #region Beautification
         private void InputPane_Hiding(InputPane sender, InputPaneVisibilityEventArgs args)
         {
             var trans = new TranslateTransform();
@@ -43,7 +80,6 @@ namespace Share_Across_Devices
             this.RenderTransform = trans;
             args.EnsuredFocusedElementInView = false;
         }
-
         private void InputPane_Showing(InputPane sender, InputPaneVisibilityEventArgs args)
         {
             var _offSet = (int)args.OccludedRect.Height;
@@ -52,7 +88,6 @@ namespace Share_Across_Devices
             trans.Y = -_offSet;
             this.RenderTransform = trans;
         }
-
         private void setTitleBar()
         {
 
@@ -80,42 +115,9 @@ namespace Share_Across_Devices
                 statusBar.ForegroundColor = Colors.White;
             }
         }
+        #endregion
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            base.OnNavigatedTo(e);
-            var protocolArgs = e.Parameter as ProtocolActivatedEventArgs;
-
-
-            // Set the ProtocolForResultsOperation field.
-            if (protocolArgs != null)
-            {
-                var queryStrings = new WwwFormUrlDecoder(protocolArgs.Uri.Query);
-                string textToCopy = queryStrings.GetFirstValueByName("Text");
-                try
-                {
-                    if (textToCopy.Length > 0)
-                    {
-                        DataPackage package = new DataPackage()
-                        {
-                            RequestedOperation = DataPackageOperation.Copy
-                        };
-                        package.SetText(textToCopy);
-                        Clipboard.SetContent(package);
-                        Clipboard.Flush();
-                        NotifyUser("Copied!", NotifyType.StatusMessage);
-                    }
-                }
-                catch
-                {
-                    NotifyUser("Manual copy required", NotifyType.StatusMessage);
-                    this.ClipboardText.Text = textToCopy;
-                    this.CopyToLocalClipboardButton.Visibility = Visibility.Visible;
-                    this.CopyToLocalClipboardButton.IsEnabled = true;
-                }
-            }
-        }
-
+        #region Device List Methods
         private async void setUpDevicesList()
         {
             RemoteSystemAccessStatus accessStatus = await RemoteSystem.RequestAccessAsync();
@@ -127,7 +129,6 @@ namespace Share_Across_Devices
                 deviceWatcher.Start();
             }
         }
-
         private async void DeviceWatcher_RemoteSystemAdded(RemoteSystemWatcher sender, RemoteSystemAddedEventArgs args)
         {
             var remoteSystem = args.RemoteSystem;
@@ -139,32 +140,73 @@ namespace Share_Across_Devices
                 }
             });
         }
-        private async void openRemoteConnectionAsync(RemoteSystem remotesys)
-        {
-            if (remotesys != null)
-            {
-                // Create a remote system connection request.
-                RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(remotesys);
+        #endregion
 
-                this.LoadingBar.IsEnabled = true;
-                this.LoadingBar.Visibility = Visibility.Visible;
-                NotifyUser("Sharing to " + remotesys.DisplayName + "...", NotifyType.StatusMessage);
-                var status = await RemoteLauncher.LaunchUriAsync(connectionRequest, new Uri("share-app:?Text=" + this.ClipboardText.Text));
-                NotifyUser(status.ToString(), NotifyType.StatusMessage);
-                this.LoadingBar.IsEnabled = false;
-                this.LoadingBar.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                NotifyUser("Select a device for remote connection.", NotifyType.ErrorMessage);
-            }
+        #region UI Change Events
+        private void ClipboardText_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            this.validTextAndButtons();
         }
-        public void NotifyUser(string strMessage, NotifyType type)
+        private void DeviceListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            this.validTextAndButtons();
+        }
+        private void LaunchInBrowserButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var button = sender as Button;
+            this.animateButtonEnabled(button);
+        }
+
+        private void CopyToClipboardButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var button = sender as Button;
+            this.animateButtonEnabled(button);
+        }
+
+        private void CopyToLocalClipboardButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var button = sender as Button;
+            this.animateLocalClipButton(button);
+        }
+
+        private void OpenInTubeCastButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var button = sender as Button;
+            this.animateLocalClipButton(button);
+        }
+        #endregion
+
+        #region UI Helpers
+        public void NotifyUser(string strMessage)
         {
             StatusBlock.Text = strMessage;
         }
-
-        private void ClipboardText_TextChanged(object sender, TextChangedEventArgs e)
+        private void showShareLoading(string deviceName)
+        {
+            this.LoadingBar.IsEnabled = true;
+            this.LoadingBar.Visibility = Visibility.Visible;
+            NotifyUser("Sharing to " + deviceName + "...");
+        }
+        private void showShareComplete(RemoteLaunchUriStatus status)
+        {
+            NotifyUser(status.ToString());
+            this.LoadingBar.IsEnabled = false;
+            this.LoadingBar.Visibility = Visibility.Collapsed;
+        }
+        private void showYoutubeButtons()
+        {
+            this.LaunchText.Visibility = Visibility.Visible;
+            this.OpenInTubeCastButton.Visibility = Visibility.Visible;
+            this.OpenInMyTubeButton.Visibility = Visibility.Visible;
+            this.OpenInTubeCastButton.IsEnabled = true;
+            this.OpenInMyTubeButton.IsEnabled = true;
+        }
+        private void hideYoutubeButtons()
+        {
+            this.OpenInTubeCastButton.IsEnabled = false;
+            this.OpenInMyTubeButton.IsEnabled = false;
+        }
+        private void validTextAndButtons()
         {
             if (this.ClipboardText.Text.Length > 0 && this.DeviceListBox.SelectedItem != null)
             {
@@ -175,27 +217,9 @@ namespace Share_Across_Devices
             {
                 this.LaunchInBrowserButton.IsEnabled = false;
                 this.CopyToClipboardButton.IsEnabled = false;
-                this.OpenInTubeCastButton.IsEnabled = false;
-                this.OpenInMyTubeButton.IsEnabled = false;
+                this.hideYoutubeButtons();
             }
         }
-
-        private void DeviceListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (this.ClipboardText.Text.Length > 0 && this.DeviceListBox.SelectedItem != null)
-            {
-                this.checkIfWebLink();
-                this.CopyToClipboardButton.IsEnabled = true;
-            }
-            else
-            {
-                this.LaunchInBrowserButton.IsEnabled = false;
-                this.CopyToClipboardButton.IsEnabled = false;
-                this.OpenInTubeCastButton.IsEnabled = false;
-                this.OpenInMyTubeButton.IsEnabled = false;
-            }
-        }
-
         private void checkIfWebLink()
         {
             if (this.ClipboardText.Text.ToLower().StartsWith("http://") || this.ClipboardText.Text.ToLower().StartsWith("https://"))
@@ -203,52 +227,81 @@ namespace Share_Across_Devices
                 this.LaunchInBrowserButton.IsEnabled = true;
                 if (this.ClipboardText.Text.ToLower().Contains("youtube.com/watch?"))
                 {
-                    this.OpenInTubeCastButton.Visibility = Visibility.Visible;
-                    this.OpenInTubeCastButton.IsEnabled = true;
-                    this.OpenInMyTubeButton.Visibility = Visibility.Visible;
-                    this.OpenInMyTubeButton.IsEnabled = true;
-                    this.LaunchText.Visibility = Visibility.Visible;
+                    this.showYoutubeButtons();
                 }
                 else
                 {
-                    this.OpenInTubeCastButton.IsEnabled = false;
-                    this.OpenInMyTubeButton.IsEnabled = false;
+                    this.hideYoutubeButtons();
                 }
             }
             else
             {
                 this.LaunchInBrowserButton.IsEnabled = false;
-                this.OpenInTubeCastButton.IsEnabled = false;
-                this.OpenInMyTubeButton.IsEnabled = false;
+                this.hideYoutubeButtons();
             }
         }
+        #endregion
 
+        #region Button Click Events
         private async void LaunchInBrowserButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
 
             if (selectedDevice != null)
             {
-                Uri uri;
-                if (Uri.TryCreate(this.ClipboardText.Text, UriKind.Absolute, out uri))
-                {
-                    this.LoadingBar.IsEnabled = true;
-                    this.LoadingBar.Visibility = Visibility.Visible;
-                    NotifyUser("Sharing to " + selectedDevice.DisplayName + "...", NotifyType.StatusMessage);
-                    RemoteLaunchUriStatus launchUriStatus = await RemoteLauncher.LaunchUriAsync(new RemoteSystemConnectionRequest(selectedDevice), uri);
-                    NotifyUser(launchUriStatus.ToString(), NotifyType.StatusMessage);
-                    this.LoadingBar.IsEnabled = false;
-                    this.LoadingBar.Visibility = Visibility.Collapsed;
-                }
+                this.showShareLoading(selectedDevice.DisplayName);
+                var status = await RemoteLaunch.TryShareURL(selectedDevice, this.ClipboardText.Text);
+                this.showShareComplete(status);
             }
         }
-
-        private void CopyToClipboardButton_Click(object sender, RoutedEventArgs e)
+        private async void CopyToClipboardButton_Click(object sender, RoutedEventArgs e)
         {
             RemoteSystem selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
-            this.openRemoteConnectionAsync(selectedDevice);
-        }
 
+            if (selectedDevice != null)
+            {
+                this.showShareLoading(selectedDevice.DisplayName);
+                var status = await RemoteLaunch.TrySharetext(selectedDevice, this.ClipboardText.Text);
+                this.showShareComplete(status);
+            }
+        }
+        private async void OpenInTubeCastButton_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
+
+            if (selectedDevice != null)
+            {
+                this.showShareLoading(selectedDevice.DisplayName);
+                var status = await RemoteLaunch.TryShareURL(selectedDevice, RemoteLaunch.ParseYoutubeLinkToTubeCastUri(this.ClipboardText.Text));
+                this.showShareComplete(status);
+            }
+        }
+        private async void OpenInMyTubeButton_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
+
+            if (selectedDevice != null)
+            {
+                this.showShareLoading(selectedDevice.DisplayName);
+                var status = await RemoteLaunch.TryShareURL(selectedDevice, RemoteLaunch.ParseYoutubeLinkToMyTubeUri(this.ClipboardText.Text));
+                this.showShareComplete(status);
+            }
+        }
+        private void CopyToLocalClipboardButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataPackage package = new DataPackage()
+            {
+                RequestedOperation = DataPackageOperation.Copy
+            };
+            package.SetText(this.ClipboardText.Text);
+            Clipboard.SetContent(package);
+            Clipboard.Flush();
+            NotifyUser("Copied!");
+            this.CopyToLocalClipboardButton.IsEnabled = false;
+        }
+        #endregion
+
+        #region Animations
         private void animateLocalClipButton(Button button)
         {
             var itemVisual = ElementCompositionPreview.GetElementVisual(button);
@@ -288,107 +341,6 @@ namespace Share_Across_Devices
             itemVisual.StartAnimation("Opacity", opacityAnimation);
             myScopedBatch.End();
         }
-
-        private void OnBatchCompleted(object sender, CompositionBatchCompletedEventArgs args)
-        {
-            if (!this.CopyToLocalClipboardButton.IsEnabled)
-            {
-                this.CopyToLocalClipboardButton.Visibility = Visibility.Collapsed;
-            }
-            if (!this.OpenInTubeCastButton.IsEnabled)
-            {
-                this.OpenInTubeCastButton.Visibility = Visibility.Collapsed;
-            }
-            if (!this.OpenInMyTubeButton.IsEnabled)
-            {
-                this.OpenInMyTubeButton.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void CopyToLocalClipboardButton_Click(object sender, RoutedEventArgs e)
-        {
-            DataPackage package = new DataPackage()
-            {
-                RequestedOperation = DataPackageOperation.Copy
-            };
-            package.SetText(this.ClipboardText.Text);
-            Clipboard.SetContent(package);
-            Clipboard.Flush();
-            NotifyUser("Copied!", NotifyType.StatusMessage);
-            this.CopyToLocalClipboardButton.IsEnabled = false;            
-        }
-
-        private void LaunchInBrowserButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            var button = sender as Button;
-            this.animateButtonEnabled(button);
-        }
-
-        private void CopyToClipboardButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            var button = sender as Button;
-            this.animateButtonEnabled(button);
-        }
-
-        private void CopyToLocalClipboardButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            var button = sender as Button;
-            this.animateLocalClipButton(button);
-        }
-
-        private async void OpenInTubeCastButton_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
-
-            if (selectedDevice != null)
-            {
-                Uri uri;
-                if (Uri.TryCreate(this.convertYoutubeLinkToTubeCastUri(), UriKind.Absolute, out uri))
-                {
-                    this.LoadingBar.IsEnabled = true;
-                    this.LoadingBar.Visibility = Visibility.Visible;
-                    NotifyUser("Sharing to " + selectedDevice.DisplayName + "...", NotifyType.StatusMessage);
-                    RemoteLaunchUriStatus launchUriStatus = await RemoteLauncher.LaunchUriAsync(new RemoteSystemConnectionRequest(selectedDevice), uri);
-                    NotifyUser(launchUriStatus.ToString(), NotifyType.StatusMessage);
-                    this.LoadingBar.IsEnabled = false;
-                    this.LoadingBar.Visibility = Visibility.Collapsed;
-                }
-            }
-        }
-
-        private async void OpenInMyTubeButton_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
-
-            if (selectedDevice != null)
-            {
-                Uri uri;
-                if (Uri.TryCreate(this.convertYoutubeLinkToMyTubeUri(), UriKind.Absolute, out uri))
-                {
-                    this.LoadingBar.IsEnabled = true;
-                    this.LoadingBar.Visibility = Visibility.Visible;
-                    NotifyUser("Sharing to " + selectedDevice.DisplayName + "...", NotifyType.StatusMessage);
-                    RemoteLaunchUriStatus launchUriStatus = await RemoteLauncher.LaunchUriAsync(new RemoteSystemConnectionRequest(selectedDevice), uri);
-                    NotifyUser(launchUriStatus.ToString(), NotifyType.StatusMessage);
-                    this.LoadingBar.IsEnabled = false;
-                    this.LoadingBar.Visibility = Visibility.Collapsed;
-                }
-            }
-        }
-
-        private string convertYoutubeLinkToTubeCastUri()
-        {
-            var uri = new Uri(this.ClipboardText.Text);
-            var queryStrings = new WwwFormUrlDecoder(uri.Query);
-            string videoString = queryStrings.GetFirstValueByName("v");
-            return "tubecast:VideoID=" + videoString;
-        }
-
-        private string convertYoutubeLinkToMyTubeUri()
-        {
-            return "mytube:link=" + this.ClipboardText.Text;
-        }
-
         private void animateButtonEnabled(Button button)
         {
             var itemVisual = ElementCompositionPreview.GetElementVisual(button);
@@ -413,11 +365,24 @@ namespace Share_Across_Devices
             itemVisual.StartAnimation("Scale", scaleAnimation);
         }
 
-        private void OpenInTubeCastButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void OnBatchCompleted(object sender, CompositionBatchCompletedEventArgs args)
         {
-            var button = sender as Button;
-            this.animateLocalClipButton(button);
+            if (!this.CopyToLocalClipboardButton.IsEnabled)
+            {
+                this.CopyToLocalClipboardButton.Visibility = Visibility.Collapsed;
+            }
+            if (!this.OpenInTubeCastButton.IsEnabled)
+            {
+                this.OpenInTubeCastButton.Visibility = Visibility.Collapsed;
+            }
+            if (!this.OpenInMyTubeButton.IsEnabled)
+            {
+                this.OpenInMyTubeButton.Visibility = Visibility.Collapsed;
+            }
         }
+        #endregion
+
+
     }
     public enum NotifyType
     {
