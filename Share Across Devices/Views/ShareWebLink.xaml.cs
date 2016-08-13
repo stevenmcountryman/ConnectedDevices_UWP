@@ -1,4 +1,5 @@
-﻿using Share_Across_Devices.Helpers;
+﻿using Share_Across_Devices.Controls;
+using Share_Across_Devices.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -264,10 +265,8 @@ namespace Share_Across_Devices
             var remoteSystem = args.RemoteSystem;
             await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                if (!this.DeviceListBox.Items.Contains(remoteSystem))
-                {
-                    this.DeviceListBox.Items.Add(remoteSystem);
-                }
+                RemoteDevice device = new RemoteDevice(remoteSystem);
+                this.DeviceGrid.Items.Add(device);
             });
         }
         #endregion
@@ -281,22 +280,10 @@ namespace Share_Across_Devices
         {
             this.validTextAndButtons();
         }
-        private void LaunchInBrowserButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void Button_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             var button = sender as Button;
             this.animateButtonEnabled(button);
-        }
-
-        private void CopyToClipboardButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            var button = sender as Button;
-            this.animateButtonEnabled(button);
-        }
-
-        private void OpenInTubeCastButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            var button = sender as Button;
-            this.animateYoutubeButtons(button);
         }
         #endregion
 
@@ -319,9 +306,6 @@ namespace Share_Across_Devices
         }
         private void showYoutubeButtons()
         {
-            this.LaunchText.Visibility = Visibility.Visible;
-            this.OpenInTubeCastButton.Visibility = Visibility.Visible;
-            this.OpenInMyTubeButton.Visibility = Visibility.Visible;
             this.OpenInTubeCastButton.IsEnabled = true;
             this.OpenInMyTubeButton.IsEnabled = true;
         }
@@ -332,7 +316,7 @@ namespace Share_Across_Devices
         }
         private void validTextAndButtons()
         {
-            if (this.ClipboardText.Text.Length > 0 && this.DeviceListBox.SelectedItem != null)
+            if (this.ClipboardText.Text.Length > 0 && this.DeviceGrid.SelectedItem != null)
             {
                 this.checkIfWebLink();
                 this.CopyToClipboardButton.IsEnabled = true;
@@ -369,7 +353,7 @@ namespace Share_Across_Devices
         #region Button Click Events
         private async void LaunchInBrowserButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
+            var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
 
             if (selectedDevice != null)
             {
@@ -380,7 +364,7 @@ namespace Share_Across_Devices
         }
         private async void CopyToClipboardButton_Click(object sender, RoutedEventArgs e)
         {
-            RemoteSystem selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
+            var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
 
             if (selectedDevice != null)
             {
@@ -391,7 +375,7 @@ namespace Share_Across_Devices
         }
         private async void OpenInTubeCastButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
+            var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
 
             if (selectedDevice != null)
             {
@@ -402,7 +386,7 @@ namespace Share_Across_Devices
         }
         private async void OpenInMyTubeButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
+            var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
 
             if (selectedDevice != null)
             {
@@ -414,45 +398,6 @@ namespace Share_Across_Devices
         #endregion
 
         #region Animations
-        private void animateYoutubeButtons(Button button)
-        {
-            var itemVisual = ElementCompositionPreview.GetElementVisual(button);
-            float width = (float)button.RenderSize.Width;
-            float height = (float)button.RenderSize.Height;
-            itemVisual.CenterPoint = new Vector3(width / 2, height / 2, 0f);
-
-            Vector3KeyFrameAnimation scaleAnimation = _compositor.CreateVector3KeyFrameAnimation();
-            scaleAnimation.Duration = TimeSpan.FromMilliseconds(500);
-
-            ScalarKeyFrameAnimation opacityAnimation = _compositor.CreateScalarKeyFrameAnimation();
-            opacityAnimation.Duration = TimeSpan.FromMilliseconds(500);
-
-            if (button.IsEnabled)
-            {
-                itemVisual.Opacity = 0f;
-                scaleAnimation.InsertKeyFrame(0f, new Vector3(0f, 0f, 0f));
-                scaleAnimation.InsertKeyFrame(0.1f, new Vector3(1f, 1.1f, 1.1f));
-                scaleAnimation.InsertKeyFrame(1f, new Vector3(1f, 1f, 1f));
-
-                opacityAnimation.InsertKeyFrame(1f, 1f);
-            }
-            else
-            {
-                this.LaunchText.Visibility = Visibility.Collapsed;
-                itemVisual.Opacity = 1f;
-                scaleAnimation.InsertKeyFrame(0f, new Vector3(1f, 1f, 1f));
-                scaleAnimation.InsertKeyFrame(0.1f, new Vector3(1f, 1.1f, 1.1f));
-                scaleAnimation.InsertKeyFrame(1f, new Vector3(0f, 0f, 0f));
-
-                opacityAnimation.InsertKeyFrame(1f, 0f);
-            }
-
-            CompositionScopedBatch myScopedBatch = _compositor.CreateScopedBatch(CompositionBatchTypes.Animation);
-            myScopedBatch.Completed += OnBatchCompleted;
-            itemVisual.StartAnimation("Scale", scaleAnimation);
-            itemVisual.StartAnimation("Opacity", opacityAnimation);
-            myScopedBatch.End();
-        }
         private void animateButtonEnabled(Button button)
         {
             var itemVisual = ElementCompositionPreview.GetElementVisual(button);
@@ -475,18 +420,6 @@ namespace Share_Across_Devices
 
             scaleAnimation.InsertKeyFrame(1f, new Vector3(1f, 1f, 1f));
             itemVisual.StartAnimation("Scale", scaleAnimation);
-        }
-
-        private void OnBatchCompleted(object sender, CompositionBatchCompletedEventArgs args)
-        {
-            if (!this.OpenInTubeCastButton.IsEnabled)
-            {
-                this.OpenInTubeCastButton.Visibility = Visibility.Collapsed;
-            }
-            if (!this.OpenInMyTubeButton.IsEnabled)
-            {
-                this.OpenInMyTubeButton.Visibility = Visibility.Collapsed;
-            }
         }
         #endregion
     }

@@ -29,23 +29,79 @@
                        HorizontalAlignment="Center"
                        TextAlignment="Center"/>
         </StackPanel>
-        
         <StackPanel x:Name="MainStackPanel"
-            VerticalAlignment="Center"
                     RelativePanel.AlignBottomWithPanel="True"
                     RelativePanel.AlignLeftWithPanel="True"
                     RelativePanel.AlignRightWithPanel="True">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+
+            <TextBlock Margin="8"
+                       Text="Devices: "
+                       Foreground="White"
+                       FontSize="18"
+                       HorizontalAlignment="Center"/>
+            <ScrollViewer VerticalScrollMode="Enabled"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          HorizontalScrollMode="Disabled"
+                          MaxHeight="440">
+                <GridView HorizontalAlignment="Center"
+                      HorizontalContentAlignment="Center"
+                      x:Name="DeviceGrid"
+                      SelectionChanged="DeviceListBox_SelectionChanged"/>
+            </ScrollViewer>
+            <TextBlock x:Name="ClipboardText" 
+                     HorizontalAlignment="Stretch"
+                     MaxWidth="480"
+                     Margin="8"
+                     Foreground="White"
+                       FontWeight="Bold"
+                     TextAlignment="Center"
+                       MaxLines="3"
+                       TextWrapping="Wrap"/>
+            <StackPanel Orientation="Horizontal" 
+                        HorizontalAlignment="Right"
+                        FlowDirection="RightToLeft"
+                        MaxWidth="480">
+                <Button x:Name="CopyToClipboardButton" 
+                    IsEnabled="False" 
+                    Width="100"
+                    Content="clipboard" 
+                    Margin="8"
+                    Padding="12"
+                    Foreground="White"
+                    FontWeight="Bold"
+                    FontSize="16"
+                    HorizontalAlignment="Right"
+                    Click="CopyToClipboardButton_Click" 
+                    BorderBrush="{x:Null}" 
+                    IsEnabledChanged="Button_IsEnabledChanged"/>
+                <Button x:Name="LaunchInBrowserButton" 
+                    IsEnabled="False" 
+                    Width="100"
+                    Content="browser" 
+                    Margin="8"
+                    Padding="12"
+                    Foreground="White"
+                    FontWeight="Bold"
+                    FontSize="16"
+                    HorizontalAlignment="Right"
+                    Click="LaunchInBrowserButton_Click" 
+                    BorderBrush="{x:Null}" 
+                    IsEnabledChanged="Button_IsEnabledChanged" />
                 <TextBlock x:Name="LaunchText"
                            Foreground="White"
-                           Text="Launch in: "
-                           Margin="8"
-                           Padding="12"
+                           Text="share to: "
+                           Padding="14"
                            FontWeight="Bold"
-                           Visibility="Collapsed"/>
+                           Margin="8"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" 
+                        HorizontalAlignment="Right"
+                        FlowDirection="RightToLeft"
+                        MaxWidth="480">
                 <Button x:Name="OpenInTubeCastButton" 
-                    Visibility="Collapsed"
                     IsEnabled="False"
+                    Width="100"
                     Content="TubeCast" 
                     Margin="8,8,8,8"
                     Padding="12"
@@ -55,10 +111,10 @@
                     HorizontalAlignment="Center"
                     Click="OpenInTubeCastButton_Click" 
                     BorderBrush="{x:Null}" 
-                    IsEnabledChanged="OpenInTubeCastButton_IsEnabledChanged" />
+                    IsEnabledChanged="Button_IsEnabledChanged" />
                 <Button x:Name="OpenInMyTubeButton" 
-                    Visibility="Collapsed"
                     IsEnabled="False"
+                    Width="100"
                     Content="myTube!" 
                     Margin="8,8,8,8"
                     Padding="12"
@@ -68,65 +124,7 @@
                     HorizontalAlignment="Center"
                     Click="OpenInMyTubeButton_Click" 
                     BorderBrush="{x:Null}" 
-                    IsEnabledChanged="OpenInTubeCastButton_IsEnabledChanged" />
-            </StackPanel>
-            <TextBlock Margin="8"
-                       Text="Devices: "
-                       Foreground="White"
-                       FontSize="18"/>
-            <ListView ItemsSource="{Binding DeviceList}" 
-                     Margin="8" 
-                     x:Name="DeviceListBox" 
-                     HorizontalAlignment="Stretch"
-                     HorizontalContentAlignment="Left"
-                     SelectionChanged="DeviceListBox_SelectionChanged"
-                     Background="Transparent" 
-                     BorderBrush="{x:Null}" 
-                     Foreground="White">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding DisplayName}"
-                                   FontWeight="Bold"
-                                   Foreground="White"
-                                   FontSize="18"
-                                   TextAlignment="Left"/>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-            <TextBlock x:Name="ClipboardText" 
-                       HorizontalAlignment="Center"
-                       TextAlignment="Center"
-                       Margin="8"
-                       FontSize="18"
-                       Foreground="White"
-                       FontWeight="Bold"
-                       TextWrapping="Wrap"
-                       MaxLines="3"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button x:Name="LaunchInBrowserButton" 
-                    IsEnabled="False" 
-                    Content="share to browser" 
-                    Margin="4,8,4,8"
-                    Padding="8"
-                    Foreground="White"
-                    FontWeight="Bold"
-                    FontSize="12"
-                    HorizontalAlignment="Right"
-                    Click="LaunchInBrowserButton_Click" 
-                    BorderBrush="{x:Null}" 
-                    IsEnabledChanged="LaunchInBrowserButton_IsEnabledChanged" />
-                <Button x:Name="CopyToClipboardButton" 
-                    IsEnabled="False" 
-                    Content="share to clipboard" 
-                    Margin="4,8,8,8"
-                    Padding="8"
-                    Foreground="White"
-                    FontWeight="Bold"
-                    FontSize="12"
-                    HorizontalAlignment="Right"
-                    Click="CopyToClipboardButton_Click" 
-                    BorderBrush="{x:Null}" 
-                    IsEnabledChanged="CopyToClipboardButton_IsEnabledChanged"/>
+                    IsEnabledChanged="Button_IsEnabledChanged" />
             </StackPanel>
         </StackPanel>
     </RelativePanel>
