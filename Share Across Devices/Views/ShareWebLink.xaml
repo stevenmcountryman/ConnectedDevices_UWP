@@ -47,7 +47,8 @@
                 <GridView HorizontalAlignment="Center"
                       HorizontalContentAlignment="Center"
                       x:Name="DeviceGrid"
-                      SelectionChanged="DeviceListBox_SelectionChanged"/>
+                      SelectionChanged="DeviceListBox_SelectionChanged"
+                      ItemContainerStyle="{StaticResource MyGridViewItemContainerStyle}"/>
             </ScrollViewer>
             <TextBlock x:Name="ClipboardText" 
                      HorizontalAlignment="Stretch"

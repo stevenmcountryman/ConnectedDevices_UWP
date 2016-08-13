@@ -69,7 +69,8 @@
                 <GridView HorizontalAlignment="Center"
                       HorizontalContentAlignment="Center"
                       x:Name="DeviceGrid"
-                      SelectionChanged="DeviceListBox_SelectionChanged"/>
+                      SelectionChanged="DeviceListBox_SelectionChanged"
+                      ItemContainerStyle="{StaticResource MyGridViewItemContainerStyle}"/>
             </ScrollViewer>
             <TextBox x:Name="ClipboardText" 
                      TextChanged="ClipboardText_TextChanged"
@@ -111,7 +112,8 @@
                           RelativePanel.AlignTopWithPanel="True"
                           RelativePanel.AlignBottomWithPanel="True"
                           Padding="0"
-                          Margin="0">
+                          Margin="0" 
+                          SelectionMode="None">
                     <Button x:Name="LaunchInBrowserButton" 
                     IsEnabled="False" 
                     Width="100"
