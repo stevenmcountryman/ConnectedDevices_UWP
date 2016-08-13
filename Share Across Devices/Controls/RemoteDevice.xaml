@@ -1,0 +1,29 @@
+﻿<UserControl
+    x:Class="Share_Across_Devices.Controls.RemoteDevice"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Share_Across_Devices.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="200"
+    d:DesignWidth="200">
+
+    <RelativePanel Width="200" Height="200">
+        <TextBlock x:Name="DeviceIcon"
+            FontFamily="Segoe MDL2 Assets"
+                   Text="&#xE212;"
+                   Foreground="White"
+                   FontSize="120"
+                   RelativePanel.AlignHorizontalCenterWithPanel="True"
+                   RelativePanel.Above="DeviceName"/>
+        <TextBlock x:Name="DeviceName"
+                   RelativePanel.AlignBottomWithPanel="True"
+                   RelativePanel.AlignLeftWithPanel="True"
+                   RelativePanel.AlignRightWithPanel="True"
+                   TextAlignment="Center"
+                   Foreground="White"
+                   TextWrapping="Wrap"
+                   Margin="8"/>
+    </RelativePanel>
+</UserControl>

@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Hosting;
 using System.Numerics;
 using Windows.UI.Xaml.Media;
 using Share_Across_Devices.Helpers;
+using Share_Across_Devices.Controls;
 
 namespace Share_Across_Devices
 {
@@ -134,10 +135,8 @@ namespace Share_Across_Devices
             var remoteSystem = args.RemoteSystem;
             await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                if (!this.DeviceListBox.Items.Contains(remoteSystem))
-                {
-                    this.DeviceListBox.Items.Add(remoteSystem);
-                }
+                RemoteDevice device = new RemoteDevice(remoteSystem);
+                this.DeviceGrid.Items.Add(device);
             });
         }
         #endregion
@@ -151,25 +150,13 @@ namespace Share_Across_Devices
         {
             this.validTextAndButtons();
         }
-        private void LaunchInBrowserButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            var button = sender as Button;
-            this.animateButtonEnabled(button);
-        }
-
-        private void CopyToClipboardButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void Button_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             var button = sender as Button;
             this.animateButtonEnabled(button);
         }
 
         private void CopyToLocalClipboardButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            var button = sender as Button;
-            this.animateLocalClipButton(button);
-        }
-
-        private void OpenInTubeCastButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             var button = sender as Button;
             this.animateLocalClipButton(button);
@@ -195,9 +182,6 @@ namespace Share_Across_Devices
         }
         private void showYoutubeButtons()
         {
-            this.LaunchText.Visibility = Visibility.Visible;
-            this.OpenInTubeCastButton.Visibility = Visibility.Visible;
-            this.OpenInMyTubeButton.Visibility = Visibility.Visible;
             this.OpenInTubeCastButton.IsEnabled = true;
             this.OpenInMyTubeButton.IsEnabled = true;
         }
@@ -208,7 +192,7 @@ namespace Share_Across_Devices
         }
         private void validTextAndButtons()
         {
-            if (this.ClipboardText.Text.Length > 0 && this.DeviceListBox.SelectedItem != null)
+            if (this.ClipboardText.Text.Length > 0 && this.DeviceGrid.SelectedItem != null)
             {
                 this.checkIfWebLink();
                 this.CopyToClipboardButton.IsEnabled = true;
@@ -245,7 +229,7 @@ namespace Share_Across_Devices
         #region Button Click Events
         private async void LaunchInBrowserButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
+            var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
 
             if (selectedDevice != null)
             {
@@ -256,7 +240,7 @@ namespace Share_Across_Devices
         }
         private async void CopyToClipboardButton_Click(object sender, RoutedEventArgs e)
         {
-            RemoteSystem selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
+            var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
 
             if (selectedDevice != null)
             {
@@ -267,7 +251,7 @@ namespace Share_Across_Devices
         }
         private async void OpenInTubeCastButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
+            var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
 
             if (selectedDevice != null)
             {
@@ -278,7 +262,7 @@ namespace Share_Across_Devices
         }
         private async void OpenInMyTubeButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedDevice = this.DeviceListBox.SelectedItem as RemoteSystem;
+            var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
 
             if (selectedDevice != null)
             {
@@ -326,7 +310,6 @@ namespace Share_Across_Devices
             }
             else
             {
-                this.LaunchText.Visibility = Visibility.Collapsed;
                 itemVisual.Opacity = 1f;
                 scaleAnimation.InsertKeyFrame(0f, new Vector3(1f, 1f, 1f));
                 scaleAnimation.InsertKeyFrame(0.1f, new Vector3(1f, 1.1f, 1.1f));
@@ -370,14 +353,6 @@ namespace Share_Across_Devices
             if (!this.CopyToLocalClipboardButton.IsEnabled)
             {
                 this.CopyToLocalClipboardButton.Visibility = Visibility.Collapsed;
-            }
-            if (!this.OpenInTubeCastButton.IsEnabled)
-            {
-                this.OpenInTubeCastButton.Visibility = Visibility.Collapsed;
-            }
-            if (!this.OpenInMyTubeButton.IsEnabled)
-            {
-                this.OpenInMyTubeButton.Visibility = Visibility.Collapsed;
             }
         }
         #endregion
