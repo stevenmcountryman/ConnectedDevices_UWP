@@ -9,7 +9,7 @@
     mc:Ignorable="d">
 
     <RelativePanel x:Name="MainPanel" 
-                   Background="SlateGray"
+                   Background="#FF535353"
                    Padding="8">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="AdaptiveStates">
@@ -69,6 +69,7 @@
                 <GridView HorizontalAlignment="Center"
                       HorizontalContentAlignment="Center"
                       x:Name="DeviceGrid"
+                      Padding="0"
                       SelectionChanged="DeviceListBox_SelectionChanged"
                       ItemContainerStyle="{StaticResource MyGridViewItemContainerStyle}"/>
             </ScrollViewer>
@@ -78,7 +79,7 @@
                      MaxWidth="480"
                      Margin="8"
                      Background="White" 
-                     BorderBrush="{x:Null}"/>
+                     BorderBrush="{x:Null}" Style="{StaticResource MyTextBoxStyle}"/>
             <Button x:Name="CopyToLocalClipboardButton" 
                     Visibility="Collapsed"
                     IsEnabled="False"

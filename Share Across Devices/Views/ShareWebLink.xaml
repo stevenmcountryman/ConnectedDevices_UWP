@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     <RelativePanel x:Name="MainPanel" 
-                   Background="SlateGray"
+                   Background="#FF535353"
                    Padding="8">
         <StackPanel RelativePanel.Above="MainStackPanel"
                     RelativePanel.AlignLeftWithPanel="True"
@@ -46,6 +46,7 @@
                           MaxHeight="440">
                 <GridView HorizontalAlignment="Center"
                       HorizontalContentAlignment="Center"
+                      Padding="0"
                       x:Name="DeviceGrid"
                       SelectionChanged="DeviceListBox_SelectionChanged"
                       ItemContainerStyle="{StaticResource MyGridViewItemContainerStyle}"/>
@@ -55,10 +56,10 @@
                      MaxWidth="480"
                      Margin="8"
                      Foreground="White"
-                       FontWeight="Bold"
+                     FontWeight="Bold"
                      TextAlignment="Center"
-                       MaxLines="3"
-                       TextWrapping="Wrap"/>
+                     MaxLines="3"
+                     TextWrapping="Wrap"/>
             <StackPanel Orientation="Horizontal" 
                         HorizontalAlignment="Right"
                         FlowDirection="RightToLeft"
