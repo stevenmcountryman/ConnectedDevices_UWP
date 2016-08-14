@@ -24,6 +24,9 @@
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
       <Extensions>
+        <uap:Extension Category="windows.appService" EntryPoint="ShareAcrossAppService.AppService">
+          <uap3:AppService Name="simplisidy.appservice" SupportsRemoteSystems="true"/>
+        </uap:Extension>
         <uap:Extension Category="windows.protocol">
           <uap:Protocol Name="share-app">
             <uap:DisplayName>Share App Protocol</uap:DisplayName>
@@ -34,9 +37,6 @@
             <uap:DataFormat>WebLink</uap:DataFormat>
             <uap:DataFormat>Text</uap:DataFormat>
           </uap:ShareTarget>
-        </uap:Extension>
-        <uap:Extension Category="windows.appService" EntryPoint="ShareAcrossAppService.AppService">
-          <uap3:AppService Name="simplisidy.appservice" SupportsRemoteSystems="true"/>
         </uap:Extension>
       </Extensions>
     </Application>
