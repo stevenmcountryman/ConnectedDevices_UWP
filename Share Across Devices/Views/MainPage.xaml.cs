@@ -17,6 +17,13 @@ using System.Numerics;
 using Windows.UI.Xaml.Media;
 using Share_Across_Devices.Helpers;
 using Share_Across_Devices.Controls;
+using Windows.ApplicationModel.AppService;
+using System.Threading.Tasks;
+using Windows.Foundation.Collections;
+using System.IO;
+using Windows.Networking.Sockets;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 
 namespace Share_Across_Devices
 {
@@ -27,6 +34,8 @@ namespace Share_Across_Devices
     {
         private RemoteSystemWatcher deviceWatcher;
         private Compositor _compositor;
+        private string fileName;
+        private StorageFile file;
 
         public MainPage()
         {
@@ -48,29 +57,96 @@ namespace Share_Across_Devices
             if (protocolArgs != null)
             {
                 var queryStrings = new WwwFormUrlDecoder(protocolArgs.Uri.Query);
-                string textToCopy = queryStrings.GetFirstValueByName("Text");
-                try
+                if (!protocolArgs.Uri.Query.Equals(":?FileName="))
                 {
-                    if (textToCopy.Length > 0)
+                    string textToCopy = queryStrings.GetFirstValueByName("Text");
+                    try
                     {
-                        DataPackage package = new DataPackage()
+                        if (textToCopy.Length > 0)
                         {
-                            RequestedOperation = DataPackageOperation.Copy
-                        };
-                        package.SetText(textToCopy);
-                        Clipboard.SetContent(package);
-                        Clipboard.Flush();
-                        NotifyUser("Copied!");
+                            DataPackage package = new DataPackage()
+                            {
+                                RequestedOperation = DataPackageOperation.Copy
+                            };
+                            package.SetText(textToCopy);
+                            Clipboard.SetContent(package);
+                            Clipboard.Flush();
+                            NotifyUser("Copied!");
+                        }
                     }
+                    catch
+                    {
+                        NotifyUser("Manual copy required");
+                        this.ClipboardText.Text = textToCopy;
+                        this.CopyToLocalClipboardButton.Visibility = Visibility.Visible;
+                        this.CopyToLocalClipboardButton.IsEnabled = true;
+                    }
+
                 }
-                catch
+                else
                 {
-                    NotifyUser("Manual copy required");
-                    this.ClipboardText.Text = textToCopy;
-                    this.CopyToLocalClipboardButton.Visibility = Visibility.Visible;
-                    this.CopyToLocalClipboardButton.IsEnabled = true;
+                    fileName = queryStrings.GetFirstValueByName("FileName");
+                    NotifyUser(fileName + " transfer initiated");
+                    this.beginListeningForFile();
                 }
             }
+        }
+
+        private async void beginListeningForFile()
+        {
+            NotifyUser("Listening for file");
+            try
+            {
+                //Create a StreamSocketListener to start listening for TCP connections.
+                StreamSocketListener socketListener = new StreamSocketListener();
+
+                //Hook up an event handler to call when connections are received.
+                socketListener.ConnectionReceived += SocketListener_ConnectionReceived;
+
+                //Start listening for incoming TCP connections on the specified port. You can specify any port that' s not currently in use.
+                await socketListener.BindServiceNameAsync("1337");
+            }
+            catch (Exception e)
+            {
+                //Handle exception.
+            }
+        }
+
+        private async void SocketListener_ConnectionReceived(StreamSocketListener sender, StreamSocketListenerConnectionReceivedEventArgs args)
+        {
+            if (fileName != null)
+            {
+                file = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName);
+                //Read line from the remote client.
+
+                NotifyUser("Receiving file...");
+                Stream inStream = args.Socket.InputStream.AsStreamForRead();
+
+                using (var fileStream = await file.OpenStreamForWriteAsync())
+                {
+                    inStream.CopyTo(fileStream);
+                }
+                await inStream.FlushAsync();
+
+                //Send the line back to the remote client.
+                Stream outStream = args.Socket.OutputStream.AsStreamForWrite();
+                StreamWriter writer = new StreamWriter(outStream);
+                await writer.WriteLineAsync("File Received!");
+                await writer.FlushAsync();
+
+                NotifyUser("File received");
+
+                this.saveFile();
+            }
+        }
+
+        private async void saveFile()
+        {
+            FolderPicker saver = new FolderPicker();
+            saver.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            var folder = await saver.PickSingleFolderAsync();
+            await file.CopyAsync(folder);
+            NotifyUser("File Saved");
         }
 
         #region Beautification
@@ -358,6 +434,124 @@ namespace Share_Across_Devices
         #endregion
 
 
+        private async void openRemoteConnectionAsync(RemoteSystem remotesys)
+        {
+            FileOpenPicker openPicker = new FileOpenPicker();
+            openPicker.FileTypeFilter.Add("*");
+            openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            file = await openPicker.PickSingleFileAsync();
+
+            AppServiceConnection connection = new AppServiceConnection
+            {
+                AppServiceName = "simplisidy.appservice",
+                PackageFamilyName = "34507Simplisidy.ShareAcrossDevices_wtkr3v20s86d8"
+            };
+
+            if (remotesys != null)
+            {
+                // Create a remote system connection request.
+                RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(remotesys);
+
+                NotifyUser("Requesting connection to " + remotesys.DisplayName + "...");
+                AppServiceConnectionStatus status = await connection.OpenRemoteAsync(connectionRequest);
+
+                if (status == AppServiceConnectionStatus.Success)
+                {
+                    NotifyUser("Successfully connected to " + remotesys.DisplayName + "...");
+                    await RequestIPAddress(connection);
+                }
+                else
+                {
+                    NotifyUser("Attempt to open a remote app service connection failed with error - " + status.ToString());
+                }
+            }
+            else
+            {
+                NotifyUser("Select a device for remote connection.");
+            }
+        }
+        private async Task RequestIPAddress(AppServiceConnection connection)
+        {
+            // Send message if connection to the remote app service is open.
+            if (connection != null)
+            {
+                //Set up the inputs and send a message to the service.
+                ValueSet inputs = new ValueSet();
+                NotifyUser("Requesting IP address....");
+                AppServiceResponse response = await connection.SendMessageAsync(inputs);
+
+                if (response.Status == AppServiceResponseStatus.Success)
+                {
+                    if (response.Message.ContainsKey("result"))
+                    {
+                        string ipAddress = response.Message["result"].ToString();
+                        if (string.IsNullOrEmpty(ipAddress))
+                        {
+                            NotifyUser("Remote app service did not respond with a result.");
+                        }
+                        else
+                        {
+                            this.beginConnection(ipAddress);
+                        }
+                    }
+                    else
+                    {
+                        NotifyUser("Response from remote app service does not contain a result.");
+                    }
+                }
+                else
+                {
+                    NotifyUser("Sending message to remote app service failed with error - " + response.Status.ToString());
+                }
+            }
+            else
+            {
+                NotifyUser("Not connected to any app service. Select a device to open a connection.");
+            }
+        }
+
+        private async void beginConnection(string ipAddress)
+        {
+            try
+            {
+                var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
+                var status = await RemoteLaunch.TryBeginShareFile(selectedDevice, file.Name);
+
+                if (status == RemoteLaunchUriStatus.Success)
+                {
+                    //Create the StreamSocket and establish a connection to the echo server.
+                    StreamSocket socket = new StreamSocket();
+
+                    //The server hostname that we will be establishing a connection to. We will be running the server and client locally,
+                    //so we will use localhost as the hostname.
+                    Windows.Networking.HostName serverHost = new Windows.Networking.HostName(ipAddress);
+
+                    //Every protocol typically has a standard port number. For example HTTP is typically 80, FTP is 20 and 21, etc.
+                    //For the echo server/client application we will use a random port 1337.
+                    string serverPort = "1337";
+                    await socket.ConnectAsync(serverHost, serverPort);
+
+                    //Write data to the echo server.
+                    Stream streamOut = socket.OutputStream.AsStreamForWrite();
+
+                    using (var fileStream = await file.OpenStreamForReadAsync())
+                    {
+                        fileStream.CopyTo(streamOut);
+                    }
+                    await streamOut.FlushAsync();
+
+                    //Read data from the echo server.
+                    Stream streamIn = socket.InputStream.AsStreamForRead();
+                    StreamReader reader = new StreamReader(streamIn);
+                    string response = await reader.ReadLineAsync();
+                    NotifyUser(response);
+                }
+            }
+            catch (Exception e)
+            {
+                //Handle exception here.            
+            }
+        }
     }
     public enum NotifyType
     {

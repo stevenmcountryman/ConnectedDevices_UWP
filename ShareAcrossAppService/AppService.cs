@@ -3,6 +3,8 @@ using Windows.ApplicationModel.AppService;
 using Windows.ApplicationModel.Background;
 using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
+using Windows.Networking;
+using Windows.Networking.Connectivity;
 
 namespace ShareAcrossAppService
 {
@@ -37,13 +39,18 @@ namespace ShareAcrossAppService
             // and we don't want this call to get cancelled while we are waiting.
             var messageDeferral = args.GetDeferral();
 
-            ValueSet message = args.Request.Message;
             ValueSet returnData = new ValueSet();
-
-            string command = message["clipboard"] as string;
-
-
-            returnData.Add("result", "Clipboard Sent!");
+            foreach (HostName localHostName in NetworkInformation.GetHostNames())
+            {
+                if (localHostName.IPInformation != null)
+                {
+                    if (localHostName.Type == HostNameType.Ipv4)
+                    {
+                        returnData.Add("result", localHostName.ToString());
+                        break;
+                    }
+                }
+            }
 
             await args.Request.SendResponseAsync(returnData); // Return the data to the caller.// Complete the deferral so that the platform knows that we're done responding to the app service call.
         }
