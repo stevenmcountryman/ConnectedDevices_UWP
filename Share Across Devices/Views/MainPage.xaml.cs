@@ -57,7 +57,7 @@ namespace Share_Across_Devices
             if (protocolArgs != null)
             {
                 var queryStrings = new WwwFormUrlDecoder(protocolArgs.Uri.Query);
-                if (!protocolArgs.Uri.Query.Equals(":?FileName="))
+                if (!protocolArgs.Uri.Query.StartsWith("?FileName="))
                 {
                     string textToCopy = queryStrings.GetFirstValueByName("Text");
                     try
@@ -514,6 +514,7 @@ namespace Share_Across_Devices
         {
             try
             {
+                NotifyUser("Launching app on device....");
                 var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
                 var status = await RemoteLaunch.TryBeginShareFile(selectedDevice, file.Name);
 
@@ -528,12 +529,15 @@ namespace Share_Across_Devices
 
                     //Every protocol typically has a standard port number. For example HTTP is typically 80, FTP is 20 and 21, etc.
                     //For the echo server/client application we will use a random port 1337.
+                    NotifyUser("Opening connection....");
                     string serverPort = "1337";
                     await socket.ConnectAsync(serverHost, serverPort);
 
+                    NotifyUser("Creating file stream....");
                     //Write data to the echo server.
                     Stream streamOut = socket.OutputStream.AsStreamForWrite();
 
+                    NotifyUser("Sending file....");
                     using (var fileStream = await file.OpenStreamForReadAsync())
                     {
                         fileStream.CopyTo(streamOut);
@@ -549,7 +553,7 @@ namespace Share_Across_Devices
             }
             catch (Exception e)
             {
-                //Handle exception here.            
+                NotifyUser("Connection failed. Network destination not allowed.");
             }
         }
 
