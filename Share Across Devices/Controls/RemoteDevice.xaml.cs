@@ -40,5 +40,9 @@ namespace Share_Across_Devices.Controls
         {
             return this.remoteDevice;
         }
+        public void SetDevice(RemoteSystem system)
+        {
+            this.remoteDevice = system;
+        }
     }
 }

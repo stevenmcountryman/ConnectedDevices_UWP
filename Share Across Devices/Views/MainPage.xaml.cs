@@ -203,9 +203,12 @@ namespace Share_Across_Devices
             {
                 deviceWatcher = RemoteSystem.CreateWatcher();
                 deviceWatcher.RemoteSystemAdded += DeviceWatcher_RemoteSystemAdded;
+                deviceWatcher.RemoteSystemUpdated += DeviceWatcher_RemoteSystemUpdated;
+                deviceWatcher.RemoteSystemRemoved += DeviceWatcher_RemoteSystemRemoved;
                 deviceWatcher.Start();
             }
         }
+
         private async void DeviceWatcher_RemoteSystemAdded(RemoteSystemWatcher sender, RemoteSystemAddedEventArgs args)
         {
             var remoteSystem = args.RemoteSystem;
@@ -213,6 +216,36 @@ namespace Share_Across_Devices
             {
                 RemoteDevice device = new RemoteDevice(remoteSystem);
                 this.DeviceGrid.Items.Add(device);
+            });
+        }
+        private async void DeviceWatcher_RemoteSystemUpdated(RemoteSystemWatcher sender, RemoteSystemUpdatedEventArgs args)
+        {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                foreach (RemoteDevice device in this.DeviceGrid.Items)
+                {
+                    if (device.GetDevice().Id == args.RemoteSystem.Id)
+                    {
+                        device.SetDevice(args.RemoteSystem);
+                        this.validTextAndButtons();
+                        return;
+                    }
+                }
+            });
+        }
+        private async void DeviceWatcher_RemoteSystemRemoved(RemoteSystemWatcher sender, RemoteSystemRemovedEventArgs args)
+        {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                foreach (RemoteDevice device in this.DeviceGrid.Items)
+                {
+                    if (device.GetDevice().Id == args.RemoteSystemId)
+                    {
+                        this.DeviceGrid.Items.Remove(device);
+                        this.validTextAndButtons();
+                        return;
+                    }
+                }
             });
         }
         #endregion
@@ -273,12 +306,21 @@ namespace Share_Across_Devices
                 this.checkIfWebLink();
                 this.CopyToClipboardButton.IsEnabled = true;
             }
+            else if (this.DeviceGrid.SelectedItem != null && this.remoteSystemIsLocal())
+            {
+                this.OpenFileButton.IsEnabled = true;
+            }
             else
             {
                 this.LaunchInBrowserButton.IsEnabled = false;
+                this.OpenFileButton.IsEnabled = false;
                 this.CopyToClipboardButton.IsEnabled = false;
                 this.hideYoutubeButtons();
             }
+        }
+        private bool remoteSystemIsLocal()
+        {
+            return (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice().IsAvailableByProximity;
         }
         private void checkIfWebLink()
         {
@@ -433,7 +475,7 @@ namespace Share_Across_Devices
         }
         #endregion
 
-
+        #region File/App Service Stuff
         private async void openRemoteConnectionAsync(RemoteSystem remotesys)
         {
             FileOpenPicker openPicker = new FileOpenPicker();
@@ -509,7 +551,6 @@ namespace Share_Across_Devices
                 NotifyUser("Not connected to any app service. Select a device to open a connection.");
             }
         }
-
         private async void beginConnection(string ipAddress)
         {
             try
@@ -563,6 +604,7 @@ namespace Share_Across_Devices
 
             this.openRemoteConnectionAsync(selectedDevice);
         }
+        #endregion
     }
     public enum NotifyType
     {

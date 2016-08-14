@@ -168,6 +168,7 @@
                     BorderBrush="{x:Null}" 
                     IsEnabledChanged="Button_IsEnabledChanged" />
                     <Button x:Name="OpenFileButton" 
+                    IsEnabled="False"
                     Width="100"
                     Content="file" 
                     Margin="4"
@@ -176,7 +177,8 @@
                     FontWeight="Bold"
                     FontSize="16"
                     HorizontalAlignment="Center"
-                    Click="OpenFileButton_Click" 
+                    Click="OpenFileButton_Click"
+                            IsEnabledChanged="Button_IsEnabledChanged"
                     BorderBrush="{x:Null}"  />
                 </GridView>
             </RelativePanel>
