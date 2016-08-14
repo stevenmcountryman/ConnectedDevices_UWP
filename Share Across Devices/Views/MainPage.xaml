@@ -167,6 +167,17 @@
                     Click="OpenInMyTubeButton_Click" 
                     BorderBrush="{x:Null}" 
                     IsEnabledChanged="Button_IsEnabledChanged" />
+                    <Button x:Name="OpenFileButton" 
+                    Width="100"
+                    Content="file" 
+                    Margin="4"
+                    Padding="12"
+                    Foreground="White"
+                    FontWeight="Bold"
+                    FontSize="16"
+                    HorizontalAlignment="Center"
+                    Click="OpenFileButton_Click" 
+                    BorderBrush="{x:Null}"  />
                 </GridView>
             </RelativePanel>
         </StackPanel>

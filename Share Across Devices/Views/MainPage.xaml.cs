@@ -552,6 +552,13 @@ namespace Share_Across_Devices
                 //Handle exception here.            
             }
         }
+
+        private void OpenFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
+
+            this.openRemoteConnectionAsync(selectedDevice);
+        }
     }
     public enum NotifyType
     {
