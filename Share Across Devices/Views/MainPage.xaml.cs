@@ -137,24 +137,14 @@ namespace Share_Across_Devices
                 }
                 using (var fileStream = await file.OpenStreamForWriteAsync())
                 {
-                    using (DataWriter dataWriter = new DataWriter(fileStream.AsOutputStream()))
+                    using (Stream inStream = args.Socket.InputStream.AsStreamForRead())
                     {
-                        using (Stream inStream = args.Socket.InputStream.AsStreamForRead())
+                        while (inStream.CanRead)
                         {
-                            using (var dataReader = new DataReader(inStream.AsInputStream()))
-                            {
-                                while (dataReader.UnconsumedBufferLength > 0)
-                                {
-                                    var data = dataReader.ReadByte();
-                                    dataWriter.WriteByte(data);
-                                }
-                                dataReader.Dispose();
-                            }
-                            inStream.Dispose();
+                            var data = (byte)inStream.ReadByte();
+                            fileStream.WriteByte(data);
                         }
-                        dataWriter.Dispose();
                     }
-                    fileStream.Dispose();
                 }
 
                 //Send the line back to the remote client.
@@ -641,22 +631,14 @@ namespace Share_Across_Devices
                     //Write data to the echo server.
                     using (Stream streamOut = socket.OutputStream.AsStreamForWrite())
                     {
-                        using (DataWriter dataWriter = new DataWriter(streamOut.AsOutputStream()))
+                        using (var fileStream = await file.OpenStreamForReadAsync())
                         {
-                            using (var fileStream = await file.OpenStreamForReadAsync())
+                            while (fileStream.Position != -1)
                             {
-                                using (var dataReader = new DataReader(fileStream.AsInputStream()))
-                                {
-                                    while (dataReader.UnconsumedBufferLength > 0)
-                                    {
-                                        var data = dataReader.ReadByte();
-                                        dataWriter.WriteByte(data);
-                                    }
-                                    dataReader.Dispose();
-                                }
-                                fileStream.Dispose();
+                                var data = (byte)fileStream.ReadByte();
+                                streamOut.WriteByte(data);
                             }
-                            dataWriter.Dispose();
+                            fileStream.Dispose();
                         }
                         streamOut.Dispose();
                     }
