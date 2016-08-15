@@ -25,6 +25,8 @@ using Windows.Networking.Sockets;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using System.Threading;
+using Windows.Storage.Streams;
+using System.Text;
 
 namespace Share_Across_Devices
 {
@@ -93,7 +95,6 @@ namespace Share_Across_Devices
                 else
                 {
                     fileName = queryStrings.GetFirstValueByName("FileName");
-                    NotifyUser(fileName + " transfer initiated");
                     this.beginListeningForFile();
                 }
             }
@@ -101,7 +102,7 @@ namespace Share_Across_Devices
 
         private async void beginListeningForFile()
         {
-            NotifyUser("Listening for file");
+            NotifyUser("Receiving file...");
             try
             {
                 //Create a StreamSocketListener to start listening for TCP connections.
@@ -111,11 +112,11 @@ namespace Share_Across_Devices
                 socketListener.ConnectionReceived += SocketListener_ConnectionReceived;
 
                 //Start listening for incoming TCP connections on the specified port. You can specify any port that' s not currently in use.
-                await socketListener.BindServiceNameAsync("1337");
+                await socketListener.BindServiceNameAsync("1717");
             }
             catch (Exception e)
             {
-                //Handle exception.
+                NotifyUser("Failed to receive file");
             }
         }
 
@@ -123,17 +124,20 @@ namespace Share_Across_Devices
         {
             if (fileName != null)
             {
-                file = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName);
+                file = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
                 //Read line from the remote client.
-
-                NotifyUser("Receiving file...");
-                Stream inStream = args.Socket.InputStream.AsStreamForRead();
-
                 using (var fileStream = await file.OpenStreamForWriteAsync())
                 {
-                    inStream.CopyTo(fileStream);
+                    byte[] result;
+                    using (Stream inStream = args.Socket.InputStream.AsStreamForRead())
+                    {
+                        result = new byte[inStream.Length];
+                        await inStream.ReadAsync(result, 0, (int)inStream.Length);
+                        inStream.Dispose();
+                    }
+                    await fileStream.WriteAsync(result, 0, result.Length);
+                    fileStream.Dispose();
                 }
-                await inStream.FlushAsync();
 
                 //Send the line back to the remote client.
                 Stream outStream = args.Socket.OutputStream.AsStreamForWrite();
@@ -612,19 +616,24 @@ namespace Share_Across_Devices
                     //Every protocol typically has a standard port number. For example HTTP is typically 80, FTP is 20 and 21, etc.
                     //For the echo server/client application we will use a random port 1337.
                     NotifyUser("Opening connection....");
-                    string serverPort = "1337";
+                    string serverPort = "1717";
                     await socket.ConnectAsync(serverHost, serverPort);
 
                     NotifyUser("Creating file stream....");
                     //Write data to the echo server.
-                    Stream streamOut = socket.OutputStream.AsStreamForWrite();
-
-                    NotifyUser("Sending file....");
-                    using (var fileStream = await file.OpenStreamForReadAsync())
+                    using (Stream streamOut = socket.OutputStream.AsStreamForWrite())
                     {
-                        fileStream.CopyTo(streamOut);
+                        NotifyUser("Sending file....");
+                        byte[] result;
+                        using (var fileStream = await file.OpenStreamForReadAsync())
+                        {
+                            result = new byte[fileStream.Length];
+                            await fileStream.ReadAsync(result, 0, (int)fileStream.Length);
+                            fileStream.Dispose();
+                        }
+                        await streamOut.WriteAsync(result, 0, result.Length);
+                        streamOut.Dispose();
                     }
-                    await streamOut.FlushAsync();
 
                     //Read data from the echo server.
                     Stream streamIn = socket.InputStream.AsStreamForRead();
