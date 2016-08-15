@@ -130,7 +130,21 @@ namespace Share_Across_Devices
                 {
                     using (var inStream = args.Socket.InputStream.AsStreamForRead())
                     {
-                        await inStream.CopyToAsync(inStream);
+                        byte[] bytes = new byte[65536];
+                        DataReader din = new DataReader(inStream.AsInputStream());
+                        //now send the length (as a simple long)
+                        long numToSend = din.ReadInt64();
+                        //now send the file contents
+                        long numSent = 0;
+                        while (numSent < numToSend)
+                        {
+                            long numThisTime = numToSend - numSent;
+                            numThisTime = numThisTime < bytes.Length ? numThisTime : bytes.Length;
+                            int numRead = await inStream.ReadAsync(bytes, 0, (int)numThisTime);
+                            if (numRead == -1) break;
+                            await fileStream.WriteAsync(bytes, 0, (int)numThisTime);
+                            numSent += numRead;
+                        }
                     }
                 }
 
@@ -620,17 +634,26 @@ namespace Share_Across_Devices
                     {
                         using (var fileStream = await file.OpenStreamForReadAsync())
                         {
-                            byte[] buffer = new byte[fileStream.Length];
-
-                            int read = 0;
-                            while ((read = await fileStream.ReadAsync(buffer, 0, (int)fileStream.Length)) != 0)
+                            byte[] bytes = new byte[65536];
+                            DataWriter dout = new DataWriter(streamOut.AsOutputStream());
+                            //now send the length (as a simple long)
+                            long numToSend = fileStream.Length;
+                            dout.WriteInt64(numToSend);
+                            //now send the file contents
+                            long numSent = 0;
+                            while (numSent < numToSend)
                             {
-                                await streamOut.WriteAsync(buffer, 0, read);
-                                await streamOut.FlushAsync();
+                                long numThisTime = numToSend - numSent;
+                                numThisTime = numThisTime < bytes.Length ? numThisTime : bytes.Length;
+                                int numRead = await fileStream.ReadAsync(bytes, 0, (int)numThisTime);
+                                if (numRead == -1) break;
+                                dout.WriteBytes(bytes);
+                                numSent += numRead;
                             }
                         }
                     }
 
+                    
                     //Read data from the echo server.
                     Stream streamIn = socket.InputStream.AsStreamForRead();
                     StreamReader reader = new StreamReader(streamIn);
