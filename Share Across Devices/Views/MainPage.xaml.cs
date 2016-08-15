@@ -130,21 +130,11 @@ namespace Share_Across_Devices
                 {
                     using (var inStream = args.Socket.InputStream.AsStreamForRead())
                     {
-                        byte[] bytes = new byte[65536];
-                        DataReader din = new DataReader(inStream.AsInputStream());
-                        //now send the length (as a simple long)
-                        long numToSend = din.ReadInt64();
-                        //now send the file contents
-                        long numSent = 0;
-                        while (numSent < numToSend)
-                        {
-                            long numThisTime = numToSend - numSent;
-                            numThisTime = numThisTime < bytes.Length ? numThisTime : bytes.Length;
-                            int numRead = await inStream.ReadAsync(bytes, 0, (int)numThisTime);
-                            if (numRead == -1) break;
-                            await fileStream.WriteAsync(bytes, 0, (int)numThisTime);
-                            numSent += numRead;
-                        }
+                        byte[] bytes = new byte[inStream.Length];
+                        await inStream.ReadAsync(bytes, 0, (int)inStream.Length);
+                        await inStream.FlushAsync();
+                        DataWriter dout = new DataWriter(fileStream.AsOutputStream());
+                        dout.WriteBytes(bytes);
                     }
                 }
 
@@ -634,22 +624,11 @@ namespace Share_Across_Devices
                     {
                         using (var fileStream = await file.OpenStreamForReadAsync())
                         {
-                            byte[] bytes = new byte[65536];
+                            byte[] bytes = new byte[fileStream.Length];
+                            await fileStream.ReadAsync(bytes, 0, (int)fileStream.Length);
+                            await fileStream.FlushAsync();
                             DataWriter dout = new DataWriter(streamOut.AsOutputStream());
-                            //now send the length (as a simple long)
-                            long numToSend = fileStream.Length;
-                            dout.WriteInt64(numToSend);
-                            //now send the file contents
-                            long numSent = 0;
-                            while (numSent < numToSend)
-                            {
-                                long numThisTime = numToSend - numSent;
-                                numThisTime = numThisTime < bytes.Length ? numThisTime : bytes.Length;
-                                int numRead = await fileStream.ReadAsync(bytes, 0, (int)numThisTime);
-                                if (numRead == -1) break;
-                                dout.WriteBytes(bytes);
-                                numSent += numRead;
-                            }
+                            dout.WriteBytes(bytes);
                         }
                     }
 
