@@ -128,22 +128,9 @@ namespace Share_Across_Devices
                 //Read line from the remote client.
                 using (var fileStream = await file.OpenStreamForWriteAsync())
                 {
-                    using (Stream inStream = args.Socket.InputStream.AsStreamForRead())
+                    using (var inStream = args.Socket.InputStream.AsStreamForRead())
                     {
-                        inStream.CopyTo(fileStream);
-                        inStream.Dispose();
-                    }
-                    fileStream.Dispose();
-                }
-                using (var fileStream = await file.OpenStreamForWriteAsync())
-                {
-                    using (Stream inStream = args.Socket.InputStream.AsStreamForRead())
-                    {
-                        while (inStream.CanRead)
-                        {
-                            var data = (byte)inStream.ReadByte();
-                            fileStream.WriteByte(data);
-                        }
+                        await inStream.CopyToAsync(inStream);
                     }
                 }
 
@@ -633,14 +620,15 @@ namespace Share_Across_Devices
                     {
                         using (var fileStream = await file.OpenStreamForReadAsync())
                         {
-                            while (fileStream.Position != -1)
+                            byte[] buffer = new byte[fileStream.Length];
+
+                            int read = 0;
+                            while ((read = await fileStream.ReadAsync(buffer, 0, (int)fileStream.Length)) != 0)
                             {
-                                var data = (byte)fileStream.ReadByte();
-                                streamOut.WriteByte(data);
+                                await streamOut.WriteAsync(buffer, 0, read);
+                                await streamOut.FlushAsync();
                             }
-                            fileStream.Dispose();
                         }
-                        streamOut.Dispose();
                     }
 
                     //Read data from the echo server.
