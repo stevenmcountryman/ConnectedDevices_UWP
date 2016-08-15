@@ -27,6 +27,7 @@ using Windows.Storage.Pickers;
 using System.Threading;
 using Windows.Storage.Streams;
 using System.Text;
+using System.Runtime.Serialization;
 
 namespace Share_Across_Devices
 {
@@ -130,11 +131,7 @@ namespace Share_Across_Devices
                 {
                     using (var inStream = args.Socket.InputStream.AsStreamForRead())
                     {
-                        byte[] bytes = new byte[inStream.Length];
-                        await inStream.ReadAsync(bytes, 0, (int)inStream.Length);
-                        await inStream.FlushAsync();
-                        DataWriter dout = new DataWriter(fileStream.AsOutputStream());
-                        dout.WriteBytes(bytes);
+
                     }
                 }
 
@@ -624,11 +621,7 @@ namespace Share_Across_Devices
                     {
                         using (var fileStream = await file.OpenStreamForReadAsync())
                         {
-                            byte[] bytes = new byte[fileStream.Length];
-                            await fileStream.ReadAsync(bytes, 0, (int)fileStream.Length);
-                            await fileStream.FlushAsync();
-                            DataWriter dout = new DataWriter(streamOut.AsOutputStream());
-                            dout.WriteBytes(bytes);
+
                         }
                     }
 

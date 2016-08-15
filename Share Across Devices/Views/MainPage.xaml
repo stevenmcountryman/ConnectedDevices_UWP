@@ -116,7 +116,9 @@
                                     Click="CopyToClipboardButton_Click" 
                                     BorderBrush="{x:Null}" 
                                     IsEnabledChanged="Button_IsEnabledChanged"/>
+                    <!--
                     <Button x:Name="OpenFileButton" 
+                                    Visibility="Collapsed"
                                     IsEnabled="False"
                                     Width="85"
                                     Content="file" 
@@ -129,6 +131,7 @@
                                     Click="OpenFileButton_Click"
                                     IsEnabledChanged="Button_IsEnabledChanged"
                                     BorderBrush="{x:Null}"  />
+                    -->
                 </GridView>
             </StackPanel>
         </StackPanel>
