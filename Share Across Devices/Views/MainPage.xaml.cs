@@ -128,14 +128,11 @@ namespace Share_Across_Devices
                 //Read line from the remote client.
                 using (var fileStream = await file.OpenStreamForWriteAsync())
                 {
-                    byte[] result;
                     using (Stream inStream = args.Socket.InputStream.AsStreamForRead())
                     {
-                        result = new byte[inStream.Length];
-                        await inStream.ReadAsync(result, 0, (int)inStream.Length);
+                        inStream.CopyTo(fileStream);
                         inStream.Dispose();
                     }
-                    await fileStream.WriteAsync(result, 0, result.Length);
                     fileStream.Dispose();
                 }
 
@@ -624,14 +621,11 @@ namespace Share_Across_Devices
                     using (Stream streamOut = socket.OutputStream.AsStreamForWrite())
                     {
                         NotifyUser("Sending file....");
-                        byte[] result;
                         using (var fileStream = await file.OpenStreamForReadAsync())
                         {
-                            result = new byte[fileStream.Length];
-                            await fileStream.ReadAsync(result, 0, (int)fileStream.Length);
+                            fileStream.CopyTo(streamOut);
                             fileStream.Dispose();
                         }
-                        await streamOut.WriteAsync(result, 0, result.Length);
                         streamOut.Dispose();
                     }
 
