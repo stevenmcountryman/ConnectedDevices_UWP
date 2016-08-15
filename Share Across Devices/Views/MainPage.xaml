@@ -9,53 +9,12 @@
     mc:Ignorable="d">
 
     <RelativePanel x:Name="MainPanel" 
-                   Background="#FF535353"
-                   Padding="8">
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="AdaptiveStates">
-                <VisualState x:Name="Desktop">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="480" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="ButtonPanel.HorizontalAlignment" Value="Center" />
-                    </VisualState.Setters>
-                </VisualState>
-                <VisualState x:Name="Mobile">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="0" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="ButtonPanel.HorizontalAlignment" Value="Right" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>            
-        </VisualStateManager.VisualStateGroups>
-        <StackPanel RelativePanel.Above="MainStackPanel"
-                    RelativePanel.AlignLeftWithPanel="True"
-                    RelativePanel.AlignRightWithPanel="True">
-            <ProgressBar x:Name="LoadingBar" 
-                         Margin="8" 
-                         Visibility="Collapsed" 
-                         IsEnabled="False" 
-                         IsIndeterminate="true" 
-                         Height="4" 
-                         Foreground="White" 
-                         Background="{x:Null}"/>
-            <TextBlock x:Name="StatusBlock" 
-                       FontWeight="Bold" 
-                       Foreground="White"
-                       FontSize="20"
-                       Margin="10,10,10,20" 
-                       TextWrapping="Wrap"
-                       HorizontalAlignment="Center"
-                       TextAlignment="Center"/>
-        </StackPanel>
+                   Background="#FF535353">
         <StackPanel x:Name="MainStackPanel"
                     RelativePanel.AlignBottomWithPanel="True"
                     RelativePanel.AlignLeftWithPanel="True"
-                    RelativePanel.AlignRightWithPanel="True">
-
+                    RelativePanel.AlignRightWithPanel="True"
+                    Padding="8">
             <TextBlock Margin="8"
                        Text="Devices: "
                        Foreground="White"
@@ -73,115 +32,126 @@
                       SelectionChanged="DeviceListBox_SelectionChanged"
                       ItemContainerStyle="{StaticResource MyGridViewItemContainerStyle}"/>
             </ScrollViewer>
-            <TextBox x:Name="ClipboardText" 
-                     TextChanged="ClipboardText_TextChanged"
-                     HorizontalAlignment="Stretch"
-                     MaxWidth="480"
-                     Margin="8"
-                     Background="White" 
-                     BorderBrush="{x:Null}" Style="{StaticResource MyTextBoxStyle}"/>
-            <Button x:Name="CopyToLocalClipboardButton" 
-                    Visibility="Collapsed"
-                    IsEnabled="False"
-                    Content="copy" 
-                    Margin="8"
-                    Padding="12"
-                    Foreground="White"
-                    FontWeight="Bold"
-                    FontSize="16"
-                    HorizontalAlignment="Right"
-                    Click="CopyToLocalClipboardButton_Click" 
-                    BorderBrush="{x:Null}" 
-                    IsEnabledChanged="CopyToLocalClipboardButton_IsEnabledChanged" />
-            <RelativePanel  x:Name="ButtonPanel"
-                            HorizontalAlignment="Center">
-                <TextBlock x:Name="LaunchText"
-                           Foreground="White"
-                           Text="share to:"
-                           FontWeight="Bold"
-                           Margin="-8"
-                           VerticalAlignment="Center"
-                           RelativePanel.AlignTopWithPanel="True"
-                           RelativePanel.AlignBottomWithPanel="True"
-                           RelativePanel.AlignLeftWithPanel="True">
-                    <TextBlock.Projection>
-                        <PlaneProjection RotationZ="90"/>
-                    </TextBlock.Projection>
-                </TextBlock>
-                <GridView RelativePanel.AlignRightWithPanel="True"
-                          RelativePanel.RightOf="LaunchText"
-                          RelativePanel.AlignTopWithPanel="True"
-                          RelativePanel.AlignBottomWithPanel="True"
-                          Padding="0"
-                          Margin="0" 
-                          SelectionMode="None">
+            <StackPanel HorizontalAlignment="Stretch"
+                        MaxWidth="480">
+                <TextBox x:Name="ClipboardText" 
+                                 TextChanged="ClipboardText_TextChanged"
+                                 HorizontalAlignment="Stretch"
+                                 Margin="8"
+                                 Background="White" 
+                                 BorderBrush="{x:Null}" Style="{StaticResource MyTextBoxStyle}"/>
+                <Button x:Name="CopyToLocalClipboardButton" 
+                                Visibility="Collapsed"
+                                IsEnabled="False"
+                                Content="copy" 
+                                Margin="8"
+                                Padding="0,12,0,12"
+                                Foreground="White"
+                                FontWeight="Bold"
+                                FontSize="16"
+                                HorizontalAlignment="Right"
+                                Click="CopyToLocalClipboardButton_Click" 
+                                BorderBrush="{x:Null}" 
+                                IsEnabledChanged="CopyToLocalClipboardButton_IsEnabledChanged" />
+                <GridView HorizontalAlignment="Right"
+                                  Padding="0"
+                                  Margin="0" 
+                                  SelectionMode="None">
                     <Button x:Name="LaunchInBrowserButton" 
-                    IsEnabled="False" 
-                    Width="100"
-                    Content="browser" 
-                    Margin="4"
-                    Padding="12"
-                    Foreground="White"
-                    FontWeight="Bold"
-                    FontSize="16"
-                    HorizontalAlignment="Right"
-                    Click="LaunchInBrowserButton_Click" 
-                    BorderBrush="{x:Null}" 
-                    IsEnabledChanged="Button_IsEnabledChanged" />
-                    <Button x:Name="CopyToClipboardButton" 
-                    IsEnabled="False" 
-                    Width="100"
-                    Content="clipboard"
-                    Margin="4"
-                    Padding="12"
-                    Foreground="White"
-                    FontWeight="Bold"
-                    FontSize="16"
-                    HorizontalAlignment="Right"
-                    Click="CopyToClipboardButton_Click" 
-                    BorderBrush="{x:Null}" 
-                    IsEnabledChanged="Button_IsEnabledChanged"/>
+                                    IsEnabled="False" 
+                                    Width="85"
+                                    Content="browser" 
+                                    Margin="4"
+                                    Padding="0,12,0,12"
+                                    Foreground="White"
+                                    FontWeight="Bold"
+                                    FontSize="16"
+                                    HorizontalAlignment="Right"
+                                    Click="LaunchInBrowserButton_Click" 
+                                    BorderBrush="{x:Null}" 
+                                    IsEnabledChanged="Button_IsEnabledChanged" />
                     <Button x:Name="OpenInTubeCastButton" 
-                    IsEnabled="False"
-                    Width="100"
-                    Content="TubeCast" 
-                    Margin="4"
-                    Padding="12"
-                    Foreground="White"
-                    FontWeight="Bold"
-                    FontSize="16"
-                    HorizontalAlignment="Center"
-                    Click="OpenInTubeCastButton_Click" 
-                    BorderBrush="{x:Null}" 
-                    IsEnabledChanged="Button_IsEnabledChanged" />
+                                    IsEnabled="False"
+                                    Width="85"
+                                    Content="TubeCast" 
+                                    Margin="4"
+                                    Padding="0,12,0,12"
+                                    Foreground="White"
+                                    FontWeight="Bold"
+                                    FontSize="16"
+                                    HorizontalAlignment="Center"
+                                    Click="OpenInTubeCastButton_Click" 
+                                    BorderBrush="{x:Null}" 
+                                    IsEnabledChanged="Button_IsEnabledChanged" />
                     <Button x:Name="OpenInMyTubeButton" 
-                    IsEnabled="False"
-                    Width="100"
-                    Content="myTube!" 
-                    Margin="4"
-                    Padding="12"
-                    Foreground="White"
-                    FontWeight="Bold"
-                    FontSize="16"
-                    HorizontalAlignment="Center"
-                    Click="OpenInMyTubeButton_Click" 
-                    BorderBrush="{x:Null}" 
-                    IsEnabledChanged="Button_IsEnabledChanged" />
-                    <Button x:Name="OpenFileButton" 
-                    IsEnabled="False"
-                    Width="100"
-                    Content="file" 
-                    Margin="4"
-                    Padding="12"
-                    Foreground="White"
-                    FontWeight="Bold"
-                    FontSize="16"
-                    HorizontalAlignment="Center"
-                    Click="OpenFileButton_Click"
-                            IsEnabledChanged="Button_IsEnabledChanged"
-                    BorderBrush="{x:Null}"  />
+                                    IsEnabled="False"
+                                    Width="85"
+                                    Content="myTube!" 
+                                    Margin="4"
+                                    Padding="0,12,0,12"
+                                    Foreground="White"
+                                    FontWeight="Bold"
+                                    FontSize="16"
+                                    HorizontalAlignment="Center"
+                                    Click="OpenInMyTubeButton_Click" 
+                                    BorderBrush="{x:Null}" 
+                                    IsEnabledChanged="Button_IsEnabledChanged" />
                 </GridView>
-            </RelativePanel>
+                <GridView Padding="0"
+                                  Margin="0" 
+                                  SelectionMode="None"
+                                  HorizontalAlignment="Right">
+                    <Button x:Name="CopyToClipboardButton" 
+                                    IsEnabled="False" 
+                                    Width="85"
+                                    Content="clipboard"
+                                    Margin="4"
+                                    Padding="0,12,0,12"
+                                    Foreground="White"
+                                    FontWeight="Bold"
+                                    FontSize="16"
+                                    HorizontalAlignment="Right"
+                                    Click="CopyToClipboardButton_Click" 
+                                    BorderBrush="{x:Null}" 
+                                    IsEnabledChanged="Button_IsEnabledChanged"/>
+                    <Button x:Name="OpenFileButton" 
+                                    IsEnabled="False"
+                                    Width="85"
+                                    Content="file" 
+                                    Margin="4"
+                                    Padding="0,12,0,12"
+                                    Foreground="White"
+                                    FontWeight="Bold"
+                                    FontSize="16"
+                                    HorizontalAlignment="Center"
+                                    Click="OpenFileButton_Click"
+                                    IsEnabledChanged="Button_IsEnabledChanged"
+                                    BorderBrush="{x:Null}"  />
+                </GridView>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel x:Name="StatusPanel"
+                    RelativePanel.AlignTopWithPanel="True"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.AlignRightWithPanel="True" 
+                    Background="#FF335BA2"
+                    Padding="8">
+            <ProgressBar x:Name="LoadingBar" 
+                         Margin="8" 
+                         Visibility="Collapsed" 
+                         IsEnabled="False" 
+                         IsIndeterminate="true" 
+                         Height="4" 
+                         Foreground="White" 
+                         Background="{x:Null}"/>
+            <TextBlock x:Name="StatusBlock" 
+                       FontWeight="Bold" 
+                       Foreground="White"
+                       FontSize="20"
+                       Margin="10,10,10,20" 
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"/>
         </StackPanel>
     </RelativePanel>
 </Page>

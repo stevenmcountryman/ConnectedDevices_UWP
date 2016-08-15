@@ -24,6 +24,7 @@ using System.IO;
 using Windows.Networking.Sockets;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using System.Threading;
 
 namespace Share_Across_Devices
 {
@@ -40,13 +41,19 @@ namespace Share_Across_Devices
         public MainPage()
         {
             this.InitializeComponent();
-            _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
+            this.setUpCompositorStuff();
             this.setUpDevicesList();
             this.setTitleBar();
             InputPane.GetForCurrentView().Showing += InputPane_Showing;
             InputPane.GetForCurrentView().Hiding += InputPane_Hiding;
         }
 
+        private void setUpCompositorStuff()
+        {
+            _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
+            var itemVisual = ElementCompositionPreview.GetElementVisual(this.StatusPanel);
+            itemVisual.Opacity = 0;
+        }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
@@ -276,7 +283,9 @@ namespace Share_Across_Devices
         public void NotifyUser(string strMessage)
         {
             StatusBlock.Text = strMessage;
+            this.animateStatusContinuous();
         }
+
         private void showShareLoading(string deviceName)
         {
             this.LoadingBar.IsEnabled = true;
@@ -301,14 +310,28 @@ namespace Share_Across_Devices
         }
         private void validTextAndButtons()
         {
-            if (this.ClipboardText.Text.Length > 0 && this.DeviceGrid.SelectedItem != null)
+            if (this.DeviceGrid.SelectedItem != null)
             {
-                this.checkIfWebLink();
-                this.CopyToClipboardButton.IsEnabled = true;
-            }
-            else if (this.DeviceGrid.SelectedItem != null && this.remoteSystemIsLocal())
-            {
-                this.OpenFileButton.IsEnabled = true;
+                if (this.remoteSystemIsLocal())
+                {
+                    this.OpenFileButton.IsEnabled = true;
+                }
+                else
+                {
+                    this.OpenFileButton.IsEnabled = false;
+                }
+
+                if (this.ClipboardText.Text.Length > 0)
+                {
+                    this.CopyToClipboardButton.IsEnabled = true;
+                    this.checkIfWebLink();
+                }
+                else
+                {
+                    this.CopyToClipboardButton.IsEnabled = false;
+                    this.LaunchInBrowserButton.IsEnabled = false;
+                    this.hideYoutubeButtons();
+                }
             }
             else
             {
@@ -404,6 +427,21 @@ namespace Share_Across_Devices
         #endregion
 
         #region Animations
+        private void animateStatusContinuous()
+        {
+            var itemVisual = ElementCompositionPreview.GetElementVisual(this.StatusPanel);
+
+            ScalarKeyFrameAnimation opacityAnimation = _compositor.CreateScalarKeyFrameAnimation();
+            opacityAnimation.IterationBehavior = AnimationIterationBehavior.Count;
+            opacityAnimation.IterationCount = 5;
+            opacityAnimation.Duration = TimeSpan.FromMilliseconds(1500);
+            opacityAnimation.InsertKeyFrame(0f, 0f);
+            opacityAnimation.InsertKeyFrame(0.5f, 1f);
+            opacityAnimation.InsertKeyFrame(1f, 0f);
+
+            itemVisual.StartAnimation("Opacity", opacityAnimation);
+        }
+
         private void animateLocalClipButton(Button button)
         {
             var itemVisual = ElementCompositionPreview.GetElementVisual(button);
@@ -483,33 +521,36 @@ namespace Share_Across_Devices
             openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
             file = await openPicker.PickSingleFileAsync();
 
-            AppServiceConnection connection = new AppServiceConnection
+            if (file != null)
             {
-                AppServiceName = "simplisidy.appservice",
-                PackageFamilyName = "34507Simplisidy.ShareAcrossDevices_wtkr3v20s86d8"
-            };
-
-            if (remotesys != null)
-            {
-                // Create a remote system connection request.
-                RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(remotesys);
-
-                NotifyUser("Requesting connection to " + remotesys.DisplayName + "...");
-                AppServiceConnectionStatus status = await connection.OpenRemoteAsync(connectionRequest);
-
-                if (status == AppServiceConnectionStatus.Success)
+                AppServiceConnection connection = new AppServiceConnection
                 {
-                    NotifyUser("Successfully connected to " + remotesys.DisplayName + "...");
-                    await RequestIPAddress(connection);
+                    AppServiceName = "simplisidy.appservice",
+                    PackageFamilyName = "34507Simplisidy.ShareAcrossDevices_wtkr3v20s86d8"
+                };
+
+                if (remotesys != null)
+                {
+                    // Create a remote system connection request.
+                    RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(remotesys);
+
+                    NotifyUser("Requesting connection to " + remotesys.DisplayName + "...");
+                    AppServiceConnectionStatus status = await connection.OpenRemoteAsync(connectionRequest);
+
+                    if (status == AppServiceConnectionStatus.Success)
+                    {
+                        NotifyUser("Successfully connected to " + remotesys.DisplayName + "...");
+                        await RequestIPAddress(connection);
+                    }
+                    else
+                    {
+                        NotifyUser("Attempt to open a remote app service connection failed with error - " + status.ToString());
+                    }
                 }
                 else
                 {
-                    NotifyUser("Attempt to open a remote app service connection failed with error - " + status.ToString());
+                    NotifyUser("Select a device for remote connection.");
                 }
-            }
-            else
-            {
-                NotifyUser("Select a device for remote connection.");
             }
         }
         private async Task RequestIPAddress(AppServiceConnection connection)
@@ -606,11 +647,6 @@ namespace Share_Across_Devices
         }
         #endregion
     }
-    public enum NotifyType
-    {
-        StatusMessage,
-        ErrorMessage
-    };
 
     sealed partial class App : Application
     {
