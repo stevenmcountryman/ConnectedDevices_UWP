@@ -595,6 +595,7 @@ namespace Share_Across_Devices
                     StreamReader reader = new StreamReader(streamIn);
                     string response = await reader.ReadLineAsync();
                     NotifyUser(response);
+                    socket.Dispose();
                 }
             }
             catch (Exception e)
