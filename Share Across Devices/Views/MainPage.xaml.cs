@@ -131,7 +131,14 @@ namespace Share_Across_Devices
                 {
                     using (var inStream = args.Socket.InputStream.AsStreamForRead())
                     {
-
+                        byte[] bytes;
+                        DataReader dataReader = new DataReader(inStream.AsInputStream());
+                        while (inStream.CanRead)
+                        {
+                            bytes = new byte[7171];
+                            dataReader.ReadBytes(bytes);
+                            await fileStream.WriteAsync(bytes, 0, bytes.Length);
+                        }
                     }
                 }
 
@@ -621,11 +628,19 @@ namespace Share_Across_Devices
                     {
                         using (var fileStream = await file.OpenStreamForReadAsync())
                         {
-
+                            byte[] bytes;
+                            DataWriter dataWriter = new DataWriter(streamOut.AsOutputStream());
+                            fileStream.Seek(0, SeekOrigin.Begin);
+                            while (fileStream.Position != -1)
+                            {
+                                bytes = new byte[7171];
+                                await fileStream.ReadAsync(bytes, 0, bytes.Length);
+                                dataWriter.WriteBytes(bytes);
+                            }
                         }
                     }
 
-                    
+
                     //Read data from the echo server.
                     Stream streamIn = socket.InputStream.AsStreamForRead();
                     StreamReader reader = new StreamReader(streamIn);
