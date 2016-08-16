@@ -146,8 +146,14 @@ namespace Share_Across_Devices
                             bytes = new byte[7171];
                             await dataReader.LoadAsync((uint)bytes.Length);
                             dataReader.ReadBytes(bytes);
-                            await fileStream.WriteAsync(bytes, 0, bytes.Length);                            
+                            await fileStream.WriteAsync(bytes, 0, bytes.Length);
                         }
+                        await dataReader.LoadAsync(sizeof(Int32));
+                        var byteSize = dataReader.ReadInt32();
+                        bytes = new byte[byteSize];
+                        await dataReader.LoadAsync((uint)byteSize);
+                        dataReader.ReadBytes(bytes);
+                        await fileStream.WriteAsync(bytes, 0, byteSize);
                     }
                 }
 
@@ -677,16 +683,23 @@ namespace Share_Across_Devices
                             byte[] bytes;
                             DataWriter dataWriter = new DataWriter(streamOut.AsOutputStream());
                             fileStream.Seek(0, SeekOrigin.Begin);
-                            while (fileStream.Position < fileStream.Length)
+                            while (fileStream.Position <= fileStream.Length - 7171)
                             {
+                                bytes = new byte[7171];
                                 dataWriter.WriteBoolean(true);
                                 await dataWriter.StoreAsync();
-                                bytes = new byte[7171];
                                 await fileStream.ReadAsync(bytes, 0, bytes.Length);
                                 dataWriter.WriteBytes(bytes);
                                 await dataWriter.StoreAsync();
                             }
+
+                            bytes = new byte[fileStream.Length - fileStream.Position];
                             dataWriter.WriteBoolean(false);
+                            await dataWriter.StoreAsync();
+                            dataWriter.WriteInt32(bytes.Length);
+                            await dataWriter.StoreAsync();
+                            await fileStream.ReadAsync(bytes, 0, bytes.Length);
+                            dataWriter.WriteBytes(bytes);
                             await dataWriter.StoreAsync();
                         }
                     }
