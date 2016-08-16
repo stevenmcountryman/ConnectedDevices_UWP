@@ -129,49 +129,59 @@ namespace Share_Across_Devices
             sender.ConnectionReceived -= SocketListener_ConnectionReceived;
             if (fileName != null)
             {
-                file = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
-                //Read line from the remote client.
-                using (var fileStream = await file.OpenStreamForWriteAsync())
+                try
                 {
-                    using (var inStream = args.Socket.InputStream.AsStreamForRead())
+                    file = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
+                    //Read line from the remote client.
+                    using (var fileStream = await file.OpenStreamForWriteAsync())
                     {
-                        byte[] bytes;
-                        DataReader dataReader = new DataReader(inStream.AsInputStream());
-                        fileStream.Seek(0, SeekOrigin.Begin);
-                        while (inStream.CanRead)
+                        using (var inStream = args.Socket.InputStream.AsStreamForRead())
                         {
-                            await dataReader.LoadAsync(sizeof(bool));
-                            if (dataReader.ReadBoolean() == false)
+                            byte[] bytes;
+                            DataReader dataReader = new DataReader(inStream.AsInputStream());
+                            fileStream.Seek(0, SeekOrigin.Begin);
+                            while (inStream.CanRead)
                             {
-                                break;
+                                await dataReader.LoadAsync(sizeof(bool));
+                                if (dataReader.ReadBoolean() == false)
+                                {
+                                    break;
+                                }
+                                await dataReader.LoadAsync(sizeof(Int32));
+                                var byteSize = dataReader.ReadInt32();
+                                bytes = new byte[byteSize];
+                                await dataReader.LoadAsync(sizeof(Int32));
+                                var percentComplete = dataReader.ReadInt32();
+                                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                                {
+                                    this.StatusBlock.Text = percentComplete + "% transferred";
+                                });
+                                await dataReader.LoadAsync((uint)byteSize);
+                                dataReader.ReadBytes(bytes);
+                                await fileStream.WriteAsync(bytes, 0, byteSize);
                             }
-                            await dataReader.LoadAsync(sizeof(Int32));
-                            var byteSize = dataReader.ReadInt32();
-                            bytes = new byte[byteSize];
-                            await dataReader.LoadAsync(sizeof(Int32));
-                            var percentComplete = dataReader.ReadInt32();
-                            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                            {
-                                this.StatusBlock.Text = percentComplete + "% transferred";
-                            });
-                            await dataReader.LoadAsync((uint)byteSize);
-                            dataReader.ReadBytes(bytes);
-                            await fileStream.WriteAsync(bytes, 0, byteSize);
                         }
                     }
+
+                    //Send the line back to the remote client.
+                    Stream outStream = args.Socket.OutputStream.AsStreamForWrite();
+                    StreamWriter writer = new StreamWriter(outStream);
+                    await writer.WriteLineAsync("File Received!");
+                    await writer.FlushAsync();
+
+                    await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    {
+                        NotifyUser("File received");
+                        this.displayFile();
+                    });
                 }
-
-                //Send the line back to the remote client.
-                Stream outStream = args.Socket.OutputStream.AsStreamForWrite();
-                StreamWriter writer = new StreamWriter(outStream);
-                await writer.WriteLineAsync("File Received!");
-                await writer.FlushAsync();
-
-                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                catch
                 {
-                    NotifyUser("File received");
-                    this.displayFile();
-                });
+                    await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    {
+                        NotifyUser("Transfer interrupted");
+                    });
+                }
             }
             sender.Dispose();
         }
@@ -699,12 +709,12 @@ namespace Share_Across_Devices
                                 await dataWriter.StoreAsync();
                                 dataWriter.WriteInt32(bytes.Length);
                                 await dataWriter.StoreAsync();
-                                var percentage = ((double)fileStream.Position / (double)fileStream.Length) + 100.0;
+                                var percentage = ((double)fileStream.Position / (double)fileStream.Length) * 100.0;
                                 dataWriter.WriteInt32(Convert.ToInt32(percentage));
                                 await dataWriter.StoreAsync();
                                 await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                                 {
-                                    this.StatusBlock.Text = percentage + "% transferred";
+                                    this.StatusBlock.Text = Convert.ToInt32(percentage) + "% transferred";
                                 });
                                 await fileStream.ReadAsync(bytes, 0, bytes.Length);
                                 dataWriter.WriteBytes(bytes);
