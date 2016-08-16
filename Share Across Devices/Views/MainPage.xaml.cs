@@ -143,7 +143,7 @@ namespace Share_Across_Devices
                             {
                                 break;
                             }
-                            await dataReader.LoadAsync(32);
+                            await dataReader.LoadAsync(sizeof(Int32));
                             var byteSize = dataReader.ReadInt32();
                             bytes = new byte[byteSize];
                             await dataReader.LoadAsync((uint)byteSize);
