@@ -90,5 +90,31 @@ namespace Share_Across_Devices.Controls
         {
             this.CancelEvent(sender, new EventArgs());
         }
+
+        private async void OpenFileButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            if (file != null)
+            {
+                // Set the option to show the picker
+                var options = new Windows.System.LauncherOptions();
+                options.DisplayApplicationPicker = true;
+
+                // Launch the retrieved file
+                bool success = await Windows.System.Launcher.LaunchFileAsync(this.file, options);
+                if (success)
+                {
+                    // File launched
+                }
+                else
+                {
+                    // File launch failed
+                }
+            }
+            else
+            {
+                // Could not find file
+            }
+
+        }
     }
 }

@@ -40,14 +40,20 @@ namespace ShareAcrossAppService
             var messageDeferral = args.GetDeferral();
 
             ValueSet returnData = new ValueSet();
-            foreach (HostName localHostName in NetworkInformation.GetHostNames())
+            var allHostNames = NetworkInformation.GetHostNames();
+            foreach (HostName localHostName in allHostNames)
             {
                 if (localHostName.IPInformation != null)
                 {
                     if (localHostName.Type == HostNameType.Ipv4)
                     {
-                        returnData.Add("result", localHostName.ToString());
-                        break;
+                        if (localHostName.ToString().StartsWith("10.") ||
+                            localHostName.ToString().StartsWith("192.") ||
+                            localHostName.ToString().StartsWith("172."))
+                        {
+                            returnData.Add("result", localHostName.ToString());
+                            break;
+                        }
                     }
                 }
             }
