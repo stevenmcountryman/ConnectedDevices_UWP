@@ -587,7 +587,6 @@ namespace Share_Across_Devices
                             }
                             dataWriter.WriteBoolean(false);
                             await dataWriter.StoreAsync();
-                            dataWriter.Dispose();
                         }
                     }
 
@@ -597,7 +596,6 @@ namespace Share_Across_Devices
                     string response = await reader.ReadLineAsync();
                     reader.Dispose();
                     NotifyUser(response);
-                    socket.Dispose();
                 }
             }
             catch (Exception e)
