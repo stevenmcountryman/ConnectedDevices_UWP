@@ -172,6 +172,10 @@ namespace Share_Across_Devices
             this.FileView.DisplayFile(this.file);
             this.animateFileViewer();
         }
+        private void displayText()
+        {
+
+        }
 
 
         #region Beautification
