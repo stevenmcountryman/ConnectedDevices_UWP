@@ -730,6 +730,7 @@ namespace Share_Across_Devices
                     StreamReader reader = new StreamReader(streamIn);
                     string response = await reader.ReadLineAsync();
                     NotifyUser(response);
+                    socket.Dispose();
                 }
             }
             catch (Exception e)
@@ -746,7 +747,6 @@ namespace Share_Across_Devices
         private void FileView_CancelEvent(object sender, EventArgs e)
         {
             this.animateFileViewerClosing();
-            NotifyUser("Cancelled");
         }
         #endregion
 
