@@ -169,6 +169,7 @@ namespace Share_Across_Devices
                     StreamWriter writer = new StreamWriter(outStream);
                     await writer.WriteLineAsync("File Received!");
                     await writer.FlushAsync();
+                    writer.Dispose();
 
                     await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                     {
@@ -731,6 +732,7 @@ namespace Share_Across_Devices
                     Stream streamIn = socket.InputStream.AsStreamForRead();
                     StreamReader reader = new StreamReader(streamIn);
                     string response = await reader.ReadLineAsync();
+                    reader.Dispose();
                     NotifyUser(response);
                     socket.Dispose();
                 }

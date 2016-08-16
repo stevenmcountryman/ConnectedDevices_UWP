@@ -595,6 +595,7 @@ namespace Share_Across_Devices
                     Stream streamIn = socket.InputStream.AsStreamForRead();
                     StreamReader reader = new StreamReader(streamIn);
                     string response = await reader.ReadLineAsync();
+                    reader.Dispose();
                     NotifyUser(response);
                     socket.Dispose();
                 }
