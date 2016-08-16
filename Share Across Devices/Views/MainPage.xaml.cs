@@ -124,6 +124,7 @@ namespace Share_Across_Devices
 
         private async void SocketListener_ConnectionReceived(StreamSocketListener sender, StreamSocketListenerConnectionReceivedEventArgs args)
         {
+            sender.ConnectionReceived -= SocketListener_ConnectionReceived;
             if (fileName != null)
             {
                 file = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
@@ -158,29 +159,20 @@ namespace Share_Across_Devices
 
                 await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                 {
-                    this.SaveFileButton.Visibility = Visibility.Visible;
-                    this.SaveFileButton.IsEnabled = true;
                     NotifyUser("File received");
+                    this.displayFile();
                 });
             }
+            sender.Dispose();
         }
 
-        private async void saveFile()
+        private void displayFile()
         {
-            var savePicker = new FolderPicker();
-            savePicker.FileTypeFilter.Add("*");
-            savePicker.ViewMode = PickerViewMode.List;
-            savePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-
-            StorageFolder folder = await savePicker.PickSingleFolderAsync();
-            if (folder != null)
-            {
-                StorageApplicationPermissions.FutureAccessList.AddOrReplace("FileToSave", folder);
-                await file.CopyAsync(folder, fileName, NameCollisionOption.ReplaceExisting);
-                NotifyUser("File Saved");
-            }
-            this.SaveFileButton.IsEnabled = false;
+            this.FileView.Visibility = Visibility.Visible;
+            this.FileView.DisplayFile(this.file);
+            this.animateFileViewer();
         }
+
 
         #region Beautification
         private void InputPane_Hiding(InputPane sender, InputPaneVisibilityEventArgs args)
@@ -453,6 +445,37 @@ namespace Share_Across_Devices
         #endregion
 
         #region Animations
+        private void animateFileViewer()
+        {
+            var itemVisual = ElementCompositionPreview.GetElementVisual(this.FileView);
+
+            ScalarKeyFrameAnimation opacityAnimation = _compositor.CreateScalarKeyFrameAnimation();
+            opacityAnimation.Duration = TimeSpan.FromMilliseconds(500);
+            opacityAnimation.InsertKeyFrame(0f, 0f);
+            opacityAnimation.InsertKeyFrame(1f, 1f);
+
+            itemVisual.StartAnimation("Opacity", opacityAnimation);
+        }
+        private void animateFileViewerClosing()
+        {
+            var itemVisual = ElementCompositionPreview.GetElementVisual(this.FileView);
+
+            ScalarKeyFrameAnimation opacityAnimation = _compositor.CreateScalarKeyFrameAnimation();
+            opacityAnimation.Duration = TimeSpan.FromMilliseconds(500);
+            opacityAnimation.InsertKeyFrame(0f, 1f);
+            opacityAnimation.InsertKeyFrame(1f, 0f);
+
+            CompositionScopedBatch myScopedBatch = _compositor.CreateScopedBatch(CompositionBatchTypes.Animation);
+            myScopedBatch.Completed += MyScopedBatch_Completed; ;
+            itemVisual.StartAnimation("Opacity", opacityAnimation);
+            myScopedBatch.End();
+        }
+
+        private void MyScopedBatch_Completed(object sender, CompositionBatchCompletedEventArgs args)
+        {
+            this.FileView.Visibility = Visibility.Collapsed;
+        }
+
         private void animateStatusContinuous()
         {
             var itemVisual = ElementCompositionPreview.GetElementVisual(this.StatusPanel);
@@ -535,10 +558,6 @@ namespace Share_Across_Devices
             if (!this.CopyToLocalClipboardButton.IsEnabled)
             {
                 this.CopyToLocalClipboardButton.Visibility = Visibility.Collapsed;
-            }
-            if (!this.SaveFileButton.IsEnabled)
-            {
-                this.SaveFileButton.Visibility = Visibility.Collapsed;
             }
         }
         #endregion
@@ -680,18 +699,23 @@ namespace Share_Across_Devices
                 NotifyUser("Connection failed. Network destination not allowed.");
             }
         }
-
         private void OpenFileButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
 
             this.openRemoteConnectionAsync(selectedDevice);
         }
+        private void FileView_CancelEvent(object sender, EventArgs e)
+        {
+            this.animateFileViewerClosing();
+            NotifyUser("Cancelled");
+        }
         #endregion
 
-        private void SaveFileButton_Click(object sender, RoutedEventArgs e)
+        private void FileView_SaveEvent(object sender, EventArgs e)
         {
-            this.saveFile();
+            this.animateFileViewerClosing();
+            NotifyUser("File saved!");
         }
     }
 

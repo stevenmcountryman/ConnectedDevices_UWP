@@ -55,19 +55,6 @@
                                 Click="CopyToLocalClipboardButton_Click" 
                                 BorderBrush="{x:Null}" 
                                 IsEnabledChanged="CopyToLocalClipboardButton_IsEnabledChanged" />
-                <Button x:Name="SaveFileButton" 
-                                Visibility="Collapsed"
-                                IsEnabled="False"
-                                Content="save file" 
-                                Margin="8"
-                                Padding="12"
-                                Foreground="White"
-                                FontWeight="Bold"
-                                FontSize="16"
-                                HorizontalAlignment="Right"
-                                Click="SaveFileButton_Click" 
-                                BorderBrush="{x:Null}" 
-                                IsEnabledChanged="CopyToLocalClipboardButton_IsEnabledChanged" />
                 <GridView HorizontalAlignment="Right"
                                   Padding="0"
                                   Margin="0" 
@@ -168,5 +155,13 @@
                        HorizontalAlignment="Center"
                        TextAlignment="Center"/>
         </StackPanel>
+        <controls:TransferView x:Name="FileView"
+                               RelativePanel.AlignBottomWithPanel="True"
+                               RelativePanel.AlignLeftWithPanel="True"
+                               RelativePanel.AlignRightWithPanel="True"
+                               RelativePanel.AlignTopWithPanel="True"
+                               Visibility="Collapsed"
+                               CancelEvent="FileView_CancelEvent"
+                               SaveEvent="FileView_SaveEvent"/>
     </RelativePanel>
 </Page>
