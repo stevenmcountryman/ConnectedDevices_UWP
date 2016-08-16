@@ -138,7 +138,7 @@ namespace Share_Across_Devices
                         fileStream.Seek(0, SeekOrigin.Begin);
                         while (inStream.CanRead)
                         {
-                            await dataReader.LoadAsync(1);
+                            await dataReader.LoadAsync(sizeof(bool));
                             if (dataReader.ReadBoolean() == false)
                             {
                                 break;
@@ -146,6 +146,12 @@ namespace Share_Across_Devices
                             await dataReader.LoadAsync(sizeof(Int32));
                             var byteSize = dataReader.ReadInt32();
                             bytes = new byte[byteSize];
+                            await dataReader.LoadAsync(sizeof(Int32));
+                            var percentComplete = dataReader.ReadInt32();
+                            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                            {
+                                NotifyUser(percentComplete + "% transferred..");
+                            });
                             await dataReader.LoadAsync((uint)byteSize);
                             dataReader.ReadBytes(bytes);
                             await fileStream.WriteAsync(bytes, 0, byteSize);
@@ -688,6 +694,8 @@ namespace Share_Across_Devices
                                 dataWriter.WriteBoolean(true);
                                 await dataWriter.StoreAsync();
                                 dataWriter.WriteInt32(bytes.Length);
+                                await dataWriter.StoreAsync();
+                                dataWriter.WriteInt32(Convert.ToInt32((fileStream.Position / fileStream.Length) * 100));
                                 await dataWriter.StoreAsync();
                                 await fileStream.ReadAsync(bytes, 0, bytes.Length);
                                 dataWriter.WriteBytes(bytes);
