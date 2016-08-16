@@ -130,6 +130,7 @@ namespace Share_Across_Devices
                     try
                     {
                         this.sharedStorageItems = await this.shareOperation.Data.GetStorageItemsAsync();
+                        StorageApplicationPermissions.FutureAccessList.AddOrReplace("FileToSend", this.sharedStorageItems[0]);
                     }
                     catch (Exception ex)
                     {
@@ -190,7 +191,6 @@ namespace Share_Across_Devices
                     }
                     if (this.sharedStorageItems != null && this.sharedStorageItems.Count == 1)
                     {
-                        StorageApplicationPermissions.FutureAccessList.AddOrReplace("FileToSend", this.sharedStorageItems[0]);
                         this.file = await StorageFile.GetFileFromPathAsync(this.sharedStorageItems[0].Path);
                         this.ClipboardText.Text = file.Name;
                     }
@@ -577,10 +577,7 @@ namespace Share_Across_Devices
                                 var percentage = ((double)fileStream.Position / (double)fileStream.Length) * 100.0;
                                 dataWriter.WriteInt32(Convert.ToInt32(percentage));
                                 await dataWriter.StoreAsync();
-                                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                                {
-                                    this.StatusBlock.Text = Convert.ToInt32(percentage) + "% transferred";
-                                });
+                                this.StatusBlock.Text = Convert.ToInt32(percentage) + "% transferred";
                                 await fileStream.ReadAsync(bytes, 0, bytes.Length);
                                 dataWriter.WriteBytes(bytes);
                                 await dataWriter.StoreAsync();

@@ -713,10 +713,7 @@ namespace Share_Across_Devices
                                 var percentage = ((double)fileStream.Position / (double)fileStream.Length) * 100.0;
                                 dataWriter.WriteInt32(Convert.ToInt32(percentage));
                                 await dataWriter.StoreAsync();
-                                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                                {
-                                    this.StatusBlock.Text = Convert.ToInt32(percentage) + "% transferred";
-                                });
+                                this.StatusBlock.Text = Convert.ToInt32(percentage) + "% transferred";
                                 await fileStream.ReadAsync(bytes, 0, bytes.Length);
                                 dataWriter.WriteBytes(bytes);
                                 await dataWriter.StoreAsync();
