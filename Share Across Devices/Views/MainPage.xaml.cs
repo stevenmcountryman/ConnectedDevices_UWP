@@ -143,17 +143,13 @@ namespace Share_Across_Devices
                             {
                                 break;
                             }
-                            bytes = new byte[7171];
-                            await dataReader.LoadAsync((uint)bytes.Length);
+                            await dataReader.LoadAsync(32);
+                            var byteSize = dataReader.ReadInt32();
+                            bytes = new byte[byteSize];
+                            await dataReader.LoadAsync((uint)byteSize);
                             dataReader.ReadBytes(bytes);
-                            await fileStream.WriteAsync(bytes, 0, bytes.Length);
+                            await fileStream.WriteAsync(bytes, 0, byteSize);
                         }
-                        await dataReader.LoadAsync(sizeof(Int32));
-                        var byteSize = dataReader.ReadInt32();
-                        bytes = new byte[byteSize];
-                        await dataReader.LoadAsync((uint)byteSize);
-                        dataReader.ReadBytes(bytes);
-                        await fileStream.WriteAsync(bytes, 0, byteSize);
                     }
                 }
 
@@ -177,10 +173,6 @@ namespace Share_Across_Devices
             this.FileView.Visibility = Visibility.Visible;
             this.FileView.DisplayFile(this.file);
             this.animateFileViewer();
-        }
-        private void displayText()
-        {
-
         }
 
 
@@ -683,23 +675,25 @@ namespace Share_Across_Devices
                             byte[] bytes;
                             DataWriter dataWriter = new DataWriter(streamOut.AsOutputStream());
                             fileStream.Seek(0, SeekOrigin.Begin);
-                            while (fileStream.Position <= fileStream.Length - 7171)
+                            while (fileStream.Position < fileStream.Length)
                             {
-                                bytes = new byte[7171];
+                                if (fileStream.Length - fileStream.Position >= 7171)
+                                {
+                                    bytes = new byte[7171];
+                                }
+                                else
+                                {
+                                    bytes = new byte[fileStream.Length - fileStream.Position];
+                                }
                                 dataWriter.WriteBoolean(true);
+                                await dataWriter.StoreAsync();
+                                dataWriter.WriteInt32(bytes.Length);
                                 await dataWriter.StoreAsync();
                                 await fileStream.ReadAsync(bytes, 0, bytes.Length);
                                 dataWriter.WriteBytes(bytes);
                                 await dataWriter.StoreAsync();
                             }
-
-                            bytes = new byte[fileStream.Length - fileStream.Position];
                             dataWriter.WriteBoolean(false);
-                            await dataWriter.StoreAsync();
-                            dataWriter.WriteInt32(bytes.Length);
-                            await dataWriter.StoreAsync();
-                            await fileStream.ReadAsync(bytes, 0, bytes.Length);
-                            dataWriter.WriteBytes(bytes);
                             await dataWriter.StoreAsync();
                         }
                     }
