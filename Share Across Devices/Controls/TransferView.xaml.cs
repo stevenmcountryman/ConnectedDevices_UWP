@@ -97,18 +97,10 @@ namespace Share_Across_Devices.Controls
             {
                 // Set the option to show the picker
                 var options = new Windows.System.LauncherOptions();
-                options.DisplayApplicationPicker = true;
+                options.DisplayApplicationPicker = false;
 
                 // Launch the retrieved file
-                bool success = await Windows.System.Launcher.LaunchFileAsync(this.file, options);
-                if (success)
-                {
-                    // File launched
-                }
-                else
-                {
-                    // File launch failed
-                }
+                await Windows.System.Launcher.LaunchFileAsync(this.file, options);
             }
             else
             {

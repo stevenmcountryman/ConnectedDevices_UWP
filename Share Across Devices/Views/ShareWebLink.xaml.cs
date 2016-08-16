@@ -549,7 +549,9 @@ namespace Share_Across_Devices
                     string serverPort = "1717";
                     await socket.ConnectAsync(serverHost, serverPort);
 
-                    NotifyUser("Creating file stream....");
+                    var itemVisual = ElementCompositionPreview.GetElementVisual(this.StatusPanel);
+                    itemVisual.Opacity = 1f;
+                    this.StatusBlock.Text = "Sending file...";
                     //Write data to the echo server.
                     using (Stream streamOut = socket.OutputStream.AsStreamForWrite())
                     {
@@ -560,9 +562,25 @@ namespace Share_Across_Devices
                             fileStream.Seek(0, SeekOrigin.Begin);
                             while (fileStream.Position < fileStream.Length)
                             {
+                                if (fileStream.Length - fileStream.Position >= 7171)
+                                {
+                                    bytes = new byte[7171];
+                                }
+                                else
+                                {
+                                    bytes = new byte[fileStream.Length - fileStream.Position];
+                                }
                                 dataWriter.WriteBoolean(true);
                                 await dataWriter.StoreAsync();
-                                bytes = new byte[7171];
+                                dataWriter.WriteInt32(bytes.Length);
+                                await dataWriter.StoreAsync();
+                                var percentage = ((double)fileStream.Position / (double)fileStream.Length) * 100.0;
+                                dataWriter.WriteInt32(Convert.ToInt32(percentage));
+                                await dataWriter.StoreAsync();
+                                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                                {
+                                    this.StatusBlock.Text = Convert.ToInt32(percentage) + "% transferred";
+                                });
                                 await fileStream.ReadAsync(bytes, 0, bytes.Length);
                                 dataWriter.WriteBytes(bytes);
                                 await dataWriter.StoreAsync();
