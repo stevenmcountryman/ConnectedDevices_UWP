@@ -587,6 +587,7 @@ namespace Share_Across_Devices
                             }
                             dataWriter.WriteBoolean(false);
                             await dataWriter.StoreAsync();
+                            dataWriter.Dispose();
                         }
                     }
 

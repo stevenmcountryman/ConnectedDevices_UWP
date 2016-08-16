@@ -160,6 +160,7 @@ namespace Share_Across_Devices
                                 dataReader.ReadBytes(bytes);
                                 await fileStream.WriteAsync(bytes, 0, byteSize);
                             }
+                            dataReader.Dispose();
                         }
                     }
 
@@ -722,6 +723,7 @@ namespace Share_Across_Devices
                             }
                             dataWriter.WriteBoolean(false);
                             await dataWriter.StoreAsync();
+                            dataWriter.Dispose();
                         }
                     }
 
