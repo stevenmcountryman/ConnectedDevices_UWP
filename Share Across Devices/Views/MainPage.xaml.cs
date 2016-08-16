@@ -175,7 +175,7 @@ namespace Share_Across_Devices
             StorageFolder folder = await savePicker.PickSingleFolderAsync();
             if (folder != null)
             {
-                StorageApplicationPermissions.FutureAccessList.AddOrReplace("ImagesFolderToken", folder);
+                StorageApplicationPermissions.FutureAccessList.AddOrReplace("FileToSave", folder);
                 await file.CopyAsync(folder, fileName, NameCollisionOption.ReplaceExisting);
                 NotifyUser("File Saved");
             }

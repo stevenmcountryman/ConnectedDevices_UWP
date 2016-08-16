@@ -3,13 +3,18 @@ using Share_Across_Devices.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Numerics;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.AppService;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.ApplicationModel.DataTransfer.ShareTarget;
 using Windows.Foundation;
+using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
+using Windows.Networking.Sockets;
 using Windows.Storage;
+using Windows.Storage.AccessCache;
 using Windows.Storage.Streams;
 using Windows.System;
 using Windows.System.RemoteSystems;
@@ -54,6 +59,7 @@ namespace Share_Across_Devices
         private const string dataFormatName = "http://schema.org/Book";
         private RemoteSystemWatcher deviceWatcher;
         private Compositor _compositor;
+        StorageFile file;
 
         public ShareWebLink()
         {
@@ -176,11 +182,17 @@ namespace Share_Across_Devices
                 // In this sample, we just display the shared data content.
 
                 // Get back to the UI thread using the dispatcher.
-                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
                 {
                     if (this.sharedWebLink != null)
                     {
                         AddContentValue("", this.sharedWebLink.AbsoluteUri);
+                    }
+                    if (this.sharedStorageItems != null && this.sharedStorageItems.Count == 1)
+                    {
+                        StorageApplicationPermissions.FutureAccessList.AddOrReplace("FileToSend", this.sharedStorageItems[0]);
+                        this.file = await StorageFile.GetFileFromPathAsync(this.sharedStorageItems[0].Path);
+                        this.ClipboardText.Text = file.Name;
                     }
                 });
             });
@@ -319,6 +331,7 @@ namespace Share_Across_Devices
             if (this.ClipboardText.Text.Length > 0 && this.DeviceGrid.SelectedItem != null)
             {
                 this.checkIfWebLink();
+                this.checkIfFile();
                 this.CopyToClipboardButton.IsEnabled = true;
             }
             else
@@ -326,6 +339,18 @@ namespace Share_Across_Devices
                 this.LaunchInBrowserButton.IsEnabled = false;
                 this.CopyToClipboardButton.IsEnabled = false;
                 this.hideYoutubeButtons();
+                this.OpenFileButton.IsEnabled = false;
+            }
+        }
+        private void checkIfFile()
+        {
+            if (this.file != null)
+            {
+                this.OpenFileButton.IsEnabled = true;
+            }
+            else
+            {
+                this.OpenFileButton.IsEnabled = false;
             }
         }
         private void checkIfWebLink()
@@ -422,5 +447,142 @@ namespace Share_Across_Devices
             itemVisual.StartAnimation("Scale", scaleAnimation);
         }
         #endregion
+
+        private void OpenFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
+            this.openRemoteConnectionAsync(selectedDevice);
+        }
+        private async void openRemoteConnectionAsync(RemoteSystem remotesys)
+        {
+            if (file != null)
+            {
+                AppServiceConnection connection = new AppServiceConnection
+                {
+                    AppServiceName = "simplisidy.appservice",
+                    PackageFamilyName = "34507Simplisidy.ShareAcrossDevices_wtkr3v20s86d8"
+                };
+
+                if (remotesys != null)
+                {
+                    // Create a remote system connection request.
+                    RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(remotesys);
+
+                    NotifyUser("Requesting connection to " + remotesys.DisplayName + "...");
+                    AppServiceConnectionStatus status = await connection.OpenRemoteAsync(connectionRequest);
+
+                    if (status == AppServiceConnectionStatus.Success)
+                    {
+                        NotifyUser("Successfully connected to " + remotesys.DisplayName + "...");
+                        await RequestIPAddress(connection);
+                    }
+                    else
+                    {
+                        NotifyUser("Attempt to open a remote app service connection failed with error - " + status.ToString());
+                    }
+                }
+                else
+                {
+                    NotifyUser("Select a device for remote connection.");
+                }
+            }
+        }
+        private async Task RequestIPAddress(AppServiceConnection connection)
+        {
+            // Send message if connection to the remote app service is open.
+            if (connection != null)
+            {
+                //Set up the inputs and send a message to the service.
+                ValueSet inputs = new ValueSet();
+                NotifyUser("Requesting IP address....");
+                AppServiceResponse response = await connection.SendMessageAsync(inputs);
+
+                if (response.Status == AppServiceResponseStatus.Success)
+                {
+                    if (response.Message.ContainsKey("result"))
+                    {
+                        string ipAddress = response.Message["result"].ToString();
+                        if (string.IsNullOrEmpty(ipAddress))
+                        {
+                            NotifyUser("Remote app service did not respond with a result.");
+                        }
+                        else
+                        {
+                            this.beginConnection(ipAddress);
+                        }
+                    }
+                    else
+                    {
+                        NotifyUser("Response from remote app service does not contain a result.");
+                    }
+                }
+                else
+                {
+                    NotifyUser("Sending message to remote app service failed with error - " + response.Status.ToString());
+                }
+            }
+            else
+            {
+                NotifyUser("Not connected to any app service. Select a device to open a connection.");
+            }
+        }
+        private async void beginConnection(string ipAddress)
+        {
+            try
+            {
+                NotifyUser("Launching app on device....");
+                var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
+                var status = await RemoteLaunch.TryBeginShareFile(selectedDevice, file.Name);
+
+                if (status == RemoteLaunchUriStatus.Success)
+                {
+                    //Create the StreamSocket and establish a connection to the echo server.
+                    StreamSocket socket = new StreamSocket();
+
+                    //The server hostname that we will be establishing a connection to. We will be running the server and client locally,
+                    //so we will use localhost as the hostname.
+                    Windows.Networking.HostName serverHost = new Windows.Networking.HostName(ipAddress);
+
+                    //Every protocol typically has a standard port number. For example HTTP is typically 80, FTP is 20 and 21, etc.
+                    //For the echo server/client application we will use a random port 1337.
+                    NotifyUser("Opening connection....");
+                    string serverPort = "1717";
+                    await socket.ConnectAsync(serverHost, serverPort);
+
+                    NotifyUser("Creating file stream....");
+                    //Write data to the echo server.
+                    using (Stream streamOut = socket.OutputStream.AsStreamForWrite())
+                    {
+                        using (var fileStream = await file.OpenStreamForReadAsync())
+                        {
+                            byte[] bytes;
+                            DataWriter dataWriter = new DataWriter(streamOut.AsOutputStream());
+                            fileStream.Seek(0, SeekOrigin.Begin);
+                            while (fileStream.Position < fileStream.Length)
+                            {
+                                dataWriter.WriteBoolean(true);
+                                await dataWriter.StoreAsync();
+                                bytes = new byte[7171];
+                                await fileStream.ReadAsync(bytes, 0, bytes.Length);
+                                dataWriter.WriteBytes(bytes);
+                                await dataWriter.StoreAsync();
+                            }
+                            dataWriter.WriteBoolean(false);
+                            await dataWriter.StoreAsync();
+                        }
+                    }
+
+                    //Read data from the echo server.
+                    Stream streamIn = socket.InputStream.AsStreamForRead();
+                    StreamReader reader = new StreamReader(streamIn);
+                    string response = await reader.ReadLineAsync();
+                    NotifyUser(response);
+                }
+            }
+            catch (Exception e)
+            {
+                NotifyUser("Connection failed. Network destination not allowed.");
+            }
+        }
     }
 }
