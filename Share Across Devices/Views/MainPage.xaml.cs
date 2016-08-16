@@ -179,6 +179,7 @@ namespace Share_Across_Devices
                 await file.CopyAsync(folder, fileName, NameCollisionOption.ReplaceExisting);
                 NotifyUser("File Saved");
             }
+            this.SaveFileButton.IsEnabled = false;
         }
 
         #region Beautification
@@ -535,6 +536,10 @@ namespace Share_Across_Devices
             {
                 this.CopyToLocalClipboardButton.Visibility = Visibility.Collapsed;
             }
+            if (!this.SaveFileButton.IsEnabled)
+            {
+                this.SaveFileButton.Visibility = Visibility.Collapsed;
+            }
         }
         #endregion
 
@@ -649,15 +654,19 @@ namespace Share_Across_Devices
                             byte[] bytes;
                             DataWriter dataWriter = new DataWriter(streamOut.AsOutputStream());
                             fileStream.Seek(0, SeekOrigin.Begin);
-                            while (fileStream.Position != -1)
+                            while (fileStream.Position < fileStream.Length)
                             {
+                                dataWriter.WriteBoolean(true);
+                                await dataWriter.StoreAsync();
                                 bytes = new byte[7171];
                                 await fileStream.ReadAsync(bytes, 0, bytes.Length);
                                 dataWriter.WriteBytes(bytes);
+                                await dataWriter.StoreAsync();
                             }
+                            dataWriter.WriteBoolean(false);
+                            await dataWriter.StoreAsync();
                         }
                     }
-
 
                     //Read data from the echo server.
                     Stream streamIn = socket.InputStream.AsStreamForRead();
