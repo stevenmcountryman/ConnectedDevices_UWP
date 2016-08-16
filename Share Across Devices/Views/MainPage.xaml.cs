@@ -28,6 +28,7 @@ using System.Threading;
 using Windows.Storage.Streams;
 using System.Text;
 using System.Runtime.Serialization;
+using Windows.Storage.AccessCache;
 
 namespace Share_Across_Devices
 {
@@ -133,11 +134,18 @@ namespace Share_Across_Devices
                     {
                         byte[] bytes;
                         DataReader dataReader = new DataReader(inStream.AsInputStream());
+                        fileStream.Seek(0, SeekOrigin.Begin);
                         while (inStream.CanRead)
                         {
+                            await dataReader.LoadAsync(1);
+                            if (dataReader.ReadBoolean() == false)
+                            {
+                                break;
+                            }
                             bytes = new byte[7171];
+                            await dataReader.LoadAsync((uint)bytes.Length);
                             dataReader.ReadBytes(bytes);
-                            await fileStream.WriteAsync(bytes, 0, bytes.Length);
+                            await fileStream.WriteAsync(bytes, 0, bytes.Length);                            
                         }
                     }
                 }
@@ -148,19 +156,29 @@ namespace Share_Across_Devices
                 await writer.WriteLineAsync("File Received!");
                 await writer.FlushAsync();
 
-                NotifyUser("File received");
-
-                this.saveFile();
+                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                {
+                    this.SaveFileButton.Visibility = Visibility.Visible;
+                    this.SaveFileButton.IsEnabled = true;
+                    NotifyUser("File received");
+                });
             }
         }
 
         private async void saveFile()
         {
-            FolderPicker saver = new FolderPicker();
-            saver.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            var folder = await saver.PickSingleFolderAsync();
-            await file.CopyAsync(folder);
-            NotifyUser("File Saved");
+            var savePicker = new FolderPicker();
+            savePicker.FileTypeFilter.Add("*");
+            savePicker.ViewMode = PickerViewMode.List;
+            savePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+
+            StorageFolder folder = await savePicker.PickSingleFolderAsync();
+            if (folder != null)
+            {
+                StorageApplicationPermissions.FutureAccessList.AddOrReplace("ImagesFolderToken", folder);
+                await file.CopyAsync(folder, fileName, NameCollisionOption.ReplaceExisting);
+                NotifyUser("File Saved");
+            }
         }
 
         #region Beautification
@@ -661,6 +679,11 @@ namespace Share_Across_Devices
             this.openRemoteConnectionAsync(selectedDevice);
         }
         #endregion
+
+        private void SaveFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.saveFile();
+        }
     }
 
     sealed partial class App : Application
