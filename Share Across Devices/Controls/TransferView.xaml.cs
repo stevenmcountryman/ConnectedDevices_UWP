@@ -80,11 +80,75 @@ namespace Share_Across_Devices.Controls
                 this.setThumbnail();
                 this.VideoFileViewer.Visibility = Visibility.Visible;
                 this.VideoFileViewer.Source = new Uri(this.file.Path);
+                this.PlayPausePanel.Tapped += PlayPausePanel_Tapped;
+                this.PlayPausePanel.PointerEntered += PlayPausePanel_PointerEntered;
+                this.PlayPausePanel.PointerExited += PlayPausePanel_PointerExited;
             }
             else
             {
                 this.setThumbnail();
             }
+        }
+
+        private void PlayPausePanel_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            this.pointerEntered = false;
+            var itemVisual = ElementCompositionPreview.GetElementVisual(this.PlayPauseGrid);
+
+            ScalarKeyFrameAnimation opacityAnimation = this._compositor.CreateScalarKeyFrameAnimation();
+            opacityAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+            opacityAnimation.InsertKeyFrame(0f, 1f);
+            opacityAnimation.InsertKeyFrame(1f, 0f);
+
+            itemVisual.StartAnimation("Opacity", opacityAnimation);
+        }
+
+        private void PlayPausePanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            this.pointerEntered = true;
+            if (mediaPaused)
+            {
+                this.PlayPauseButton.Text = this.playIcon;
+            }
+            else
+            {
+                this.PlayPauseButton.Text = this.pauseIcon;
+            }
+
+            var itemVisual = ElementCompositionPreview.GetElementVisual(this.PlayPauseGrid);
+
+            ScalarKeyFrameAnimation opacityAnimation = this._compositor.CreateScalarKeyFrameAnimation();
+            opacityAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+            opacityAnimation.InsertKeyFrame(0f, 0f);
+            opacityAnimation.InsertKeyFrame(1f, 1f);
+
+            itemVisual.StartAnimation("Opacity", opacityAnimation);
+        }
+
+        private void PlayPausePanel_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            this.togglePlayPause();
+            var itemVisual = ElementCompositionPreview.GetElementVisual(this.PlayPauseGrid);
+            float width = (float)this.PlayPauseGrid.RenderSize.Width;
+            float height = (float)this.PlayPauseGrid.RenderSize.Height;
+            itemVisual.CenterPoint = new Vector3(width / 2, height / 2, 0f);
+
+            ScalarKeyFrameAnimation opacityAnimation = this._compositor.CreateScalarKeyFrameAnimation();
+            opacityAnimation.Duration = TimeSpan.FromMilliseconds(500);
+            opacityAnimation.InsertKeyFrame(0f, 1f);
+            if (!this.pointerEntered)
+            {
+                opacityAnimation.InsertKeyFrame(1f, 0f);
+            }
+
+            Vector3KeyFrameAnimation scaleAnimation = this._compositor.CreateVector3KeyFrameAnimation();
+            scaleAnimation.Duration = TimeSpan.FromMilliseconds(500);
+            scaleAnimation.InsertKeyFrame(0f, new Vector3(1f, 1f, 1f));
+            scaleAnimation.InsertKeyFrame(0.2f, new Vector3(1.1f, 1.1f, 1.1f));
+            scaleAnimation.InsertKeyFrame(1f, new Vector3(1f, 1f, 1f));
+
+            itemVisual.StartAnimation("Opacity", opacityAnimation);
+            itemVisual.StartAnimation("Scale", scaleAnimation);
         }
 
         private async void setThumbnail()
@@ -132,6 +196,9 @@ namespace Share_Across_Devices.Controls
             this.VideoFileViewer.Stop();
             this.mediaPaused = true;
             this.CancelEvent(this, new EventArgs());
+            this.PlayPausePanel.Tapped -= PlayPausePanel_Tapped;
+            this.PlayPausePanel.PointerEntered -= PlayPausePanel_PointerEntered;
+            this.PlayPausePanel.PointerExited -= PlayPausePanel_PointerExited;
         }
 
         private async void OpenFileButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
@@ -166,67 +233,6 @@ namespace Share_Across_Devices.Controls
                 this.mediaPaused = true;
                 this.PlayPauseButton.Text = this.playIcon;
             }
-        }
-
-        private void StackPanel_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
-        {
-            this.togglePlayPause();
-            var itemVisual = ElementCompositionPreview.GetElementVisual(this.PlayPauseGrid);
-            float width = (float)this.PlayPauseGrid.RenderSize.Width;
-            float height = (float)this.PlayPauseGrid.RenderSize.Height;
-            itemVisual.CenterPoint = new Vector3(width / 2, height / 2, 0f);
-
-            ScalarKeyFrameAnimation opacityAnimation = this._compositor.CreateScalarKeyFrameAnimation();
-            opacityAnimation.Duration = TimeSpan.FromMilliseconds(500);
-            opacityAnimation.InsertKeyFrame(0f, 1f);
-            if (!this.pointerEntered)
-            {
-                opacityAnimation.InsertKeyFrame(1f, 0f);
-            }
-
-            Vector3KeyFrameAnimation scaleAnimation = this._compositor.CreateVector3KeyFrameAnimation();
-            scaleAnimation.Duration = TimeSpan.FromMilliseconds(500);
-            scaleAnimation.InsertKeyFrame(0f, new Vector3(1f, 1f, 1f));
-            scaleAnimation.InsertKeyFrame(0.2f, new Vector3(1.1f, 1.1f, 1.1f));
-            scaleAnimation.InsertKeyFrame(1f, new Vector3(1f, 1f, 1f));
-            
-            itemVisual.StartAnimation("Opacity", opacityAnimation);
-            itemVisual.StartAnimation("Scale", scaleAnimation);
-        }
-
-        private void StackPanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            this.pointerEntered = true;
-            if (mediaPaused)
-            {
-                this.PlayPauseButton.Text = this.playIcon;
-            }
-            else
-            {
-                this.PlayPauseButton.Text = this.pauseIcon;
-            }
-
-            var itemVisual = ElementCompositionPreview.GetElementVisual(this.PlayPauseGrid);
-
-            ScalarKeyFrameAnimation opacityAnimation = this._compositor.CreateScalarKeyFrameAnimation();
-            opacityAnimation.Duration = TimeSpan.FromMilliseconds(1000);
-            opacityAnimation.InsertKeyFrame(0f, 0f);
-            opacityAnimation.InsertKeyFrame(1f, 1f);
-
-            itemVisual.StartAnimation("Opacity", opacityAnimation);
-        }
-
-        private void StackPanel_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            this.pointerEntered = false;
-            var itemVisual = ElementCompositionPreview.GetElementVisual(this.PlayPauseGrid);
-
-            ScalarKeyFrameAnimation opacityAnimation = this._compositor.CreateScalarKeyFrameAnimation();
-            opacityAnimation.Duration = TimeSpan.FromMilliseconds(1000);
-            opacityAnimation.InsertKeyFrame(0f, 1f);
-            opacityAnimation.InsertKeyFrame(1f, 0f);
-
-            itemVisual.StartAnimation("Opacity", opacityAnimation);
         }
     }
 }

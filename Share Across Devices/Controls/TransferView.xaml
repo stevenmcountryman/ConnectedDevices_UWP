@@ -33,13 +33,12 @@
                               RelativePanel.AlignTopWithPanel="True"
                               IsLooping="True"
                               AutoPlay="False"/>
-                <Grid RelativePanel.AlignBottomWithPanel="True"
-                           RelativePanel.AlignLeftWithPanel="True"
-                           RelativePanel.AlignRightWithPanel="True"
-                           RelativePanel.AlignTopWithPanel="True"
-                            Tapped="StackPanel_Tapped"
-                            PointerEntered="StackPanel_PointerEntered"
-                            PointerExited="StackPanel_PointerExited" Background="#00000000">
+                <Grid x:Name="PlayPausePanel"
+                      RelativePanel.AlignBottomWithPanel="True"
+                      RelativePanel.AlignLeftWithPanel="True"
+                      RelativePanel.AlignRightWithPanel="True"
+                      RelativePanel.AlignTopWithPanel="True"
+                      Background="#00000000">
                     <Grid x:Name="PlayPauseGrid"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Center"
