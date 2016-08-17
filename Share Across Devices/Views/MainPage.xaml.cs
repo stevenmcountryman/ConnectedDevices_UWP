@@ -211,28 +211,28 @@ namespace Share_Across_Devices
         }
         private void setTitleBar()
         {
-
+            var appGray = Color.FromArgb(255, 83, 83, 83);
             if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.ApplicationView"))
             {
                 ApplicationView AppView = ApplicationView.GetForCurrentView();
-                AppView.TitleBar.BackgroundColor = Colors.SlateGray;
-                AppView.TitleBar.ButtonInactiveBackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.BackgroundColor = appGray;
+                AppView.TitleBar.ButtonInactiveBackgroundColor = appGray;
                 AppView.TitleBar.ButtonInactiveForegroundColor = Colors.White;
-                AppView.TitleBar.ButtonBackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.ButtonBackgroundColor = appGray;
                 AppView.TitleBar.ButtonForegroundColor = Colors.White;
-                AppView.TitleBar.ButtonHoverBackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.ButtonHoverBackgroundColor = appGray;
                 AppView.TitleBar.ButtonHoverForegroundColor = Colors.White;
-                AppView.TitleBar.ButtonPressedBackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.ButtonPressedBackgroundColor = appGray;
                 AppView.TitleBar.ButtonPressedForegroundColor = Colors.White;
                 AppView.TitleBar.ForegroundColor = Colors.White;
-                AppView.TitleBar.InactiveBackgroundColor = Colors.SlateGray;
+                AppView.TitleBar.InactiveBackgroundColor = appGray;
                 AppView.TitleBar.InactiveForegroundColor = Colors.White;
             }
             if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
             {
                 var statusBar = StatusBar.GetForCurrentView();
                 statusBar.BackgroundOpacity = 1;
-                statusBar.BackgroundColor = Colors.SlateGray;
+                statusBar.BackgroundColor = appGray;
                 statusBar.ForegroundColor = Colors.White;
             }
         }
