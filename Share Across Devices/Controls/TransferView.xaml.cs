@@ -7,6 +7,9 @@ using Windows.Storage.Pickers;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Composition;
+using Windows.UI.Xaml.Hosting;
+using System.Numerics;
 
 namespace Share_Across_Devices.Controls
 {
@@ -35,13 +38,26 @@ namespace Share_Across_Devices.Controls
             ".mp4",
             ".wmv",
             ".wma",
-            ".mp3"
+            ".mp3",
+            ".m4a"
         };
-        private bool mediaPaused = false;
+        private bool mediaPaused = true;
+        private bool pointerEntered = false;
+        private string pauseIcon = "\uE103";
+        private string playIcon = "\uE102";
+        private Compositor _compositor;
 
         public TransferView()
         {
             this.InitializeComponent();
+            this.setUpCompositorStuff();
+        }
+
+        private void setUpCompositorStuff()
+        {
+            _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
+            var itemVisual = ElementCompositionPreview.GetElementVisual(this.PlayPauseGrid);
+            itemVisual.Opacity = 0;
         }
 
         public TransferView(StorageFile file) : this()
@@ -50,34 +66,38 @@ namespace Share_Across_Devices.Controls
             this.DisplayFile(file);
         }
 
-        public async void DisplayFile(StorageFile file)
+        public void DisplayFile(StorageFile file)
         {
             this.file = file;
             this.FileNameBlock.Text = this.file.Name;
 
             if (this.imageTypes.Contains(this.file.FileType))
             {
-                this.ImageFileViewer.Visibility = Visibility.Visible;
                 this.ImageFileViewer.Source = new BitmapImage(new Uri(file.Path));
             }
             else if (this.mediaTypes.Contains(this.file.FileType))
             {
+                this.setThumbnail();
                 this.VideoFileViewer.Visibility = Visibility.Visible;
                 this.VideoFileViewer.Source = new Uri(this.file.Path);
             }
             else
             {
-                try
-                {
-                    var thumb = await this.file.GetThumbnailAsync(ThumbnailMode.DocumentsView, (uint)300, ThumbnailOptions.ResizeThumbnail);
-                    BitmapImage bitmap = new BitmapImage();
-                    bitmap.SetSource(thumb);
-                    this.ImageFileViewer.Visibility = Visibility.Visible;
-                    this.ImageFileViewer.Source = bitmap;
-                }
-                catch
-                {
-                }
+                this.setThumbnail();
+            }
+        }
+
+        private async void setThumbnail()
+        {
+            try
+            {
+                var thumb = await this.file.GetThumbnailAsync(ThumbnailMode.DocumentsView, (uint)300, ThumbnailOptions.ResizeThumbnail);
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.SetSource(thumb);
+                this.ImageFileViewer.Source = bitmap;
+            }
+            catch
+            {
             }
         }
 
@@ -104,7 +124,14 @@ namespace Share_Across_Devices.Controls
 
         private void CancelButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            this.CancelEvent(sender, new EventArgs());
+            this.close();
+        }
+
+        private void close()
+        {
+            this.VideoFileViewer.Stop();
+            this.mediaPaused = true;
+            this.CancelEvent(this, new EventArgs());
         }
 
         private async void OpenFileButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
@@ -124,18 +151,82 @@ namespace Share_Across_Devices.Controls
             }
 
         }
-        private void VideoFileViewer_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+
+        private void togglePlayPause()
         {
             if (mediaPaused)
             {
                 this.VideoFileViewer.Play();
-                this.mediaPaused = false; 
+                this.mediaPaused = false;
+                this.PlayPauseButton.Text = this.pauseIcon;
             }
             else
             {
                 this.VideoFileViewer.Pause();
                 this.mediaPaused = true;
+                this.PlayPauseButton.Text = this.playIcon;
             }
+        }
+
+        private void StackPanel_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            this.togglePlayPause();
+            var itemVisual = ElementCompositionPreview.GetElementVisual(this.PlayPauseGrid);
+            float width = (float)this.PlayPauseGrid.RenderSize.Width;
+            float height = (float)this.PlayPauseGrid.RenderSize.Height;
+            itemVisual.CenterPoint = new Vector3(width / 2, height / 2, 0f);
+
+            ScalarKeyFrameAnimation opacityAnimation = this._compositor.CreateScalarKeyFrameAnimation();
+            opacityAnimation.Duration = TimeSpan.FromMilliseconds(500);
+            opacityAnimation.InsertKeyFrame(0f, 1f);
+            if (!this.pointerEntered)
+            {
+                opacityAnimation.InsertKeyFrame(1f, 0f);
+            }
+
+            Vector3KeyFrameAnimation scaleAnimation = this._compositor.CreateVector3KeyFrameAnimation();
+            scaleAnimation.Duration = TimeSpan.FromMilliseconds(500);
+            scaleAnimation.InsertKeyFrame(0f, new Vector3(1f, 1f, 1f));
+            scaleAnimation.InsertKeyFrame(0.2f, new Vector3(1.1f, 1.1f, 1.1f));
+            scaleAnimation.InsertKeyFrame(1f, new Vector3(1f, 1f, 1f));
+            
+            itemVisual.StartAnimation("Opacity", opacityAnimation);
+            itemVisual.StartAnimation("Scale", scaleAnimation);
+        }
+
+        private void StackPanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            this.pointerEntered = true;
+            if (mediaPaused)
+            {
+                this.PlayPauseButton.Text = this.playIcon;
+            }
+            else
+            {
+                this.PlayPauseButton.Text = this.pauseIcon;
+            }
+
+            var itemVisual = ElementCompositionPreview.GetElementVisual(this.PlayPauseGrid);
+
+            ScalarKeyFrameAnimation opacityAnimation = this._compositor.CreateScalarKeyFrameAnimation();
+            opacityAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+            opacityAnimation.InsertKeyFrame(0f, 0f);
+            opacityAnimation.InsertKeyFrame(1f, 1f);
+
+            itemVisual.StartAnimation("Opacity", opacityAnimation);
+        }
+
+        private void StackPanel_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            this.pointerEntered = false;
+            var itemVisual = ElementCompositionPreview.GetElementVisual(this.PlayPauseGrid);
+
+            ScalarKeyFrameAnimation opacityAnimation = this._compositor.CreateScalarKeyFrameAnimation();
+            opacityAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+            opacityAnimation.InsertKeyFrame(0f, 1f);
+            opacityAnimation.InsertKeyFrame(1f, 0f);
+
+            itemVisual.StartAnimation("Opacity", opacityAnimation);
         }
     }
 }

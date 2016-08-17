@@ -17,7 +17,6 @@
             <RelativePanel Height="300"
                            Width="300">
                 <Image x:Name="ImageFileViewer"
-                       Visibility="Collapsed"
                        Stretch="Uniform"
                        RelativePanel.AlignBottomWithPanel="True"
                        RelativePanel.AlignLeftWithPanel="True"
@@ -32,8 +31,36 @@
                               RelativePanel.AlignLeftWithPanel="True"
                               RelativePanel.AlignRightWithPanel="True"
                               RelativePanel.AlignTopWithPanel="True"
-                              Tapped="VideoFileViewer_Tapped"
-                              IsLooping="True"/>
+                              IsLooping="True"
+                              AutoPlay="False"/>
+                <Grid RelativePanel.AlignBottomWithPanel="True"
+                           RelativePanel.AlignLeftWithPanel="True"
+                           RelativePanel.AlignRightWithPanel="True"
+                           RelativePanel.AlignTopWithPanel="True"
+                            Tapped="StackPanel_Tapped"
+                            PointerEntered="StackPanel_PointerEntered"
+                            PointerExited="StackPanel_PointerExited" Background="#00000000">
+                    <Grid x:Name="PlayPauseGrid"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          Height="80"
+                          Width="80" 
+                          Background="#7F000000"
+                          CornerRadius="40">
+                        <TextBlock x:Name="PlayPauseButton" 
+                                Text="&#xE102;" 
+                                Tag=""
+                                FontFamily="Segoe MDL2 Assets"
+                                Margin="8"
+                                Padding="12"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                                Foreground="White"
+                                FontWeight="Bold"
+                                FontSize="32"
+                               IsHitTestVisible="False"/>
+                    </Grid>
+                </Grid>
             </RelativePanel>
             <TextBlock x:Name="FileNameBlock"
                    Foreground="White"
