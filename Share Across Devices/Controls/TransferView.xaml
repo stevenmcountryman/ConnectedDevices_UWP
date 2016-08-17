@@ -14,14 +14,26 @@
                     Height="408" 
                     RelativePanel.AlignHorizontalCenterWithPanel="True"
                     RelativePanel.AlignVerticalCenterWithPanel="True">
-            <RelativePanel>
+            <RelativePanel Height="300"
+                           Width="300">
                 <Image x:Name="ImageFileViewer"
-                   Height="300"
-                   Stretch="Uniform"
-                   RelativePanel.AlignBottomWithPanel="True"
-                   RelativePanel.AlignLeftWithPanel="True"
-                   RelativePanel.AlignRightWithPanel="True"
-                   RelativePanel.AlignTopWithPanel="True"/>
+                       Visibility="Collapsed"
+                       Stretch="Uniform"
+                       RelativePanel.AlignBottomWithPanel="True"
+                       RelativePanel.AlignLeftWithPanel="True"
+                       RelativePanel.AlignRightWithPanel="True"
+                       RelativePanel.AlignTopWithPanel="True"/>
+                <MediaElement x:Name="VideoFileViewer"
+                              Stretch="Uniform"
+                              Visibility="Collapsed"
+                              Width="300"
+                              Height="300"
+                              RelativePanel.AlignBottomWithPanel="True"
+                              RelativePanel.AlignLeftWithPanel="True"
+                              RelativePanel.AlignRightWithPanel="True"
+                              RelativePanel.AlignTopWithPanel="True"
+                              Tapped="VideoFileViewer_Tapped"
+                              IsLooping="True"/>
             </RelativePanel>
             <TextBlock x:Name="FileNameBlock"
                    Foreground="White"

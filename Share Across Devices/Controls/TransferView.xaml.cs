@@ -5,7 +5,7 @@ using Windows.Storage.AccessCache;
 using Windows.Storage.FileProperties;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media.Imaging;
 
 namespace Share_Across_Devices.Controls
@@ -30,6 +30,15 @@ namespace Share_Across_Devices.Controls
             ".bmp",
             ".ico"
         };
+        private List<string> mediaTypes = new List<string>()
+        {
+            ".mp4",
+            ".wmv",
+            ".wma",
+            ".mp3"
+        };
+        private bool mediaPaused = false;
+
         public TransferView()
         {
             this.InitializeComponent();
@@ -48,7 +57,13 @@ namespace Share_Across_Devices.Controls
 
             if (this.imageTypes.Contains(this.file.FileType))
             {
+                this.ImageFileViewer.Visibility = Visibility.Visible;
                 this.ImageFileViewer.Source = new BitmapImage(new Uri(file.Path));
+            }
+            else if (this.mediaTypes.Contains(this.file.FileType))
+            {
+                this.VideoFileViewer.Visibility = Visibility.Visible;
+                this.VideoFileViewer.Source = new Uri(this.file.Path);
             }
             else
             {
@@ -57,6 +72,7 @@ namespace Share_Across_Devices.Controls
                     var thumb = await this.file.GetThumbnailAsync(ThumbnailMode.DocumentsView, (uint)300, ThumbnailOptions.ResizeThumbnail);
                     BitmapImage bitmap = new BitmapImage();
                     bitmap.SetSource(thumb);
+                    this.ImageFileViewer.Visibility = Visibility.Visible;
                     this.ImageFileViewer.Source = bitmap;
                 }
                 catch
@@ -107,6 +123,19 @@ namespace Share_Across_Devices.Controls
                 // Could not find file
             }
 
+        }
+        private void VideoFileViewer_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            if (mediaPaused)
+            {
+                this.VideoFileViewer.Play();
+                this.mediaPaused = false; 
+            }
+            else
+            {
+                this.VideoFileViewer.Pause();
+                this.mediaPaused = true;
+            }
         }
     }
 }
