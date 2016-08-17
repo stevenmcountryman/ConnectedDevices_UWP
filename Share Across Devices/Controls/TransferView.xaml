@@ -14,8 +14,7 @@
                     Height="408" 
                     RelativePanel.AlignHorizontalCenterWithPanel="True"
                     RelativePanel.AlignVerticalCenterWithPanel="True">
-            <RelativePanel BorderBrush="White"
-                       BorderThickness="2">
+            <RelativePanel>
                 <Image x:Name="ImageFileViewer"
                    Height="300"
                    Stretch="Uniform"
