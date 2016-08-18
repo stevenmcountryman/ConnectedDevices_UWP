@@ -62,12 +62,15 @@
                 </Grid>
             </RelativePanel>
             <TextBlock x:Name="FileNameBlock"
-                   Foreground="White"
-                   FontWeight="Bold"
-                   Text="filename.ext"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   Margin="8"/>
+                       Foreground="White"
+                       FontWeight="Bold"
+                       Text="filename.ext"
+                       TextAlignment="Center"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       TextWrapping="Wrap"
+                       MaxLines="2"
+                       Margin="8"/>
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center">
                 <Button x:Name="CancelButton" 
