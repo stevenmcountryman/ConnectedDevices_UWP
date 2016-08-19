@@ -24,11 +24,7 @@ using System.IO;
 using Windows.Networking.Sockets;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using System.Threading;
 using Windows.Storage.Streams;
-using System.Text;
-using System.Runtime.Serialization;
-using Windows.Storage.AccessCache;
 
 namespace Share_Across_Devices
 {
@@ -41,6 +37,7 @@ namespace Share_Across_Devices
         private Compositor _compositor;
         private string fileName;
         private StorageFile file;
+        private RemoteSystem selectedDevice;
 
         public MainPage()
         {
@@ -355,7 +352,7 @@ namespace Share_Across_Devices
                 }
                 else
                 {
-                    this.OpenFileButton.IsEnabled = false;
+                    this.OpenFileButton.IsEnabled = true;
                 }
 
                 if (this.ClipboardText.Text.Length > 0)
@@ -407,7 +404,7 @@ namespace Share_Across_Devices
         #region Button Click Events
         private async void LaunchInBrowserButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
+            this.selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
 
             if (selectedDevice != null)
             {
@@ -418,7 +415,7 @@ namespace Share_Across_Devices
         }
         private async void CopyToClipboardButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
+            this.selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
 
             if (selectedDevice != null)
             {
@@ -429,7 +426,7 @@ namespace Share_Across_Devices
         }
         private async void OpenInTubeCastButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
+            this.selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
 
             if (selectedDevice != null)
             {
@@ -440,7 +437,7 @@ namespace Share_Across_Devices
         }
         private async void OpenInMyTubeButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
+            this.selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
 
             if (selectedDevice != null)
             {
@@ -460,6 +457,17 @@ namespace Share_Across_Devices
             Clipboard.Flush();
             NotifyUser("Copied!");
             this.CopyToLocalClipboardButton.IsEnabled = false;
+        }
+        private async void OpenFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
+
+            FileOpenPicker openPicker = new FileOpenPicker();
+            openPicker.FileTypeFilter.Add("*");
+            openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            file = await openPicker.PickSingleFileAsync();
+
+            this.openRemoteConnectionAsync(selectedDevice);
         }
         #endregion
 
@@ -590,27 +598,28 @@ namespace Share_Across_Devices
             {
                 while (sendAttempt <= 3)
                 {
-                    AppServiceConnection connection = new AppServiceConnection
+                    using (AppServiceConnection connection = new AppServiceConnection
                     {
                         AppServiceName = "simplisidy.appservice",
                         PackageFamilyName = "34507Simplisidy.ShareAcrossDevices_wtkr3v20s86d8"
-                    };
-                    // Create a remote system connection request.
-                    RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(remotesys);
-
-                    NotifyUser("Requesting connection to " + remotesys.DisplayName + "...");
-                    status = await connection.OpenRemoteAsync(connectionRequest);
-
-                    if (status == AppServiceConnectionStatus.Success)
+                    })
                     {
-                        NotifyUser("Successfully connected to " + remotesys.DisplayName + "...");
-                        await this.RequestIPAddress(connection);
-                        return;
-                    }
-                    else
-                    {
-                        sendAttempt++;
-                        NotifyUser("Failed. Retrying attempt " + sendAttempt + " of 3");
+                        // Create a remote system connection request.
+                        RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(remotesys);
+
+                        NotifyUser("Requesting connection to " + remotesys.DisplayName + "...");
+                        status = await connection.OpenRemoteAsync(connectionRequest);
+                        if (status == AppServiceConnectionStatus.Success)
+                        {
+                            NotifyUser("Successfully connected to " + remotesys.DisplayName + "...");
+                            await this.RequestIPAddress(connection);
+                            return;
+                        }
+                        else
+                        {
+                            sendAttempt++;
+                            NotifyUser("Failed. Retrying attempt " + sendAttempt + " of 3");
+                        }
                     }
                 }
                 NotifyUser("Attempt to open a remote app service connection failed with error - " + status.ToString());
@@ -676,68 +685,69 @@ namespace Share_Across_Devices
                 try
                 {
                     NotifyUser("Launching app on device....");
-                    var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
-                    var status = await RemoteLaunch.TryBeginShareFile(selectedDevice, file.Name);
+                    var status = await RemoteLaunch.TryBeginShareFile(this.selectedDevice, file.Name);
 
                     if (status == RemoteLaunchUriStatus.Success)
                     {
                         //Create the StreamSocket and establish a connection to the echo server.
-                        StreamSocket socket = new StreamSocket();
-
-                        //The server hostname that we will be establishing a connection to. We will be running the server and client locally,
-                        //so we will use localhost as the hostname.
-                        Windows.Networking.HostName serverHost = new Windows.Networking.HostName(ipAddress);
-
-                        //Every protocol typically has a standard port number. For example HTTP is typically 80, FTP is 20 and 21, etc.
-                        //For the echo server/client application we will use a random port 1337.
-                        NotifyUser("Opening connection....");
-                        string serverPort = "1717";
-                        await socket.ConnectAsync(serverHost, serverPort);
-
-                        var itemVisual = ElementCompositionPreview.GetElementVisual(this.StatusPanel);
-                        itemVisual.Opacity = 1f;
-                        this.StatusBlock.Text = "Sending file...";
-                        //Write data to the echo server.
-                        using (Stream streamOut = socket.OutputStream.AsStreamForWrite())
+                        using (StreamSocket socket = new StreamSocket())
                         {
-                            using (var fileStream = await file.OpenStreamForReadAsync())
+
+                            //The server hostname that we will be establishing a connection to. We will be running the server and client locally,
+                            //so we will use localhost as the hostname.
+                            Windows.Networking.HostName serverHost = new Windows.Networking.HostName(ipAddress);
+
+                            //Every protocol typically has a standard port number. For example HTTP is typically 80, FTP is 20 and 21, etc.
+                            //For the echo server/client application we will use a random port 1337.
+                            NotifyUser("Opening connection....");
+                            string serverPort = "1717";
+                            await socket.ConnectAsync(serverHost, serverPort);
+
+                            var itemVisual = ElementCompositionPreview.GetElementVisual(this.StatusPanel);
+                            itemVisual.Opacity = 1f;
+                            this.StatusBlock.Text = "Sending file...";
+                            //Write data to the echo server.
+                            using (Stream streamOut = socket.OutputStream.AsStreamForWrite())
                             {
-                                byte[] bytes;
-                                DataWriter dataWriter = new DataWriter(streamOut.AsOutputStream());
-                                fileStream.Seek(0, SeekOrigin.Begin);
-                                while (fileStream.Position < fileStream.Length)
+                                using (var fileStream = await file.OpenStreamForReadAsync())
                                 {
-                                    if (fileStream.Length - fileStream.Position >= 7171)
+                                    byte[] bytes;
+                                    DataWriter dataWriter = new DataWriter(streamOut.AsOutputStream());
+                                    fileStream.Seek(0, SeekOrigin.Begin);
+                                    while (fileStream.Position < fileStream.Length)
                                     {
-                                        bytes = new byte[7171];
+                                        if (fileStream.Length - fileStream.Position >= 7171)
+                                        {
+                                            bytes = new byte[7171];
+                                        }
+                                        else
+                                        {
+                                            bytes = new byte[fileStream.Length - fileStream.Position];
+                                        }
+                                        dataWriter.WriteBoolean(true);
+                                        await dataWriter.StoreAsync();
+                                        dataWriter.WriteInt32(bytes.Length);
+                                        await dataWriter.StoreAsync();
+                                        var percentage = ((double)fileStream.Position / (double)fileStream.Length) * 100.0;
+                                        dataWriter.WriteInt32(Convert.ToInt32(percentage));
+                                        await dataWriter.StoreAsync();
+                                        this.StatusBlock.Text = Convert.ToInt32(percentage) + "% transferred";
+                                        await fileStream.ReadAsync(bytes, 0, bytes.Length);
+                                        dataWriter.WriteBytes(bytes);
+                                        await dataWriter.StoreAsync();
                                     }
-                                    else
-                                    {
-                                        bytes = new byte[fileStream.Length - fileStream.Position];
-                                    }
-                                    dataWriter.WriteBoolean(true);
-                                    await dataWriter.StoreAsync();
-                                    dataWriter.WriteInt32(bytes.Length);
-                                    await dataWriter.StoreAsync();
-                                    var percentage = ((double)fileStream.Position / (double)fileStream.Length) * 100.0;
-                                    dataWriter.WriteInt32(Convert.ToInt32(percentage));
-                                    await dataWriter.StoreAsync();
-                                    this.StatusBlock.Text = Convert.ToInt32(percentage) + "% transferred";
-                                    await fileStream.ReadAsync(bytes, 0, bytes.Length);
-                                    dataWriter.WriteBytes(bytes);
+                                    dataWriter.WriteBoolean(false);
                                     await dataWriter.StoreAsync();
                                 }
-                                dataWriter.WriteBoolean(false);
-                                await dataWriter.StoreAsync();
                             }
-                        }
 
-                        //Read data from the echo server.
-                        Stream streamIn = socket.InputStream.AsStreamForRead();
-                        StreamReader reader = new StreamReader(streamIn);
-                        string response = await reader.ReadLineAsync();
-                        NotifyUser(response);
-                        return;
+                            //Read data from the echo server.
+                            Stream streamIn = socket.InputStream.AsStreamForRead();
+                            StreamReader reader = new StreamReader(streamIn);
+                            string response = await reader.ReadLineAsync();
+                            NotifyUser(response);
+                            return;
+                        }
                     }
                 }
                 catch (Exception e)
@@ -747,17 +757,6 @@ namespace Share_Across_Devices
                 }
             }
             NotifyUser("Connection failed. Network destination not allowed.");
-        }
-        private async void OpenFileButton_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
-
-            FileOpenPicker openPicker = new FileOpenPicker();
-            openPicker.FileTypeFilter.Add("*");
-            openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            file = await openPicker.PickSingleFileAsync();
-
-            this.openRemoteConnectionAsync(selectedDevice);
         }
         private void FileView_CancelEvent(object sender, EventArgs e)
         {
