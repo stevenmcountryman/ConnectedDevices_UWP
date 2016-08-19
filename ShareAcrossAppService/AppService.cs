@@ -5,6 +5,8 @@ using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
 using Windows.Networking;
 using Windows.Networking.Connectivity;
+using Windows.System;
+using Windows.UI.Xaml;
 
 namespace ShareAcrossAppService
 {
@@ -59,6 +61,7 @@ namespace ShareAcrossAppService
             }
 
             await args.Request.SendResponseAsync(returnData); // Return the data to the caller.// Complete the deferral so that the platform knows that we're done responding to the app service call.
+            await Launcher.LaunchUriAsync(new Uri("share-app:?FileName="));
         }
     }
 }

@@ -60,13 +60,21 @@ namespace Share_Across_Devices
         private RemoteSystemWatcher deviceWatcher;
         private Compositor _compositor;
         StorageFile file;
+        private int sendAttempt = 0;
 
         public ShareWebLink()
         {
             this.InitializeComponent();
-            _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
+            this.setUpCompositorStuff();
             this.setUpDevicesList();
             this.setTitleBar();
+        }
+
+        private void setUpCompositorStuff()
+        {
+            _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
+            var itemVisual = ElementCompositionPreview.GetElementVisual(this.StatusPanel);
+            itemVisual.Opacity = 0;
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -303,6 +311,7 @@ namespace Share_Across_Devices
         public void NotifyUser(string strMessage)
         {
             StatusBlock.Text = strMessage;
+            this.animateStatusContinuous();
         }
         private void showShareLoading(string deviceName)
         {
@@ -423,6 +432,20 @@ namespace Share_Across_Devices
         #endregion
 
         #region Animations
+        private void animateStatusContinuous()
+        {
+            var itemVisual = ElementCompositionPreview.GetElementVisual(this.StatusPanel);
+
+            ScalarKeyFrameAnimation opacityAnimation = _compositor.CreateScalarKeyFrameAnimation();
+            opacityAnimation.IterationBehavior = AnimationIterationBehavior.Count;
+            opacityAnimation.IterationCount = 5;
+            opacityAnimation.Duration = TimeSpan.FromMilliseconds(1500);
+            opacityAnimation.InsertKeyFrame(0f, 0f);
+            opacityAnimation.InsertKeyFrame(0.5f, 1f);
+            opacityAnimation.InsertKeyFrame(1f, 0f);
+
+            itemVisual.StartAnimation("Opacity", opacityAnimation);
+        }
         private void animateButtonEnabled(Button button)
         {
             var itemVisual = ElementCompositionPreview.GetElementVisual(button);
@@ -474,11 +497,20 @@ namespace Share_Across_Devices
                     if (status == AppServiceConnectionStatus.Success)
                     {
                         NotifyUser("Successfully connected to " + remotesys.DisplayName + "...");
+                        this.sendAttempt = 0;
                         await RequestIPAddress(connection);
                     }
                     else
                     {
                         NotifyUser("Attempt to open a remote app service connection failed with error - " + status.ToString());
+
+                        if (this.sendAttempt < 3)
+                        {
+                            this.sendAttempt = this.sendAttempt + 1;
+                            NotifyUser("Failed. Retrying attempt " + this.sendAttempt + " of 3");
+                            await Task.Delay(1000);
+                            this.openRemoteConnectionAsync(remotesys);
+                        }
                     }
                 }
                 else
@@ -505,25 +537,54 @@ namespace Share_Across_Devices
                         if (string.IsNullOrEmpty(ipAddress))
                         {
                             NotifyUser("Remote app service did not respond with a result.");
+                            if (this.sendAttempt < 3)
+                            {
+                                this.sendAttempt = this.sendAttempt + 1;
+                                NotifyUser("Failed. Retrying attempt " + this.sendAttempt + " of 3");
+                                await Task.Delay(1000);
+                                await this.RequestIPAddress(connection);
+                            }
                         }
                         else
                         {
+                            this.sendAttempt = 0;
                             this.beginConnection(ipAddress);
                         }
                     }
                     else
                     {
                         NotifyUser("Response from remote app service does not contain a result.");
+                        if (this.sendAttempt < 3)
+                        {
+                            this.sendAttempt = this.sendAttempt + 1;
+                            NotifyUser("Failed. Retrying attempt " + this.sendAttempt + " of 3");
+                            await Task.Delay(1000);
+                            await this.RequestIPAddress(connection);
+                        }
                     }
                 }
                 else
                 {
                     NotifyUser("Sending message to remote app service failed with error - " + response.Status.ToString());
+                    if (this.sendAttempt < 3)
+                    {
+                        this.sendAttempt = this.sendAttempt + 1;
+                        NotifyUser("Failed. Retrying attempt " + this.sendAttempt + " of 3");
+                        await Task.Delay(1000);
+                        await this.RequestIPAddress(connection);
+                    }
                 }
             }
             else
             {
                 NotifyUser("Not connected to any app service. Select a device to open a connection.");
+                if (this.sendAttempt < 3)
+                {
+                    this.sendAttempt = this.sendAttempt + 1;
+                    NotifyUser("Failed. Retrying attempt " + this.sendAttempt + " of 3");
+                    await Task.Delay(1000);
+                    await this.RequestIPAddress(connection);
+                }
             }
         }
         private async void beginConnection(string ipAddress)
@@ -592,11 +653,19 @@ namespace Share_Across_Devices
                     StreamReader reader = new StreamReader(streamIn);
                     string response = await reader.ReadLineAsync();
                     NotifyUser(response);
+                    this.sendAttempt = 0;
                 }
             }
             catch (Exception e)
             {
                 NotifyUser("Connection failed. Network destination not allowed.");
+                if (this.sendAttempt < 3)
+                {
+                    this.sendAttempt = this.sendAttempt + 1;
+                    NotifyUser("Failed. Retrying attempt " + this.sendAttempt + " of 3");
+                    await Task.Delay(1000);
+                    this.beginConnection(ipAddress);
+                }
             }
         }
     }

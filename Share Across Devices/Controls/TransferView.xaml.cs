@@ -186,7 +186,7 @@ namespace Share_Across_Devices.Controls
             }
         }
 
-        private void CancelButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             this.close();
         }
@@ -201,7 +201,7 @@ namespace Share_Across_Devices.Controls
             this.PlayPausePanel.PointerExited -= PlayPausePanel_PointerExited;
         }
 
-        private async void OpenFileButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private async void OpenFileButton_Click(object sender, RoutedEventArgs e)
         {
             if (file != null)
             {
