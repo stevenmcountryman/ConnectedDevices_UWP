@@ -277,9 +277,12 @@ namespace Share_Across_Devices
             {
                 deviceWatcher = RemoteSystem.CreateWatcher();
                 deviceWatcher.RemoteSystemAdded += DeviceWatcher_RemoteSystemAdded;
+                deviceWatcher.RemoteSystemUpdated += DeviceWatcher_RemoteSystemUpdated;
+                deviceWatcher.RemoteSystemRemoved += DeviceWatcher_RemoteSystemRemoved;
                 deviceWatcher.Start();
             }
         }
+
         private async void DeviceWatcher_RemoteSystemAdded(RemoteSystemWatcher sender, RemoteSystemAddedEventArgs args)
         {
             var remoteSystem = args.RemoteSystem;
@@ -287,6 +290,36 @@ namespace Share_Across_Devices
             {
                 RemoteDevice device = new RemoteDevice(remoteSystem);
                 this.DeviceGrid.Items.Add(device);
+            });
+        }
+        private async void DeviceWatcher_RemoteSystemUpdated(RemoteSystemWatcher sender, RemoteSystemUpdatedEventArgs args)
+        {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                foreach (RemoteDevice device in this.DeviceGrid.Items)
+                {
+                    if (device.GetDevice().Id == args.RemoteSystem.Id)
+                    {
+                        device.SetDevice(args.RemoteSystem);
+                        this.validTextAndButtons();
+                        return;
+                    }
+                }
+            });
+        }
+        private async void DeviceWatcher_RemoteSystemRemoved(RemoteSystemWatcher sender, RemoteSystemRemovedEventArgs args)
+        {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                foreach (RemoteDevice device in this.DeviceGrid.Items)
+                {
+                    if (device.GetDevice().Id == args.RemoteSystemId)
+                    {
+                        this.DeviceGrid.Items.Remove(device);
+                        this.validTextAndButtons();
+                        return;
+                    }
+                }
             });
         }
         #endregion
@@ -337,30 +370,41 @@ namespace Share_Across_Devices
         }
         private void validTextAndButtons()
         {
-            if (this.ClipboardText.Text.Length > 0 && this.DeviceGrid.SelectedItem != null)
+            if (this.DeviceGrid.SelectedItem != null)
             {
-                this.checkIfWebLink();
-                this.checkIfCanSendFile();
-                this.CopyToClipboardButton.IsEnabled = true;
+                if (this.remoteSystemIsLocal())
+                {
+                    this.OpenFileButton.IsEnabled = true;
+                }
+                else
+                {
+                    this.OpenFileButton.IsEnabled = false;
+                }
+
+                if (this.ClipboardText.Text.Length > 0)
+                {
+                    this.CopyToClipboardButton.IsEnabled = true;
+                    this.checkIfWebLink();
+                }
+                else
+                {
+                    this.CopyToClipboardButton.IsEnabled = false;
+                    this.LaunchInBrowserButton.IsEnabled = false;
+                    this.hideYoutubeButtons();
+                }
             }
             else
             {
                 this.LaunchInBrowserButton.IsEnabled = false;
+                this.OpenFileButton.IsEnabled = false;
                 this.CopyToClipboardButton.IsEnabled = false;
                 this.hideYoutubeButtons();
-                this.OpenFileButton.IsEnabled = false;
             }
         }
-        private void checkIfCanSendFile()
+
+        private bool remoteSystemIsLocal()
         {
-            if (this.file != null && this.selectedDevice.IsAvailableByProximity)
-            {
-                this.OpenFileButton.IsEnabled = true;
-            }
-            else
-            {
-                this.OpenFileButton.IsEnabled = false;
-            }
+            return (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice().IsAvailableByProximity && this.file != null;
         }
         private void checkIfWebLink()
         {
@@ -436,21 +480,6 @@ namespace Share_Across_Devices
                 this.selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
                 this.openRemoteConnectionAsync(selectedDevice);
             }
-            else
-            {
-                this.NotifyUser("Attempting to cancel transfer");
-                try
-                {
-                    this.connection.Dispose();
-                    this.socket.Dispose();
-                }
-                catch
-                {
-
-                }
-                this.cancelAttempted = true;
-                this.OpenFileButton.IsEnabled = false;
-            }
         }
         #endregion
 
@@ -494,32 +523,15 @@ namespace Share_Across_Devices
         }
         #endregion
 
-
-        private void handleCancel()
-        {
-            this.NotifyUser("File transfer cancelled");
-            this.cancelAttempted = false;
-            this.OpenFileButton.IsEnabled = true;
-            this.OpenFileButton.Content = "file";
-        }
+       
         private async void openRemoteConnectionAsync(RemoteSystem remotesys)
         {
-            if (this.cancelAttempted)
-            {
-                this.handleCancel();
-                return;
-            }
             var sendAttempt = 1;
             AppServiceConnectionStatus status = AppServiceConnectionStatus.Unknown;
             if (file != null && remotesys != null)
             {
                 while (sendAttempt <= 3)
                 {
-                    if (this.cancelAttempted)
-                    {
-                        this.handleCancel();
-                        return;
-                    }
                     using (this.connection = new AppServiceConnection
                     {
                         AppServiceName = "simplisidy.appservice",
@@ -553,11 +565,6 @@ namespace Share_Across_Devices
         }
         private async Task RequestIPAddress(AppServiceConnection connection)
         {
-            if (this.cancelAttempted)
-            {
-                this.handleCancel();
-                return;
-            }
             var sendAttempt = 1;
             AppServiceResponse response = null;
             // Send message if connection to the remote app service is open.
@@ -565,11 +572,6 @@ namespace Share_Across_Devices
             {
                 while (sendAttempt <= 3)
                 {
-                    if (this.cancelAttempted)
-                    {
-                        this.handleCancel();
-                        return;
-                    }
                     //Set up the inputs and send a message to the service.
                     ValueSet inputs = new ValueSet();
                     NotifyUser("Requesting IP address....");
@@ -611,19 +613,9 @@ namespace Share_Across_Devices
         }
         private async void beginConnection(string ipAddress)
         {
-            if (this.cancelAttempted)
-            {
-                this.handleCancel();
-                return;
-            }
             var sendAttempt = 1;
             while (sendAttempt <= 3)
             {
-                if (this.cancelAttempted)
-                {
-                    this.handleCancel();
-                    return;
-                }
                 try
                 {
                     NotifyUser("Launching app on device....");
@@ -658,11 +650,6 @@ namespace Share_Across_Devices
                                     fileStream.Seek(0, SeekOrigin.Begin);
                                     while (fileStream.Position < fileStream.Length)
                                     {
-                                        if (this.cancelAttempted)
-                                        {
-                                            this.handleCancel();
-                                            return;
-                                        }
                                         if (fileStream.Length - fileStream.Position >= 7171)
                                         {
                                             bytes = new byte[7171];
@@ -693,7 +680,6 @@ namespace Share_Across_Devices
                             StreamReader reader = new StreamReader(streamIn);
                             string response = await reader.ReadLineAsync();
                             NotifyUser(response);
-                            this.OpenFileButton.Content = "file";
                             return;
                         }
                     }

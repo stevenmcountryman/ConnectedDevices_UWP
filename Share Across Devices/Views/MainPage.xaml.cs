@@ -463,33 +463,14 @@ namespace Share_Across_Devices
         }
         private async void OpenFileButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.OpenFileButton.Content.ToString() == "file")
-            {
-                this.selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
+            this.selectedDevice = (this.DeviceGrid.SelectedItem as RemoteDevice).GetDevice();
 
-                FileOpenPicker openPicker = new FileOpenPicker();
-                openPicker.FileTypeFilter.Add("*");
-                openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-                file = await openPicker.PickSingleFileAsync();
+            FileOpenPicker openPicker = new FileOpenPicker();
+            openPicker.FileTypeFilter.Add("*");
+            openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            file = await openPicker.PickSingleFileAsync();
 
-                this.openRemoteConnectionAsync(selectedDevice);
-                this.OpenFileButton.Content = "cancel";
-            }
-            else
-            {
-                this.NotifyUser("Attempting to cancel transfer");
-                try
-                {
-                    this.connection.Dispose();
-                    this.socket.Dispose();
-                }
-                catch
-                {
-
-                }
-                this.cancelAttempted = true;
-                this.OpenFileButton.IsEnabled = false;
-            }
+            this.openRemoteConnectionAsync(selectedDevice);
         }
         #endregion
 
@@ -612,31 +593,14 @@ namespace Share_Across_Devices
         #endregion
 
         #region File/App Service Stuff
-        private void handleCancel()
-        {
-            this.NotifyUser("File transfer cancelled");
-            this.cancelAttempted = false;
-            this.OpenFileButton.IsEnabled = true;
-            this.OpenFileButton.Content = "file";
-        }
         private async void openRemoteConnectionAsync(RemoteSystem remotesys)
         {
-            if (this.cancelAttempted)
-            {
-                this.handleCancel();
-                return;
-            }
             var sendAttempt = 1;
             AppServiceConnectionStatus status = AppServiceConnectionStatus.Unknown;
             if (file != null && remotesys != null)
             {
                 while (sendAttempt <= 3)
                 {
-                    if (this.cancelAttempted)
-                    {
-                        this.handleCancel();
-                        return;
-                    }
                     using (this.connection = new AppServiceConnection
                     {
                         AppServiceName = "simplisidy.appservice",
@@ -670,11 +634,6 @@ namespace Share_Across_Devices
         }
         private async Task RequestIPAddress(AppServiceConnection connection)
         {
-            if (this.cancelAttempted)
-            {
-                this.handleCancel();
-                return;
-            }
             var sendAttempt = 1;
             AppServiceResponse response = null;
             // Send message if connection to the remote app service is open.
@@ -682,11 +641,6 @@ namespace Share_Across_Devices
             {
                 while (sendAttempt <= 3)
                 {
-                    if (this.cancelAttempted)
-                    {
-                        this.handleCancel();
-                        return;
-                    }
                     //Set up the inputs and send a message to the service.
                     ValueSet inputs = new ValueSet();
                     NotifyUser("Requesting IP address....");
@@ -728,19 +682,9 @@ namespace Share_Across_Devices
         }
         private async void beginConnection(string ipAddress)
         {
-            if (this.cancelAttempted)
-            {
-                this.handleCancel();
-                return;
-            }
             var sendAttempt = 1;
             while (sendAttempt <= 3)
             {
-                if (this.cancelAttempted)
-                {
-                    this.handleCancel();
-                    return;
-                }
                 try
                 {
                     NotifyUser("Launching app on device....");
@@ -775,11 +719,6 @@ namespace Share_Across_Devices
                                     fileStream.Seek(0, SeekOrigin.Begin);
                                     while (fileStream.Position < fileStream.Length)
                                     {
-                                        if (this.cancelAttempted)
-                                        {
-                                            this.handleCancel();
-                                            return;
-                                        }
                                         if (fileStream.Length - fileStream.Position >= 7171)
                                         {
                                             bytes = new byte[7171];
@@ -810,7 +749,6 @@ namespace Share_Across_Devices
                             StreamReader reader = new StreamReader(streamIn);
                             string response = await reader.ReadLineAsync();
                             NotifyUser(response);
-                            this.OpenFileButton.Content = "file";
                             return;
                         }
                     }
