@@ -340,7 +340,7 @@ namespace Share_Across_Devices
             if (this.ClipboardText.Text.Length > 0 && this.DeviceGrid.SelectedItem != null)
             {
                 this.checkIfWebLink();
-                this.checkIfFile();
+                this.checkIfCanSendFile();
                 this.CopyToClipboardButton.IsEnabled = true;
             }
             else
@@ -351,9 +351,9 @@ namespace Share_Across_Devices
                 this.OpenFileButton.IsEnabled = false;
             }
         }
-        private void checkIfFile()
+        private void checkIfCanSendFile()
         {
-            if (this.file != null)
+            if (this.file != null && this.selectedDevice.IsAvailableByProximity)
             {
                 this.OpenFileButton.IsEnabled = true;
             }
