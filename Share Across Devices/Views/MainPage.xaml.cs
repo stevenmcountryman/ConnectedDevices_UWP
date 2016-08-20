@@ -39,6 +39,8 @@ namespace Share_Across_Devices
         private StorageFile file;
         private RemoteSystem selectedDevice;
         private bool cancelAttempted = false;
+        AppServiceConnection connection;
+        StreamSocket socket;
 
         public MainPage()
         {
@@ -353,7 +355,7 @@ namespace Share_Across_Devices
                 }
                 else
                 {
-                    this.OpenFileButton.IsEnabled = true;
+                    this.OpenFileButton.IsEnabled = false;
                 }
 
                 if (this.ClipboardText.Text.Length > 0)
@@ -476,6 +478,15 @@ namespace Share_Across_Devices
             else
             {
                 this.NotifyUser("Attempting to cancel transfer");
+                try
+                {
+                    this.connection.Dispose();
+                    this.socket.Dispose();
+                }
+                catch
+                {
+
+                }
                 this.cancelAttempted = true;
                 this.OpenFileButton.IsEnabled = false;
             }
@@ -626,7 +637,7 @@ namespace Share_Across_Devices
                         this.handleCancel();
                         return;
                     }
-                    using (AppServiceConnection connection = new AppServiceConnection
+                    using (this.connection = new AppServiceConnection
                     {
                         AppServiceName = "simplisidy.appservice",
                         PackageFamilyName = "34507Simplisidy.ShareAcrossDevices_wtkr3v20s86d8"
@@ -636,7 +647,7 @@ namespace Share_Across_Devices
                         RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(remotesys);
 
                         NotifyUser("Requesting connection to " + remotesys.DisplayName + "...");
-                        status = await connection.OpenRemoteAsync(connectionRequest);
+                        status = await this.connection.OpenRemoteAsync(connectionRequest);
                         if (status == AppServiceConnectionStatus.Success)
                         {
                             NotifyUser("Successfully connected to " + remotesys.DisplayName + "...");
@@ -738,7 +749,7 @@ namespace Share_Across_Devices
                     if (status == RemoteLaunchUriStatus.Success)
                     {
                         //Create the StreamSocket and establish a connection to the echo server.
-                        using (StreamSocket socket = new StreamSocket())
+                        using (this.socket = new StreamSocket())
                         {
 
                             //The server hostname that we will be establishing a connection to. We will be running the server and client locally,
@@ -799,6 +810,7 @@ namespace Share_Across_Devices
                             StreamReader reader = new StreamReader(streamIn);
                             string response = await reader.ReadLineAsync();
                             NotifyUser(response);
+                            this.OpenFileButton.Content = "file";
                             return;
                         }
                     }

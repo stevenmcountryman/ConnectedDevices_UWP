@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Windows.ApplicationModel.AppService;
 using Windows.ApplicationModel.Background;
 using Windows.Foundation.Collections;
@@ -42,26 +44,24 @@ namespace ShareAcrossAppService
             var messageDeferral = args.GetDeferral();
 
             ValueSet returnData = new ValueSet();
-            var allHostNames = NetworkInformation.GetHostNames();
-            foreach (HostName localHostName in allHostNames)
+            var icp = NetworkInformation.GetInternetConnectionProfile();
+
+            if (icp?.NetworkAdapter == null) return;
+            var hostnames = NetworkInformation.GetHostNames();
+            HostName hostname = null;
+            foreach (var name in hostnames)
             {
-                if (localHostName.IPInformation != null)
+                if (name.IPInformation?.NetworkAdapter != null && name.IPInformation.NetworkAdapter.NetworkAdapterId == icp.NetworkAdapter.NetworkAdapterId)
                 {
-                    if (localHostName.Type == HostNameType.Ipv4)
-                    {
-                        if (localHostName.ToString().StartsWith("10.") ||
-                            localHostName.ToString().StartsWith("192.") ||
-                            localHostName.ToString().StartsWith("172."))
-                        {
-                            returnData.Add("result", localHostName.ToString());
-                            break;
-                        }
-                    }
+                    hostname = name;
+                    break;
                 }
             }
 
+            // the ip address
+            returnData.Add("result", hostname?.CanonicalName);
+
             await args.Request.SendResponseAsync(returnData); // Return the data to the caller.// Complete the deferral so that the platform knows that we're done responding to the app service call.
-            await Launcher.LaunchUriAsync(new Uri("share-app:?FileName="));
         }
     }
 }
