@@ -6,15 +6,15 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="150"
-    d:DesignWidth="150">
+    d:DesignHeight="125"
+    d:DesignWidth="125">
 
-    <RelativePanel Width="150" Height="150">
+    <RelativePanel Width="125" Height="125">
         <TextBlock x:Name="DeviceIcon"
             FontFamily="Segoe MDL2 Assets"
                    Text="&#xE212;"
                    Foreground="White"
-                   FontSize="100"
+                   FontSize="80"
                    RelativePanel.AlignHorizontalCenterWithPanel="True"
                    RelativePanel.Above="DeviceName"/>
         <TextBlock x:Name="DeviceName"
@@ -23,6 +23,7 @@
                    RelativePanel.AlignRightWithPanel="True"
                    TextAlignment="Center"
                    Foreground="White"
+                   FontSize="12"
                    TextWrapping="Wrap"
                    Margin="8"/>
     </RelativePanel>

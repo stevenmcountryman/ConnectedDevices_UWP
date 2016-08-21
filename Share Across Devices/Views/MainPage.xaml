@@ -56,9 +56,11 @@
                                 BorderBrush="{x:Null}" 
                                 IsEnabledChanged="CopyToLocalClipboardButton_IsEnabledChanged" />
                 <GridView HorizontalAlignment="Right"
-                                  Padding="0"
-                                  Margin="0" 
-                                  SelectionMode="None">
+                          Padding="0"
+                          Margin="0" 
+                          SelectionMode="None"
+                          ScrollViewer.VerticalScrollMode="Disabled"
+                          ScrollViewer.HorizontalScrollMode="Disabled">
                     <Button x:Name="LaunchInBrowserButton" 
                                     IsEnabled="False" 
                                     Width="85"
@@ -100,9 +102,11 @@
                                     IsEnabledChanged="Button_IsEnabledChanged" />
                 </GridView>
                 <GridView Padding="0"
-                                  Margin="0" 
-                                  SelectionMode="None"
-                                  HorizontalAlignment="Right">
+                          Margin="0" 
+                          SelectionMode="None"
+                          HorizontalAlignment="Right"
+                          ScrollViewer.VerticalScrollMode="Disabled"
+                          ScrollViewer.HorizontalScrollMode="Disabled">
                     <Button x:Name="CopyToClipboardButton" 
                                     IsEnabled="False" 
                                     Width="85"
