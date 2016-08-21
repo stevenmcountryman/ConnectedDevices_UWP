@@ -1,0 +1,208 @@
+﻿<Page
+    x:Class="Share_Across_Devices.Views.LandingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Share_Across_Devices.Views"
+    xmlns:uwp="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:controls="using:Share_Across_Devices.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <DataTemplate x:Key="ButtonTemplate" x:DataType="controls:RemoteDeviceObject">
+            <Grid Width="240" Height="48">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="48"></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <FontIcon Grid.Column="0" 
+                          Margin="12,12,11,12" 
+                          FontFamily="Segoe MDL2 Assets" 
+                          Glyph="{Binding DeviceIcon}" 
+                          Foreground="White"/>
+                <TextBlock Grid.Column="1" 
+                           Text="{x:Bind DeviceName}" 
+                           Foreground="White" 
+                           FontSize="16" 
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="VisualStateGroup">
+                <VisualState x:Name="VisualStatePhone">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="HamburgerMenu.IsPaneOpen" Value="False"/>
+                        <Setter Target="HamburgerMenu.DisplayMode" Value="CompactOverlay"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="VisualStateTablet">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="640" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="HamburgerMenu.IsPaneOpen" Value="True"/>
+                        <Setter Target="HamburgerMenu.DisplayMode" Value="CompactInline"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="VisualStateDesktop">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="1008" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <uwp:HamburgerMenu x:Name="HamburgerMenu"
+                           PaneBackground="#4B9DFF" 
+                           Foreground="White"                                
+                           ItemTemplate="{StaticResource ButtonTemplate}"
+                           ItemClick="HamburgerMenu_ItemClick"
+                           OpenPaneLength="240"
+                           DisplayMode="CompactInline"
+                           CompactPaneLength="48"
+                           HamburgerHeight="48"
+                           IsPaneOpen="True">
+            <RelativePanel Background="#FF535353">
+                <StackPanel x:Name="DevicePanel"
+                            Background="#3876BF"
+                            Height="144"
+                            RelativePanel.AlignTopWithPanel="True"
+                            RelativePanel.AlignLeftWithPanel="True"
+                            RelativePanel.AlignRightWithPanel="True">
+                    <FontIcon x:Name="SelectedDeviceIcon"
+                              FontFamily="Segoe MDL2 Assets" 
+                              FontSize="80"
+                              Margin="12"
+                              HorizontalAlignment="Center"
+                              Foreground="White"/>
+                    <TextBlock x:Name="SelectedDeviceName"
+                               Text="device name" 
+                               Foreground="White" 
+                               FontSize="20" 
+                               Margin="4"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+                <Grid x:Name="MediaViewGrid"
+                      RelativePanel.AlignHorizontalCenterWithPanel="True"
+                      RelativePanel.Below="DevicePanel"
+                      RelativePanel.Above="TypeAttachSendPanel"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Width="300"
+                      Height="340">
+                </Grid>
+                <Grid RelativePanel.Above="TypeAttachSendPanel"
+                      HorizontalAlignment="Center"
+                      RelativePanel.AlignHorizontalCenterWithPanel="True"
+                      VerticalAlignment="Bottom">
+                <StackPanel x:Name="SendOptionsPanel">
+                    <TextBlock Foreground="White"
+                               Text="open in:"
+                               FontWeight="Bold"
+                               TextAlignment="Center"
+                               Margin="8"/>
+                    <StackPanel Orientation="Horizontal"
+                                Margin="8">
+                        <Button x:Name="LaunchInBrowserButton" 
+                                IsEnabled="False" 
+                                Width="85"
+                                Content="browser" 
+                                Background="#3876BF"
+                                Margin="4"
+                                Padding="0,12,0,12"
+                                Foreground="White"
+                                FontWeight="Bold"
+                                FontSize="16"
+                                HorizontalAlignment="Right"
+                                BorderBrush="{x:Null}" 
+                                Click="LaunchInBrowserButton_Click"
+                                IsEnabledChanged="Button_IsEnabledChanged" />
+                        <Button x:Name="OpenInTubeCastButton" 
+                                    IsEnabled="False"
+                                    Width="85"
+                                    Content="TubeCast" 
+                                Background="#3876BF"
+                                    Margin="4"
+                                    Padding="0,12,0,12"
+                                    Foreground="White"
+                                    FontWeight="Bold"
+                                    FontSize="16"
+                                    HorizontalAlignment="Center"
+                                    BorderBrush="{x:Null}" 
+                                Click="OpenInTubeCastButton_Click"
+                                    IsEnabledChanged="Button_IsEnabledChanged" />
+                        <Button x:Name="OpenInMyTubeButton" 
+                                    IsEnabled="False"
+                                    Width="85"
+                                    Content="myTube!" 
+                                Background="#3876BF"
+                                    Margin="4"
+                                    Padding="0,12,0,12"
+                                    Foreground="White"
+                                    FontWeight="Bold"
+                                    FontSize="16"
+                                    HorizontalAlignment="Center"
+                                    BorderBrush="{x:Null}" 
+                                Click="OpenInMyTubeButton_Click"
+                                    IsEnabledChanged="Button_IsEnabledChanged" />
+                    </StackPanel>
+                </StackPanel>
+                </Grid>
+                <TextBlock x:Name="Notification"
+                           Foreground="White"
+                           RelativePanel.Above="TypeAttachSendPanel"
+                           RelativePanel.AlignHorizontalCenterWithPanel="True"/>
+                <RelativePanel x:Name="TypeAttachSendPanel"
+                               RelativePanel.AlignBottomWithPanel="True"
+                               RelativePanel.AlignLeftWithPanel="True"
+                               RelativePanel.AlignRightWithPanel="True"
+                               BorderBrush="Gray"
+                               BorderThickness="0,1,0,0" Background="#FF535353">
+                    <Button x:Name="AttachButton"
+                            RelativePanel.AlignLeftWithPanel="True"
+                            RelativePanel.AlignVerticalCenterWithPanel="True"
+                            Background="Transparent"
+                            BorderBrush="{x:Null}" 
+                            Click="AttachButton_Click"
+                            Style="{StaticResource MyButtonStyle}">
+                        <SymbolIcon Symbol="Attach" 
+                                    Foreground="White"
+                                    Margin="4"/>                        
+                    </Button>
+                    <TextBox x:Name="MessageToSend"
+                             Background="#FF535353"
+                             Foreground="White" 
+                             TextWrapping="Wrap"
+                             BorderBrush="{x:Null}"
+                             PlaceholderText="send text to clipboard..."
+                             TextChanged="MessageToSend_TextChanged"
+                             RelativePanel.RightOf="AttachButton"
+                             RelativePanel.LeftOf="SendButton"
+                             RelativePanel.AlignVerticalCenterWithPanel="True" 
+                             Style="{StaticResource MessageEnterField}"
+                             MaxHeight="100"
+                             AcceptsReturn="True"/>
+                    <Button x:Name="SendButton"
+                            RelativePanel.AlignRightWithPanel="True"
+                            RelativePanel.AlignVerticalCenterWithPanel="True"
+                            Click="SendButton_Click"
+                            Background="Transparent"
+                            BorderBrush="{x:Null}" 
+                            Style="{StaticResource MyButtonStyle}">
+                        <SymbolIcon Symbol="Send"
+                                    Foreground="White"
+                                    Margin="4"/>
+                    </Button>                    
+                </RelativePanel>
+            </RelativePanel>
+        </uwp:HamburgerMenu>
+
+    </Grid>
+</Page>

@@ -11,6 +11,40 @@ namespace Share_Across_Devices.Controls
         {
             this.InitializeComponent();
         }
+        public string DeviceFriendlyName
+        {
+            get
+            {
+                return this.DeviceName.Text;
+            }
+        }
+        public string DeviceFontIcon
+        {
+            get
+            {
+                if (this.remoteDevice.Kind == RemoteSystemKinds.Phone)
+                {
+                    return "\uE8EA";
+                }
+                else if (this.remoteDevice.Kind == RemoteSystemKinds.Desktop)
+                {
+                    return "\uE212";
+                }
+                else if (this.remoteDevice.Kind == RemoteSystemKinds.Xbox)
+                {
+                    return "\uE7FC";
+                }
+                else if (this.remoteDevice.Kind == RemoteSystemKinds.Holographic)
+                {
+                    return "\uE1A6";
+                }
+                else if (this.remoteDevice.Kind == RemoteSystemKinds.Hub)
+                {
+                    return "\uE8AE";
+                }
+                else return null;
+            }
+        }
         public RemoteDevice(RemoteSystem device) : this()
         {
             this.remoteDevice = device;

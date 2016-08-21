@@ -40,7 +40,9 @@
                                  TextChanged="ClipboardText_TextChanged"
                                  HorizontalAlignment="Stretch"
                                  Margin="8"
+                                 MaxHeight="100"
                                  Background="White" 
+                                 AcceptsReturn="True"
                                  BorderBrush="{x:Null}" Style="{StaticResource MyTextBoxStyle}"/>
                 <Button x:Name="CopyToLocalClipboardButton" 
                                 Visibility="Collapsed"

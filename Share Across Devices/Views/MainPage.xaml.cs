@@ -38,7 +38,6 @@ namespace Share_Across_Devices
         private string fileName;
         private StorageFile file;
         private RemoteSystem selectedDevice;
-        private bool cancelAttempted = false;
         AppServiceConnection connection;
         StreamSocket socket;
 
