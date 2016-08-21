@@ -225,13 +225,13 @@ namespace Share_Across_Devices.Controls
             {
                 this.VideoFileViewer.Play();
                 this.mediaPaused = false;
-                this.PlayPauseButton.Text = this.pauseIcon;
+                this.PlayPauseButton.Text = this.playIcon;
             }
             else
             {
                 this.VideoFileViewer.Pause();
                 this.mediaPaused = true;
-                this.PlayPauseButton.Text = this.playIcon;
+                this.PlayPauseButton.Text = this.pauseIcon;
             }
         }
     }
