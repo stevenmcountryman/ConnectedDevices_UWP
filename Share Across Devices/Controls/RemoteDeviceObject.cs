@@ -11,6 +11,7 @@ using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
 using Windows.System;
 using Windows.System.RemoteSystems;
+using Windows.UI.Xaml;
 using static Share_Across_Devices.Controls.MyEventArgs;
 
 namespace Share_Across_Devices.Controls
@@ -21,6 +22,8 @@ namespace Share_Across_Devices.Controls
         private AppServiceConnection connection;
         private StreamSocket socket;
         private RemoteSystem remoteSystem;
+        private DispatcherTimer timer;
+        private DateTime lastUpdatedTime;
 
         public delegate void NotifyHandler(object sender, MyEventArgs e);
         public event NotifyHandler NotifyEvent;
@@ -73,31 +76,58 @@ namespace Share_Across_Devices.Controls
         public RemoteDeviceObject(RemoteSystem remoteSystem)
         {
             this.remoteSystem = remoteSystem;
+            this.timer = new DispatcherTimer();
+            this.timer.Interval = new TimeSpan(0, 0, 1);
+            this.timer.Tick += Timer_Tick;
+        }
+
+        private void Timer_Tick(object sender, object e)
+        {
+            var currentTime = DateTime.Now.ToUniversalTime();
+            if (this.lastUpdatedTime != null && currentTime.Subtract(this.lastUpdatedTime).TotalSeconds >= 5)
+            {
+                this.NotifyEvent(this, new MyEventArgs("Network timeout. Check your connection and try again", messageType.Indefinite));
+                this.timer.Stop();
+            }
+        }
+
+        private void startTimer()
+        {
+            this.timer.Start();
+            this.lastUpdatedTime = DateTime.Now.ToUniversalTime();
         }
 
         public async void ShareMessage(string message)
         {
             this.NotifyEvent(this, new MyEventArgs("Sending to remote clipboard...", messageType.Indefinite));
+            this.startTimer();
             var status = await RemoteLaunch.TrySharetext(this.remoteSystem, message);
+            this.timer.Stop();
             this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
         }
 
         public async void OpenLinkInBrowser(string url)
         {
             this.NotifyEvent(this, new MyEventArgs("Opening in remote browser...", messageType.Indefinite));
+            this.startTimer();
             var status = await RemoteLaunch.TryShareURL(this.remoteSystem, url);
+            this.timer.Stop();
             this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
         }
         public async void OpenLinkInTubeCast(string url)
         {
             this.NotifyEvent(this, new MyEventArgs("Opening in remote browser...", messageType.Indefinite));
+            this.startTimer();
             var status = await RemoteLaunch.TryShareURL(this.remoteSystem, RemoteLaunch.ParseYoutubeLinkToTubeCastUri(url));
+            this.timer.Stop();
             this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
         }
         public async void OpenLinkInMyTube(string url)
         {
             this.NotifyEvent(this, new MyEventArgs("Opening in remote browser...", messageType.Indefinite));
+            this.startTimer();
             var status = await RemoteLaunch.TryShareURL(this.remoteSystem, RemoteLaunch.ParseYoutubeLinkToMyTubeUri(url));
+            this.timer.Stop();
             this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
         }
         public async Task<StorageFile> OpenFileToSend()
@@ -136,7 +166,10 @@ namespace Share_Across_Devices.Controls
                         RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(this.remoteSystem);
 
                         this.NotifyEvent(this, new MyEventArgs("Requesting connection to " + this.remoteSystem.DisplayName + "...", messageType.Indefinite));
+
+                        this.startTimer();
                         status = await this.connection.OpenRemoteAsync(connectionRequest);
+                        this.timer.Stop();
                         if (status == AppServiceConnectionStatus.Success)
                         {
                             this.NotifyEvent(this, new MyEventArgs("Successfully connected to " + this.remoteSystem.DisplayName + "...", messageType.Indefinite));
@@ -169,8 +202,9 @@ namespace Share_Across_Devices.Controls
                     //Set up the inputs and send a message to the service.
                     ValueSet inputs = new ValueSet();
                     this.NotifyEvent(this, new MyEventArgs("Requesting IP address....", messageType.Indefinite));
+                    this.startTimer();
                     response = await connection.SendMessageAsync(inputs);
-
+                    this.timer.Stop();
                     if (response.Status == AppServiceResponseStatus.Success)
                     {
                         if (response.Message.ContainsKey("result"))
@@ -229,7 +263,10 @@ namespace Share_Across_Devices.Controls
                             //For the echo server/client application we will use a random port 1337.
                             this.NotifyEvent(this, new MyEventArgs("Opening connection....", messageType.Indefinite));
                             string serverPort = "1717";
+
+                            this.startTimer();
                             await socket.ConnectAsync(serverHost, serverPort);
+                            this.timer.Stop();
                             
                             //Write data to the echo server.
                             using (Stream streamOut = socket.OutputStream.AsStreamForWrite())

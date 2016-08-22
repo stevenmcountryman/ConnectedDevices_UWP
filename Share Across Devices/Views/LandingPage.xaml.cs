@@ -26,6 +26,7 @@ namespace Share_Across_Devices.Views
         private bool openInTubeCast = false;
         private bool openInMyTube = false;
         private bool transferFile = false;
+
         ObservableCollection<RemoteDeviceObject> DeviceList = new ObservableCollection<RemoteDeviceObject>();
 
         public LandingPage()
