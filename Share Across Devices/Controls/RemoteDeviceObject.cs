@@ -1,9 +1,6 @@
 ﻿using Share_Across_Devices.Helpers;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.AppService;
 using Windows.Foundation.Collections;
@@ -14,7 +11,6 @@ using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
 using Windows.System;
 using Windows.System.RemoteSystems;
-using Windows.UI.Xaml.Hosting;
 
 namespace Share_Across_Devices.Controls
 {
@@ -23,36 +19,43 @@ namespace Share_Across_Devices.Controls
         private StorageFile fileToSend;
         private AppServiceConnection connection;
         private StreamSocket socket;
+        private RemoteSystem remoteSystem;
 
         public delegate void NotifyHandler(object sender, MyEventArgs e);
         public event NotifyHandler NotifyEvent;
 
         public RemoteSystem RemoteSystem
         {
-            get;
-            set;
+            get
+            {
+                return this.remoteSystem;
+            }
+            set
+            {
+                this.remoteSystem = value;
+            }
         }
         public string DeviceIcon
         {
             get
             {
-                if (this.RemoteSystem.Kind == RemoteSystemKinds.Phone)
+                if (this.remoteSystem.Kind == RemoteSystemKinds.Phone)
                 {
                     return "\uE8EA";
                 }
-                else if (this.RemoteSystem.Kind == RemoteSystemKinds.Desktop)
+                else if (this.remoteSystem.Kind == RemoteSystemKinds.Desktop)
                 {
                     return "\uE212";
                 }
-                else if (this.RemoteSystem.Kind == RemoteSystemKinds.Xbox)
+                else if (this.remoteSystem.Kind == RemoteSystemKinds.Xbox)
                 {
                     return "\uE7FC";
                 }
-                else if (this.RemoteSystem.Kind == RemoteSystemKinds.Holographic)
+                else if (this.remoteSystem.Kind == RemoteSystemKinds.Holographic)
                 {
                     return "\uE1A6";
                 }
-                else if (this.RemoteSystem.Kind == RemoteSystemKinds.Hub)
+                else if (this.remoteSystem.Kind == RemoteSystemKinds.Hub)
                 {
                     return "\uE8AE";
                 }
@@ -63,19 +66,39 @@ namespace Share_Across_Devices.Controls
         {
             get
             {
-                return this.RemoteSystem.DisplayName;
+                return this.remoteSystem.DisplayName;
             }
         }
         public RemoteDeviceObject(RemoteSystem remoteSystem)
         {
-            this.RemoteSystem = remoteSystem;
+            this.remoteSystem = remoteSystem;
         }
 
         public async void ShareMessage(string message)
         {
-            var status = await RemoteLaunch.TrySharetext(this.RemoteSystem, message);
+            this.NotifyEvent(this, new MyEventArgs("Sending to remote clipboard..."));
+            var status = await RemoteLaunch.TrySharetext(this.remoteSystem, message);
+            this.NotifyEvent(this, new MyEventArgs(status.ToString()));
         }
 
+        public async void OpenLinkInBrowser(string url)
+        {
+            this.NotifyEvent(this, new MyEventArgs("Opening in remote browser..."));
+            var status = await RemoteLaunch.TryShareURL(this.remoteSystem, url);
+            this.NotifyEvent(this, new MyEventArgs(status.ToString()));
+        }
+        public async void OpenLinkInTubeCast(string url)
+        {
+            this.NotifyEvent(this, new MyEventArgs("Opening in remote browser..."));
+            var status = await RemoteLaunch.TryShareURL(this.remoteSystem, RemoteLaunch.ParseYoutubeLinkToTubeCastUri(url));
+            this.NotifyEvent(this, new MyEventArgs(status.ToString()));
+        }
+        public async void OpenLinkInMyTube(string url)
+        {
+            this.NotifyEvent(this, new MyEventArgs("Opening in remote browser..."));
+            var status = await RemoteLaunch.TryShareURL(this.remoteSystem, RemoteLaunch.ParseYoutubeLinkToMyTubeUri(url));
+            this.NotifyEvent(this, new MyEventArgs(status.ToString()));
+        }
         public async Task<StorageFile> OpenFileToSend()
         {
             FileOpenPicker openPicker = new FileOpenPicker();
@@ -98,7 +121,7 @@ namespace Share_Across_Devices.Controls
         {
             var sendAttempt = 1;
             AppServiceConnectionStatus status = AppServiceConnectionStatus.Unknown;
-            if (this.fileToSend != null && this.RemoteSystem != null)
+            if (this.fileToSend != null && this.remoteSystem != null)
             {
                 while (sendAttempt <= 3)
                 {
@@ -109,13 +132,13 @@ namespace Share_Across_Devices.Controls
                     })
                     {
                         // Create a remote system connection request.
-                        RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(this.RemoteSystem);
+                        RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(this.remoteSystem);
 
-                        this.NotifyEvent(this, new MyEventArgs("Requesting connection to " + this.RemoteSystem.DisplayName + "..."));
+                        this.NotifyEvent(this, new MyEventArgs("Requesting connection to " + this.remoteSystem.DisplayName + "..."));
                         status = await this.connection.OpenRemoteAsync(connectionRequest);
                         if (status == AppServiceConnectionStatus.Success)
                         {
-                            this.NotifyEvent(this, new MyEventArgs("Successfully connected to " + this.RemoteSystem.DisplayName + "..."));
+                            this.NotifyEvent(this, new MyEventArgs("Successfully connected to " + this.remoteSystem.DisplayName + "..."));
                             await this.RequestIPAddress(connection);
                             return;
                         }
@@ -189,7 +212,7 @@ namespace Share_Across_Devices.Controls
                 try
                 {
                     this.NotifyEvent(this, new MyEventArgs("Launching app on device...."));
-                    var status = await RemoteLaunch.TryBeginShareFile(this.RemoteSystem, this.fileToSend.Name);
+                    var status = await RemoteLaunch.TryBeginShareFile(this.remoteSystem, this.fileToSend.Name);
 
                     if (status == RemoteLaunchUriStatus.Success)
                     {

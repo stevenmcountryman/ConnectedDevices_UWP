@@ -91,10 +91,9 @@
                 </StackPanel>
                 <Grid x:Name="MediaViewGrid"
                       RelativePanel.AlignHorizontalCenterWithPanel="True"
-                      RelativePanel.Below="DevicePanel"
                       RelativePanel.Above="TypeAttachSendPanel"
                       HorizontalAlignment="Center"
-                      VerticalAlignment="Center"
+                      VerticalAlignment="Bottom"
                       Width="300"
                       Height="340">
                 </Grid>
@@ -102,15 +101,21 @@
                       HorizontalAlignment="Center"
                       RelativePanel.AlignHorizontalCenterWithPanel="True"
                       VerticalAlignment="Bottom">
-                <StackPanel x:Name="SendOptionsPanel">
-                    <TextBlock Foreground="White"
+                    <StackPanel x:Name="SendOptionsPanel">
+                        <TextBlock Foreground="White"
                                Text="open in:"
                                FontWeight="Bold"
                                TextAlignment="Center"
                                Margin="8"/>
-                    <StackPanel Orientation="Horizontal"
-                                Margin="8">
-                        <Button x:Name="LaunchInBrowserButton" 
+                        <GridView x:Name="OpenInGridView"
+                                  Padding="0"
+                                  Margin="0"
+                                  HorizontalAlignment="Center"
+                                  HorizontalContentAlignment="Center"
+                                  SelectionChanged="OpenInGridView_SelectionChanged"
+                                  SelectionMode="Single"
+                                  ItemContainerStyle="{StaticResource MyGridViewItemContainerStyle}">
+                            <Button x:Name="OpenInBrowserButton" 
                                 IsEnabled="False" 
                                 Width="85"
                                 Content="browser" 
@@ -121,14 +126,14 @@
                                 FontWeight="Bold"
                                 FontSize="16"
                                 HorizontalAlignment="Right"
-                                BorderBrush="{x:Null}" 
-                                Click="LaunchInBrowserButton_Click"
+                                BorderBrush="Transparent" 
+                                IsHitTestVisible="False"
                                 IsEnabledChanged="Button_IsEnabledChanged" />
-                        <Button x:Name="OpenInTubeCastButton" 
+                            <Button x:Name="OpenInTubeCastButton" 
                                     IsEnabled="False"
                                     Width="85"
                                     Content="TubeCast" 
-                                Background="#3876BF"
+                                    Background="#3876BF"
                                     Margin="4"
                                     Padding="0,12,0,12"
                                     Foreground="White"
@@ -136,24 +141,24 @@
                                     FontSize="16"
                                     HorizontalAlignment="Center"
                                     BorderBrush="{x:Null}" 
-                                Click="OpenInTubeCastButton_Click"
+                                    IsHitTestVisible="False"
                                     IsEnabledChanged="Button_IsEnabledChanged" />
-                        <Button x:Name="OpenInMyTubeButton" 
-                                    IsEnabled="False"
-                                    Width="85"
-                                    Content="myTube!" 
+                            <Button x:Name="OpenInMyTubeButton" 
+                                IsEnabled="False"
+                                Width="85"
+                                Content="myTube!" 
                                 Background="#3876BF"
-                                    Margin="4"
-                                    Padding="0,12,0,12"
-                                    Foreground="White"
-                                    FontWeight="Bold"
-                                    FontSize="16"
-                                    HorizontalAlignment="Center"
-                                    BorderBrush="{x:Null}" 
-                                Click="OpenInMyTubeButton_Click"
-                                    IsEnabledChanged="Button_IsEnabledChanged" />
+                                Margin="4"
+                                Padding="0,12,0,12"
+                                Foreground="White"
+                                FontWeight="Bold"
+                                FontSize="16"
+                                HorizontalAlignment="Center"
+                                BorderBrush="{x:Null}" 
+                                IsHitTestVisible="False"
+                                IsEnabledChanged="Button_IsEnabledChanged" />
+                        </GridView>
                     </StackPanel>
-                </StackPanel>
                 </Grid>
                 <TextBlock x:Name="Notification"
                            Foreground="White"
@@ -167,14 +172,14 @@
                                BorderThickness="0,1,0,0" Background="#FF535353">
                     <Button x:Name="AttachButton"
                             RelativePanel.AlignLeftWithPanel="True"
-                            RelativePanel.AlignVerticalCenterWithPanel="True"
+                            RelativePanel.AlignBottomWithPanel="True"
+                            IsEnabled="False"
                             Background="Transparent"
-                            BorderBrush="{x:Null}" 
+                            BorderBrush="Transparent" 
                             Click="AttachButton_Click"
-                            Style="{StaticResource MyButtonStyle}">
+                            Style="{StaticResource MyButtonStyle}" Foreground="White">
                         <SymbolIcon Symbol="Attach" 
-                                    Foreground="White"
-                                    Margin="4"/>                        
+                                    Margin="4"/>
                     </Button>
                     <TextBox x:Name="MessageToSend"
                              Background="#FF535353"
@@ -191,15 +196,16 @@
                              AcceptsReturn="True"/>
                     <Button x:Name="SendButton"
                             RelativePanel.AlignRightWithPanel="True"
-                            RelativePanel.AlignVerticalCenterWithPanel="True"
+                            RelativePanel.AlignBottomWithPanel="True"
+                            IsEnabled="False"
                             Click="SendButton_Click"
                             Background="Transparent"
-                            BorderBrush="{x:Null}" 
-                            Style="{StaticResource MyButtonStyle}">
+                            BorderBrush="Transparent" 
+                            Style="{StaticResource MyButtonStyle}" 
+                            Foreground="White">
                         <SymbolIcon Symbol="Send"
-                                    Foreground="White"
                                     Margin="4"/>
-                    </Button>                    
+                    </Button>
                 </RelativePanel>
             </RelativePanel>
         </uwp:HamburgerMenu>

@@ -38,8 +38,6 @@ namespace Share_Across_Devices.Views
             var sendOptionsVisual = ElementCompositionPreview.GetElementVisual(this.SendOptionsPanel);
             sendOptionsVisual.Offset = new Vector3(0f, 100f, 0f);
             sendOptionsVisual.Opacity = 0f;
-            var mediaGridVisual = ElementCompositionPreview.GetElementVisual(this.MediaViewGrid);
-            mediaGridVisual.Opacity = 0f;
         }
 
         private void DeviceList_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -199,7 +197,7 @@ namespace Share_Across_Devices.Views
             if (this.MessageToSend.Text.ToLower().StartsWith("http://") || this.MessageToSend.Text.ToLower().StartsWith("https://"))
             {
                 this.showSendOptionsPanel();
-                this.LaunchInBrowserButton.IsEnabled = true;
+                this.OpenInBrowserButton.IsEnabled = true;
                 if (this.MessageToSend.Text.ToLower().Contains("youtube.com/watch?"))
                 {
                     this.OpenInMyTubeButton.IsEnabled = true;
@@ -213,7 +211,7 @@ namespace Share_Across_Devices.Views
             }
             else
             {
-                this.LaunchInBrowserButton.IsEnabled = false;
+                this.OpenInBrowserButton.IsEnabled = false;
                 this.OpenInMyTubeButton.IsEnabled = false;
                 this.OpenInTubeCastButton.IsEnabled = false;
                 this.hideSendOptionsPanel();
@@ -265,25 +263,43 @@ namespace Share_Across_Devices.Views
         }
         private void showMediaViewGrid()
         {
-            var itemVisual = ElementCompositionPreview.GetElementVisual(this.MediaViewGrid);
+            if (this.MediaViewGrid.Children[0] != null)
+            {
+                var itemVisual = ElementCompositionPreview.GetElementVisual(this.MediaViewGrid.Children[0] as MediaView);
 
-            ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
-            fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
-            fadeAnimation.InsertKeyFrame(0f, 0f);
-            fadeAnimation.InsertKeyFrame(1f, 1f);
-            
-            itemVisual.StartAnimation("Opacity", fadeAnimation);
+                Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
+                offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, 100f, 0f));
+                offsetAnimation.InsertKeyFrame(1f, new Vector3(0f, 0f, 0f));
+
+                ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
+                fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                fadeAnimation.InsertKeyFrame(0f, 0f);
+                fadeAnimation.InsertKeyFrame(1f, 1f);
+
+                itemVisual.StartAnimation("Offset", offsetAnimation);
+                itemVisual.StartAnimation("Opacity", fadeAnimation);
+            }
         }
         private void hideMediaViewGrid()
         {
-            var itemVisual = ElementCompositionPreview.GetElementVisual(this.MediaViewGrid);
+            if (this.MediaViewGrid.Children[0] != null)
+            {
+                var itemVisual = ElementCompositionPreview.GetElementVisual(this.MediaViewGrid.Children[0] as MediaView);
 
-            ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
-            fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
-            fadeAnimation.InsertKeyFrame(0f, 0f);
-            fadeAnimation.InsertKeyFrame(1f, 1f);
-            
-            itemVisual.StartAnimation("Opacity", fadeAnimation);
+                Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
+                offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, 0f, 0f));
+                offsetAnimation.InsertKeyFrame(1f, new Vector3(0f, 100f, 0f));
+
+                ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
+                fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                fadeAnimation.InsertKeyFrame(0f, 0f);
+                fadeAnimation.InsertKeyFrame(1f, 1f);
+
+                itemVisual.StartAnimation("Offset", offsetAnimation);
+                itemVisual.StartAnimation("Opacity", fadeAnimation);
+            }
         }
 
         private bool remoteSystemIsLocal()
@@ -297,15 +313,15 @@ namespace Share_Across_Devices.Views
             {
                 if (this.openInBrowser)
                 {
-
+                    this.selectedDevice.OpenLinkInBrowser(this.MessageToSend.Text);
                 }
                 else if (this.openInMyTube)
                 {
-
+                    this.selectedDevice.OpenLinkInMyTube(this.MessageToSend.Text);
                 }
                 else if (this.openInTubeCast)
                 {
-
+                    this.selectedDevice.OpenLinkInTubeCast(this.MessageToSend.Text);
                 }
                 else if (this.transferFile)
                 {
@@ -337,19 +353,26 @@ namespace Share_Across_Devices.Views
             }
         }
 
-        private void OpenInMyTubeButton_Click(object sender, RoutedEventArgs e)
+        private void OpenInGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-
-        }
-
-        private void OpenInTubeCastButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void LaunchInBrowserButton_Click(object sender, RoutedEventArgs e)
-        {
-
+            if (e.AddedItems[0] == this.OpenInBrowserButton)
+            {
+                this.openInBrowser = true;
+                this.openInMyTube = false;
+                this.openInTubeCast = false;
+            }
+            else if (e.AddedItems[0] == this.OpenInMyTubeButton)
+            {
+                this.openInMyTube = true;
+                this.openInBrowser = false;
+                this.openInTubeCast = false;
+            }
+            else if (e.AddedItems[0] == this.OpenInTubeCastButton)
+            {
+                this.openInTubeCast = true;
+                this.openInBrowser = false;
+                this.openInMyTube = false;
+            }
         }
     }
 }
