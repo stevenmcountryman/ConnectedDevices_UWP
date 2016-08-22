@@ -79,7 +79,7 @@
                     <FontIcon x:Name="SelectedDeviceIcon"
                               FontFamily="Segoe MDL2 Assets" 
                               FontSize="80"
-                              Margin="12"
+                              Margin="12,16,12,8"
                               HorizontalAlignment="Center"
                               Foreground="White"/>
                     <TextBlock x:Name="SelectedDeviceName"
@@ -183,6 +183,7 @@
                     </Button>
                     <TextBox x:Name="MessageToSend"
                              Background="#FF535353"
+                             IsEnabled="False"
                              Foreground="White" 
                              TextWrapping="Wrap"
                              BorderBrush="{x:Null}"

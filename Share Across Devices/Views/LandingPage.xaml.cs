@@ -8,6 +8,9 @@ using System.Collections.ObjectModel;
 using Windows.UI.Xaml.Hosting;
 using System.Numerics;
 using Windows.UI.Composition;
+using Windows.Foundation.Metadata;
+using Windows.UI;
+using Windows.UI.ViewManagement;
 
 namespace Share_Across_Devices.Views
 {
@@ -17,7 +20,6 @@ namespace Share_Across_Devices.Views
         private Compositor _compositor;
         private RemoteDeviceObject selectedDevice;
         private bool sendOptionsHidden = true;
-        private bool mediaGridHidden = true;
         private bool openInBrowser = false;
         private bool openInTubeCast = false;
         private bool openInMyTube = false;
@@ -29,15 +31,45 @@ namespace Share_Across_Devices.Views
             this.InitializeComponent();
             this.setUpDevicesList();
             this.setUpCompositor();
+            this.setTitleBar();
             this.DeviceList.CollectionChanged += DeviceList_CollectionChanged;
+        }
+
+        private void setTitleBar()
+        {
+            var appBlue = Color.FromArgb(255, 56, 118, 191);
+            if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.ApplicationView"))
+            {
+                ApplicationView AppView = ApplicationView.GetForCurrentView();
+                AppView.TitleBar.BackgroundColor = appBlue;
+                AppView.TitleBar.ButtonInactiveBackgroundColor = appBlue;
+                AppView.TitleBar.ButtonInactiveForegroundColor = Colors.White;
+                AppView.TitleBar.ButtonBackgroundColor = appBlue;
+                AppView.TitleBar.ButtonForegroundColor = Colors.White;
+                AppView.TitleBar.ButtonHoverBackgroundColor = appBlue;
+                AppView.TitleBar.ButtonHoverForegroundColor = Colors.White;
+                AppView.TitleBar.ButtonPressedBackgroundColor = appBlue;
+                AppView.TitleBar.ButtonPressedForegroundColor = Colors.White;
+                AppView.TitleBar.ForegroundColor = Colors.White;
+                AppView.TitleBar.InactiveBackgroundColor = appBlue;
+                AppView.TitleBar.InactiveForegroundColor = Colors.White;
+            }
+            if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+            {
+                var statusBar = StatusBar.GetForCurrentView();
+                statusBar.BackgroundOpacity = 1;
+                statusBar.BackgroundColor = appBlue;
+                statusBar.ForegroundColor = Colors.White;
+            }
         }
 
         private void setUpCompositor()
         {
             _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
             var sendOptionsVisual = ElementCompositionPreview.GetElementVisual(this.SendOptionsPanel);
-            sendOptionsVisual.Offset = new Vector3(0f, 100f, 0f);
             sendOptionsVisual.Opacity = 0f;
+            var devicePanelVisual = ElementCompositionPreview.GetElementVisual(this.DevicePanel);
+            devicePanelVisual.Opacity = 0f;
         }
 
         private void DeviceList_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -118,7 +150,37 @@ namespace Share_Across_Devices.Views
             {
                 this.HamburgerMenu.IsPaneOpen = false;
             }
+            this.resetView();
+            this.animateDeviceChosen();
             this.validateTextAndButtons();
+        }
+
+        private void resetView()
+        {
+            this.MessageToSend.IsEnabled = true;
+            this.MessageToSend.Text = "";
+            this.openInBrowser = false;
+            this.openInMyTube = false;
+            this.openInTubeCast = false;
+            this.OpenInGridView.SelectedIndex = -1;
+        }
+
+        private void animateDeviceChosen()
+        {
+            var devicePanelVisual = ElementCompositionPreview.GetElementVisual(this.DevicePanel);
+
+            Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
+            offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+            offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, -100f, 0f));
+            offsetAnimation.InsertKeyFrame(1f, new Vector3(0f, 0f, 0f));
+
+            ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
+            fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+            fadeAnimation.InsertKeyFrame(0f, 0f);
+            fadeAnimation.InsertKeyFrame(1f, 1f);
+
+            devicePanelVisual.StartAnimation("Offset", offsetAnimation);
+            devicePanelVisual.StartAnimation("Opacity", fadeAnimation);
         }
 
         private void SelectedDevice_NotifyEvent(object sender, MyEventArgs e)
@@ -355,23 +417,26 @@ namespace Share_Across_Devices.Views
 
         private void OpenInGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (e.AddedItems[0] == this.OpenInBrowserButton)
+            if (this.OpenInGridView.SelectedIndex >= 0)
             {
-                this.openInBrowser = true;
-                this.openInMyTube = false;
-                this.openInTubeCast = false;
-            }
-            else if (e.AddedItems[0] == this.OpenInMyTubeButton)
-            {
-                this.openInMyTube = true;
-                this.openInBrowser = false;
-                this.openInTubeCast = false;
-            }
-            else if (e.AddedItems[0] == this.OpenInTubeCastButton)
-            {
-                this.openInTubeCast = true;
-                this.openInBrowser = false;
-                this.openInMyTube = false;
+                if (e.AddedItems[0] == this.OpenInBrowserButton)
+                {
+                    this.openInBrowser = true;
+                    this.openInMyTube = false;
+                    this.openInTubeCast = false;
+                }
+                else if (e.AddedItems[0] == this.OpenInMyTubeButton)
+                {
+                    this.openInMyTube = true;
+                    this.openInBrowser = false;
+                    this.openInTubeCast = false;
+                }
+                else if (e.AddedItems[0] == this.OpenInTubeCastButton)
+                {
+                    this.openInTubeCast = true;
+                    this.openInBrowser = false;
+                    this.openInMyTube = false;
+                }
             }
         }
     }
