@@ -11,6 +11,7 @@ using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
 using Windows.System;
 using Windows.System.RemoteSystems;
+using static Share_Across_Devices.Controls.MyEventArgs;
 
 namespace Share_Across_Devices.Controls
 {
@@ -76,28 +77,28 @@ namespace Share_Across_Devices.Controls
 
         public async void ShareMessage(string message)
         {
-            this.NotifyEvent(this, new MyEventArgs("Sending to remote clipboard..."));
+            this.NotifyEvent(this, new MyEventArgs("Sending to remote clipboard...", messageType.Indefinite));
             var status = await RemoteLaunch.TrySharetext(this.remoteSystem, message);
-            this.NotifyEvent(this, new MyEventArgs(status.ToString()));
+            this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
         }
 
         public async void OpenLinkInBrowser(string url)
         {
-            this.NotifyEvent(this, new MyEventArgs("Opening in remote browser..."));
+            this.NotifyEvent(this, new MyEventArgs("Opening in remote browser...", messageType.Indefinite));
             var status = await RemoteLaunch.TryShareURL(this.remoteSystem, url);
-            this.NotifyEvent(this, new MyEventArgs(status.ToString()));
+            this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
         }
         public async void OpenLinkInTubeCast(string url)
         {
-            this.NotifyEvent(this, new MyEventArgs("Opening in remote browser..."));
+            this.NotifyEvent(this, new MyEventArgs("Opening in remote browser...", messageType.Indefinite));
             var status = await RemoteLaunch.TryShareURL(this.remoteSystem, RemoteLaunch.ParseYoutubeLinkToTubeCastUri(url));
-            this.NotifyEvent(this, new MyEventArgs(status.ToString()));
+            this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
         }
         public async void OpenLinkInMyTube(string url)
         {
-            this.NotifyEvent(this, new MyEventArgs("Opening in remote browser..."));
+            this.NotifyEvent(this, new MyEventArgs("Opening in remote browser...", messageType.Indefinite));
             var status = await RemoteLaunch.TryShareURL(this.remoteSystem, RemoteLaunch.ParseYoutubeLinkToMyTubeUri(url));
-            this.NotifyEvent(this, new MyEventArgs(status.ToString()));
+            this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
         }
         public async Task<StorageFile> OpenFileToSend()
         {
@@ -134,26 +135,26 @@ namespace Share_Across_Devices.Controls
                         // Create a remote system connection request.
                         RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(this.remoteSystem);
 
-                        this.NotifyEvent(this, new MyEventArgs("Requesting connection to " + this.remoteSystem.DisplayName + "..."));
+                        this.NotifyEvent(this, new MyEventArgs("Requesting connection to " + this.remoteSystem.DisplayName + "...", messageType.Indefinite));
                         status = await this.connection.OpenRemoteAsync(connectionRequest);
                         if (status == AppServiceConnectionStatus.Success)
                         {
-                            this.NotifyEvent(this, new MyEventArgs("Successfully connected to " + this.remoteSystem.DisplayName + "..."));
+                            this.NotifyEvent(this, new MyEventArgs("Successfully connected to " + this.remoteSystem.DisplayName + "...", messageType.Indefinite));
                             await this.RequestIPAddress(connection);
                             return;
                         }
                         else
                         {
                             sendAttempt++;
-                            this.NotifyEvent(this, new MyEventArgs("Failed. Retrying attempt " + sendAttempt + " of 3"));
+                            this.NotifyEvent(this, new MyEventArgs("Failed. Retrying attempt " + sendAttempt + " of 3", messageType.Indefinite));
                         }
                     }
                 }
-                this.NotifyEvent(this, new MyEventArgs("Attempt to open a remote app service connection failed with error - " + status.ToString()));
+                this.NotifyEvent(this, new MyEventArgs("Attempt to open a remote app service connection failed with error - " + status.ToString(), messageType.Indefinite));
             }
             else
             {
-                this.NotifyEvent(this, new MyEventArgs("Select a device for remote connection."));
+                this.NotifyEvent(this, new MyEventArgs("Select a device for remote connection.", messageType.Indefinite));
             }
         }
         private async Task RequestIPAddress(AppServiceConnection connection)
@@ -167,7 +168,7 @@ namespace Share_Across_Devices.Controls
                 {
                     //Set up the inputs and send a message to the service.
                     ValueSet inputs = new ValueSet();
-                    this.NotifyEvent(this, new MyEventArgs("Requesting IP address...."));
+                    this.NotifyEvent(this, new MyEventArgs("Requesting IP address....", messageType.Indefinite));
                     response = await connection.SendMessageAsync(inputs);
 
                     if (response.Status == AppServiceResponseStatus.Success)
@@ -182,26 +183,26 @@ namespace Share_Across_Devices.Controls
                             }
                             else
                             {
-                                this.NotifyEvent(this, new MyEventArgs("Remote app service did not respond with a result."));
+                                this.NotifyEvent(this, new MyEventArgs("Remote app service did not respond with a result.", messageType.Indefinite));
                             }
                             break;
                         }
                         else
                         {
-                            this.NotifyEvent(this, new MyEventArgs("Response from remote app service does not contain a result."));
+                            this.NotifyEvent(this, new MyEventArgs("Response from remote app service does not contain a result.", messageType.Indefinite));
                         }
                     }
                     else
                     {
                         sendAttempt++;
-                        this.NotifyEvent(this, new MyEventArgs("Failed. Retrying attempt " + sendAttempt + " of 3"));
+                        this.NotifyEvent(this, new MyEventArgs("Failed. Retrying attempt " + sendAttempt + " of 3", messageType.Indefinite));
                     }
                 }
-                this.NotifyEvent(this, new MyEventArgs("Sending message to remote app service failed with error - " + response.Status.ToString()));
+                this.NotifyEvent(this, new MyEventArgs("Sending message to remote app service failed with error - " + response.Status.ToString(), messageType.Indefinite));
             }
             else
             {
-                this.NotifyEvent(this, new MyEventArgs("Not connected to any app service. Select a device to open a connection."));
+                this.NotifyEvent(this, new MyEventArgs("Not connected to any app service. Select a device to open a connection.", messageType.Indefinite));
             }
         }
         private async void beginConnection(string ipAddress)
@@ -211,7 +212,7 @@ namespace Share_Across_Devices.Controls
             {
                 try
                 {
-                    this.NotifyEvent(this, new MyEventArgs("Launching app on device...."));
+                    this.NotifyEvent(this, new MyEventArgs("Launching app on device....", messageType.Indefinite));
                     var status = await RemoteLaunch.TryBeginShareFile(this.remoteSystem, this.fileToSend.Name);
 
                     if (status == RemoteLaunchUriStatus.Success)
@@ -226,7 +227,7 @@ namespace Share_Across_Devices.Controls
 
                             //Every protocol typically has a standard port number. For example HTTP is typically 80, FTP is 20 and 21, etc.
                             //For the echo server/client application we will use a random port 1337.
-                            this.NotifyEvent(this, new MyEventArgs("Opening connection...."));
+                            this.NotifyEvent(this, new MyEventArgs("Opening connection....", messageType.Indefinite));
                             string serverPort = "1717";
                             await socket.ConnectAsync(serverHost, serverPort);
                             
@@ -255,7 +256,7 @@ namespace Share_Across_Devices.Controls
                                         var percentage = ((double)fileStream.Position / (double)fileStream.Length) * 100.0;
                                         dataWriter.WriteInt32(Convert.ToInt32(percentage));
                                         await dataWriter.StoreAsync();
-                                        this.NotifyEvent(this, new MyEventArgs(Convert.ToInt32(percentage) + "% transferred"));
+                                        this.NotifyEvent(this, new MyEventArgs(Convert.ToInt32(percentage) + "% transferred", messageType.Indefinite));
                                         await fileStream.ReadAsync(bytes, 0, bytes.Length);
                                         dataWriter.WriteBytes(bytes);
                                         await dataWriter.StoreAsync();
@@ -269,7 +270,7 @@ namespace Share_Across_Devices.Controls
                             Stream streamIn = socket.InputStream.AsStreamForRead();
                             StreamReader reader = new StreamReader(streamIn);
                             string response = await reader.ReadLineAsync();
-                            this.NotifyEvent(this, new MyEventArgs(response));
+                            this.NotifyEvent(this, new MyEventArgs(response, messageType.Timed));
                             return;
                         }
                     }
@@ -277,10 +278,10 @@ namespace Share_Across_Devices.Controls
                 catch (Exception e)
                 {
                     sendAttempt++;
-                    this.NotifyEvent(this, new MyEventArgs("Failed. Retrying attempt " + sendAttempt + " of 3"));
+                    this.NotifyEvent(this, new MyEventArgs("Failed. Retrying attempt " + sendAttempt + " of 3", messageType.Indefinite));
                 }
             }
-            this.NotifyEvent(this, new MyEventArgs("Connection failed. Network destination not allowed."));
+            this.NotifyEvent(this, new MyEventArgs("Connection failed. Network destination not allowed.", messageType.Indefinite));
         }
     }
 
@@ -291,13 +292,25 @@ namespace Share_Across_Devices.Controls
             get;
             set;
         }
+        public messageType MessageType
+        {
+            get;
+            set;
+        }
+        public enum messageType
+        {
+            Indefinite,
+            Timed
+        }
+
         public MyEventArgs()
         {
 
         }
-        public MyEventArgs(string message)
+        public MyEventArgs(string message, messageType type)
         {
             this.Message = message;
+            this.MessageType = type;
         }
     }
 }

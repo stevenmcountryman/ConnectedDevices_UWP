@@ -70,6 +70,20 @@
                            HamburgerHeight="48"
                            IsPaneOpen="True">
             <RelativePanel Background="#FF535353">
+                <Grid x:Name="NotificationGrid"
+                      RelativePanel.AlignLeftWithPanel="True"
+                      RelativePanel.AlignRightWithPanel="True"
+                      RelativePanel.Below="DevicePanel">
+                    <StackPanel x:Name="NotificationPanel"
+                                Background="#4B9DFF">
+                        <TextBlock x:Name="NotificationText"
+                                   TextAlignment="Center"
+                                   Text="notification"
+                                   HorizontalAlignment="Stretch"
+                                   Foreground="White"
+                                   Margin="8"/>
+                    </StackPanel>
+                </Grid>
                 <StackPanel x:Name="DevicePanel"
                             Background="#3876BF"
                             Height="144"
@@ -88,7 +102,7 @@
                                FontSize="20" 
                                Margin="4"
                                HorizontalAlignment="Center"/>
-                </StackPanel>
+                </StackPanel>                
                 <Grid x:Name="MediaViewGrid"
                       RelativePanel.AlignHorizontalCenterWithPanel="True"
                       RelativePanel.Above="TypeAttachSendPanel"
@@ -160,10 +174,6 @@
                         </GridView>
                     </StackPanel>
                 </Grid>
-                <TextBlock x:Name="Notification"
-                           Foreground="White"
-                           RelativePanel.Above="TypeAttachSendPanel"
-                           RelativePanel.AlignHorizontalCenterWithPanel="True"/>
                 <RelativePanel x:Name="TypeAttachSendPanel"
                                RelativePanel.AlignBottomWithPanel="True"
                                RelativePanel.AlignLeftWithPanel="True"

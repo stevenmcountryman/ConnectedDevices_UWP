@@ -11,6 +11,7 @@ using Windows.UI.Composition;
 using Windows.Foundation.Metadata;
 using Windows.UI;
 using Windows.UI.ViewManagement;
+using System.Threading.Tasks;
 
 namespace Share_Across_Devices.Views
 {
@@ -20,6 +21,7 @@ namespace Share_Across_Devices.Views
         private Compositor _compositor;
         private RemoteDeviceObject selectedDevice;
         private bool sendOptionsHidden = true;
+        private bool notificationsHidden = true;
         private bool openInBrowser = false;
         private bool openInTubeCast = false;
         private bool openInMyTube = false;
@@ -70,6 +72,8 @@ namespace Share_Across_Devices.Views
             sendOptionsVisual.Opacity = 0f;
             var devicePanelVisual = ElementCompositionPreview.GetElementVisual(this.DevicePanel);
             devicePanelVisual.Opacity = 0f;
+            var notificationVisual = ElementCompositionPreview.GetElementVisual(this.NotificationPanel);
+            notificationVisual.Opacity = 0f;
         }
 
         private void DeviceList_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -183,10 +187,64 @@ namespace Share_Across_Devices.Views
             devicePanelVisual.StartAnimation("Opacity", fadeAnimation);
         }
 
-        private void SelectedDevice_NotifyEvent(object sender, MyEventArgs e)
+        private async void SelectedDevice_NotifyEvent(object sender, MyEventArgs e)
         {
             var message = e.Message;
-            this.Notification.Text = message;
+            this.NotificationText.Text = message;
+            if (e.MessageType == MyEventArgs.messageType.Indefinite)
+            {
+                this.animateShowNotification();
+            }
+            else
+            {
+                this.animateShowNotification();
+                await Task.Delay(2000);
+                this.animateHideNotification();
+            }
+        }
+
+        private void animateHideNotification()
+        {
+            var itemVisual = ElementCompositionPreview.GetElementVisual(this.NotificationPanel);
+
+            if (!this.notificationsHidden)
+            {
+                Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
+                offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, 0f, 0f));
+                offsetAnimation.InsertKeyFrame(1f, new Vector3(0f, -100f, 0f));
+
+                ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
+                fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                fadeAnimation.InsertKeyFrame(0f, 1f);
+                fadeAnimation.InsertKeyFrame(1f, 0f);
+
+                itemVisual.StartAnimation("Offset", offsetAnimation);
+                itemVisual.StartAnimation("Opacity", fadeAnimation);
+                this.notificationsHidden = true;
+            }
+        }
+
+        private void animateShowNotification()
+        {
+            var itemVisual = ElementCompositionPreview.GetElementVisual(this.NotificationPanel);
+
+            if (this.notificationsHidden)
+            {
+                Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
+                offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, -100f, 0f));
+                offsetAnimation.InsertKeyFrame(1f, new Vector3(0f, 0f, 0f));
+
+                ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
+                fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                fadeAnimation.InsertKeyFrame(0f, 0f);
+                fadeAnimation.InsertKeyFrame(1f, 1f);
+
+                itemVisual.StartAnimation("Offset", offsetAnimation);
+                itemVisual.StartAnimation("Opacity", fadeAnimation);
+                this.notificationsHidden = false;
+            }
         }
 
         private void MessageToSend_TextChanged(object sender, TextChangedEventArgs e)
