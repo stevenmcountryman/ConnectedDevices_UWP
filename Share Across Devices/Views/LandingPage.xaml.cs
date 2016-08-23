@@ -131,6 +131,7 @@ namespace Share_Across_Devices.Views
             }
         }
 
+        #region Share Target
         private async void handleShare(NavigationEventArgs e)
         {
             this.shareOperation = (ShareOperation)e.Parameter;
@@ -259,6 +260,7 @@ namespace Share_Across_Devices.Views
                     if (this.sharedStorageItems != null && this.sharedStorageItems.Count == 1)
                     {
                         this.file = await StorageFile.GetFileFromPathAsync(this.sharedStorageItems[0].Path);
+                        this.MessageToSend.Text = "attached file";
                         MediaView mediaView = new MediaView(file);
                         this.MediaSendViewGrid.Children.Clear();
                         this.MediaSendViewGrid.Children.Add(mediaView);
@@ -267,6 +269,7 @@ namespace Share_Across_Devices.Views
                 });
             });
         }
+        #endregion
 
         #region File retrieval 
         private async void beginListeningForFile()
@@ -909,7 +912,14 @@ namespace Share_Across_Devices.Views
             {
                 if (this.remoteSystemIsLocal())
                 {
-                    this.AttachButton.IsEnabled = true;
+                    if (this.sharingInitiated)
+                    {
+                        this.SendButton.IsEnabled = true;
+                    }
+                    else
+                    {
+                        this.AttachButton.IsEnabled = true;
+                    }
                 }
                 else
                 {
