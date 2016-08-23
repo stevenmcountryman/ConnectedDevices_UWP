@@ -31,6 +31,8 @@ namespace Share_Across_Devices.Views
         private RemoteDeviceObject selectedDevice;
         private bool sendOptionsHidden = true;
         private bool notificationsHidden = true;
+        private bool mediaViewGridHidden = true;
+        private bool mediaRetrievalGridHidden = true;
         private bool openInBrowser = false;
         private bool openInTubeCast = false;
         private bool openInMyTube = false;
@@ -362,18 +364,23 @@ namespace Share_Across_Devices.Views
             {
                 var itemVisual = ElementCompositionPreview.GetElementVisual(this.MediaSendViewGrid.Children[0]);
 
-                Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
-                offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
-                offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, 300f, 0f));
-                offsetAnimation.InsertKeyFrame(1f, new Vector3(0f, 0f, 0f));
+                if (this.mediaViewGridHidden)
+                {
+                    Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
+                    offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                    offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, 300f, 0f));
+                    offsetAnimation.InsertKeyFrame(1f, new Vector3(0f, 0f, 0f));
 
-                ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
-                fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
-                fadeAnimation.InsertKeyFrame(0f, 0f);
-                fadeAnimation.InsertKeyFrame(1f, 1f);
+                    ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
+                    fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                    fadeAnimation.InsertKeyFrame(0f, 0f);
+                    fadeAnimation.InsertKeyFrame(1f, 1f);
 
-                itemVisual.StartAnimation("Offset", offsetAnimation);
-                itemVisual.StartAnimation("Opacity", fadeAnimation);
+                    itemVisual.StartAnimation("Offset", offsetAnimation);
+                    itemVisual.StartAnimation("Opacity", fadeAnimation);
+
+                    this.mediaViewGridHidden = false;
+                }
             }
         }
         private void showMediaRetrieveViewGrid()
@@ -382,58 +389,76 @@ namespace Share_Across_Devices.Views
             {
                 var itemVisual = ElementCompositionPreview.GetElementVisual(this.MediaRetrieveViewGrid.Children[0]);
 
-                Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
-                offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
-                offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, -300f, 0f));
-                offsetAnimation.InsertKeyFrame(1f, new Vector3(0f, 0f, 0f));
+                if (this.mediaRetrievalGridHidden)
+                {
+                    Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
+                    offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                    offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, -300f, 0f));
+                    offsetAnimation.InsertKeyFrame(1f, new Vector3(0f, 0f, 0f));
 
-                ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
-                fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
-                fadeAnimation.InsertKeyFrame(0f, 0f);
-                fadeAnimation.InsertKeyFrame(1f, 1f);
+                    ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
+                    fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                    fadeAnimation.InsertKeyFrame(0f, 0f);
+                    fadeAnimation.InsertKeyFrame(1f, 1f);
 
-                itemVisual.StartAnimation("Offset", offsetAnimation);
-                itemVisual.StartAnimation("Opacity", fadeAnimation);
+                    itemVisual.StartAnimation("Offset", offsetAnimation);
+                    itemVisual.StartAnimation("Opacity", fadeAnimation);
+
+                    this.mediaRetrievalGridHidden = false;
+                }
             }
         }
-        private void hideMediaViewGrid()
+        private async void hideMediaViewGrid()
         {
             if (this.MediaSendViewGrid.Children[0] != null)
             {
                 var itemVisual = ElementCompositionPreview.GetElementVisual(this.MediaSendViewGrid.Children[0]);
 
-                Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
-                offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
-                offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, 0f, 0f));
-                offsetAnimation.InsertKeyFrame(1f, new Vector3(0f, 300f, 0f));
+                if (!this.mediaViewGridHidden)
+                {
+                    Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
+                    offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                    offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, 0f, 0f));
+                    offsetAnimation.InsertKeyFrame(1f, new Vector3(0f, 300f, 0f));
 
-                ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
-                fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
-                fadeAnimation.InsertKeyFrame(0f, 1f);
-                fadeAnimation.InsertKeyFrame(1f, 0f);
+                    ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
+                    fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                    fadeAnimation.InsertKeyFrame(0f, 1f);
+                    fadeAnimation.InsertKeyFrame(1f, 0f);
 
-                itemVisual.StartAnimation("Offset", offsetAnimation);
-                itemVisual.StartAnimation("Opacity", fadeAnimation);
+                    itemVisual.StartAnimation("Offset", offsetAnimation);
+                    itemVisual.StartAnimation("Opacity", fadeAnimation);
+                    await Task.Delay(1000);
+                    this.MediaSendViewGrid.Children.Clear();
+                    this.mediaViewGridHidden = true;
+                }
             }
         }
-        private void hideMediaRetrieveViewGrid()
+        private async void hideMediaRetrieveViewGrid()
         {
             if (this.MediaRetrieveViewGrid.Children[0] != null)
             {
                 var itemVisual = ElementCompositionPreview.GetElementVisual(this.MediaRetrieveViewGrid.Children[0]);
 
-                Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
-                offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
-                offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, 0f, 0f));
-                offsetAnimation.InsertKeyFrame(1f, new Vector3(0f, -300f, 0f));
+                if (!this.mediaRetrievalGridHidden)
+                {
+                    Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
+                    offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                    offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, 0f, 0f));
+                    offsetAnimation.InsertKeyFrame(1f, new Vector3(0f, -300f, 0f));
 
-                ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
-                fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
-                fadeAnimation.InsertKeyFrame(0f, 1f);
-                fadeAnimation.InsertKeyFrame(1f, 0f);
+                    ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
+                    fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                    fadeAnimation.InsertKeyFrame(0f, 1f);
+                    fadeAnimation.InsertKeyFrame(1f, 0f);
 
-                itemVisual.StartAnimation("Offset", offsetAnimation);
-                itemVisual.StartAnimation("Opacity", fadeAnimation);
+                    itemVisual.StartAnimation("Offset", offsetAnimation);
+                    itemVisual.StartAnimation("Opacity", fadeAnimation);
+
+                    await Task.Delay(1000);
+                    this.MediaRetrieveViewGrid.Children.Clear();
+                    this.mediaRetrievalGridHidden = true;
+                }
             }
         }
         #endregion
@@ -506,13 +531,11 @@ namespace Share_Across_Devices.Views
         #endregion     
 
         #region UI events
-        private async void TransferView_SaveEvent(object sender, EventArgs e)
+        private void TransferView_SaveEvent(object sender, EventArgs e)
         {
             this.hideMediaRetrieveViewGrid();
             this.NotificationText.Text = "File saved!";
             this.animateShowNotificationTimed();
-            await Task.Delay(1000);
-            this.MediaRetrieveViewGrid.Children.Clear();
         }
         private void NotificationText_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
@@ -527,11 +550,9 @@ namespace Share_Across_Devices.Views
             this.NotificationText.Text = "Copied";
             this.animateShowNotificationTimed();
         }
-        private async void TransferView_CancelEvent(object sender, EventArgs e)
+        private void TransferView_CancelEvent(object sender, EventArgs e)
         {
             this.hideMediaRetrieveViewGrid();
-            await Task.Delay(1000);
-            this.MediaRetrieveViewGrid.Children.Clear();
         }
         private void MessageToSend_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -568,6 +589,7 @@ namespace Share_Across_Devices.Views
             else
             {
                 this.animateShowNotificationTimed();
+                this.resetView();
             }
         }
         private void SendButton_Click(object sender, RoutedEventArgs e)
@@ -612,8 +634,10 @@ namespace Share_Across_Devices.Views
                 this.MediaSendViewGrid.Children.Clear();
                 this.MediaSendViewGrid.Children.Add(mediaViewer);
                 this.showMediaViewGrid();
+                this.MessageToSend.Text = "attached file";
             }
         }
+
         private void OpenInGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (this.OpenInGridView.SelectedIndex >= 0)
@@ -768,6 +792,9 @@ namespace Share_Across_Devices.Views
             this.openInBrowser = false;
             this.openInMyTube = false;
             this.openInTubeCast = false;
+            this.transferFile = false;
+            this.hideMediaViewGrid();
+            this.hideMediaRetrieveViewGrid();
         }
         #endregion
         
