@@ -915,6 +915,7 @@ namespace Share_Across_Devices.Views
                 {
                     if (this.sharingInitiated)
                     {
+                        this.MessageToSend.IsEnabled = false;
                         this.SendButton.IsEnabled = true;
                     }
                     else
@@ -927,7 +928,7 @@ namespace Share_Across_Devices.Views
                     this.AttachButton.IsEnabled = false;
                 }
 
-                if (this.MessageToSend.Text.Length > 0)
+                if (this.MessageToSend.Text.Length > 0 && this.MessageToSend.IsEnabled == true)
                 {
                     this.SendButton.IsEnabled = true;
                     this.checkIfWebLink();
