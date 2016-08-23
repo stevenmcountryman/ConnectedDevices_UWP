@@ -1,8 +1,9 @@
 ﻿<Application
-    x:Class="Share_Across_Devices.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Share_Across_Devices"
+    xmlns:Controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    x:Class="Share_Across_Devices.App"
     RequestedTheme="Light">
     <Application.Resources>
         <Style x:Key="MyGridViewItemContainerStyle" TargetType="GridViewItem">
@@ -748,7 +749,7 @@
                                                 <DiscreteObjectKeyFrame KeyTime="0" Value="Transparent" />
                                             </ObjectAnimationUsingKeyFrames>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="ContentPresenter">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="White" />                                                
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="White" />
                                             </ObjectAnimationUsingKeyFrames>
                                             <PointerUpThemeAnimation Storyboard.TargetName="RootGrid"/>
                                         </Storyboard>

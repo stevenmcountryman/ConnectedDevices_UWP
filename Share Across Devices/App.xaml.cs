@@ -37,7 +37,7 @@ namespace Share_Across_Devices
             // Code specific to launch for results
             var protocolArgs = args as ProtocolActivatedEventArgs;
             // Open the page that we created to handle activation for results.
-            rootFrame.Navigate(typeof(MainPage), protocolArgs);
+            rootFrame.Navigate(typeof(LandingPage), protocolArgs);
 
             // Ensure the current window is active.
             Window.Current.Activate();

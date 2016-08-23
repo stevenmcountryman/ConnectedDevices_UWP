@@ -6,85 +6,32 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="1000"
-    d:DesignWidth="1000">
+    d:DesignHeight="420"
+    d:DesignWidth="300">
 
-    <RelativePanel Background="#F93C3C3C">
-        <StackPanel Width="300"
-                    Height="420" 
-                    RelativePanel.AlignHorizontalCenterWithPanel="True"
-                    RelativePanel.AlignVerticalCenterWithPanel="True">
-            <RelativePanel Height="300"
-                           Width="300">
-                <Image x:Name="ImageFileViewer"
-                       Stretch="Uniform"
-                       RelativePanel.AlignBottomWithPanel="True"
-                       RelativePanel.AlignLeftWithPanel="True"
-                       RelativePanel.AlignRightWithPanel="True"
-                       RelativePanel.AlignTopWithPanel="True"/>
-                <MediaElement x:Name="VideoFileViewer"
-                              Stretch="Uniform"
-                              Visibility="Collapsed"
-                              Width="300"
-                              Height="300"
-                              RelativePanel.AlignBottomWithPanel="True"
-                              RelativePanel.AlignLeftWithPanel="True"
-                              RelativePanel.AlignRightWithPanel="True"
-                              RelativePanel.AlignTopWithPanel="True"
-                              IsLooping="True"
-                              AutoPlay="False"/>
-                <Grid x:Name="PlayPausePanel"
-                      RelativePanel.AlignBottomWithPanel="True"
-                      RelativePanel.AlignLeftWithPanel="True"
-                      RelativePanel.AlignRightWithPanel="True"
-                      RelativePanel.AlignTopWithPanel="True"
-                      Background="#00000000">
-                    <Grid x:Name="PlayPauseGrid"
-                          HorizontalAlignment="Center"
-                          VerticalAlignment="Center"
-                          Height="80"
-                          Width="80" 
-                          Background="#7F000000"
-                          CornerRadius="40">
-                        <TextBlock x:Name="PlayPauseButton" 
-                                Text="&#xE102;" 
-                                Tag=""
-                                FontFamily="Segoe MDL2 Assets"
-                                Margin="8"
-                                Padding="12"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                                Foreground="White"
-                                FontWeight="Bold"
-                                FontSize="32"
-                               IsHitTestVisible="False"/>
-                    </Grid>
-                </Grid>
-            </RelativePanel>
-            <TextBlock x:Name="FileNameBlock"
-                       Foreground="White"
-                       FontWeight="Bold"
-                       Text="filename.ext"
-                       TextAlignment="Center"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       TextWrapping="Wrap"
-                       MaxLines="2"
-                       Margin="8"/>
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Center">
-                <Button x:Name="CancelButton" 
-                        Content="close" 
-                        Margin="8"
-                        Padding="12"
-                        Foreground="White"
-                        FontWeight="Bold"
-                        FontSize="16"
-                        HorizontalAlignment="Center"
-                        Click="CancelButton_Click"
-                        BorderBrush="{x:Null}" 
-                        Background="#33FFFFFF"/>
-                <Button x:Name="OpenFileButton" 
+    <RelativePanel Width="300" Margin="0,8,0,0">
+        <local:MediaView x:Name="MediaViewer"
+                             RelativePanel.AlignTopWithPanel="True"
+                             RelativePanel.AlignLeftWithPanel="True"
+                             RelativePanel.AlignRightWithPanel="True"/>
+        <Button x:Name="CancelButton" 
+                Content="&#xE711;" 
+                FontFamily="Segoe MDL2 Assets"
+                Margin="8"
+                Padding="12"
+                Foreground="White"
+                FontWeight="Bold"
+                FontSize="16"
+                HorizontalAlignment="Center"
+                Click="CancelButton_Click"
+                BorderBrush="{x:Null}" 
+                Background="Transparent"
+                RelativePanel.AlignTopWithPanel="True"
+                RelativePanel.AlignRightWithPanel="True"/>
+        <StackPanel Orientation="Horizontal"
+                        RelativePanel.Below="MediaViewer"
+                        RelativePanel.AlignHorizontalCenterWithPanel="True">
+            <Button x:Name="OpenFileButton" 
                         Content="open" 
                         Margin="8"
                         Padding="12"
@@ -95,7 +42,7 @@
                         Click="OpenFileButton_Click" 
                         BorderBrush="{x:Null}" 
                         Background="#33FFFFFF"  />
-                <Button x:Name="SaveFileButton" 
+            <Button x:Name="SaveFileButton" 
                         Content="save" 
                         Margin="8"
                         Padding="12"
@@ -106,7 +53,6 @@
                         Click="SaveFileButton_Click" 
                         BorderBrush="{x:Null}" 
                         Background="#33FFFFFF"  />
-            </StackPanel>
         </StackPanel>
     </RelativePanel>
 </UserControl>

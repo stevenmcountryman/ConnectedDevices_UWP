@@ -116,7 +116,7 @@ namespace Share_Across_Devices.Controls
         }
         public async void OpenLinkInTubeCast(string url)
         {
-            this.NotifyEvent(this, new MyEventArgs("Opening in remote browser...", messageType.Indefinite));
+            this.NotifyEvent(this, new MyEventArgs("Opening in remote TubeCast...", messageType.Indefinite));
             this.startTimer();
             var status = await RemoteLaunch.TryShareURL(this.remoteSystem, RemoteLaunch.ParseYoutubeLinkToTubeCastUri(url));
             this.timer.Stop();
@@ -124,7 +124,7 @@ namespace Share_Across_Devices.Controls
         }
         public async void OpenLinkInMyTube(string url)
         {
-            this.NotifyEvent(this, new MyEventArgs("Opening in remote browser...", messageType.Indefinite));
+            this.NotifyEvent(this, new MyEventArgs("Opening in remote myTube!...", messageType.Indefinite));
             this.startTimer();
             var status = await RemoteLaunch.TryShareURL(this.remoteSystem, RemoteLaunch.ParseYoutubeLinkToMyTubeUri(url));
             this.timer.Stop();

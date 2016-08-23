@@ -187,7 +187,7 @@ namespace Share_Across_Devices
         private void displayFile()
         {
             this.FileView.Visibility = Visibility.Visible;
-            this.FileView.DisplayFile(this.file);
+            //this.FileView.DisplayFile(this.file);
             this.animateFileViewer();
         }
 
