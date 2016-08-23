@@ -774,7 +774,6 @@ namespace Share_Across_Devices.Views
             else
             {
                 this.animateShowNotificationTimed();
-                this.resetView();
             }
         }
         private void SendButton_Click(object sender, RoutedEventArgs e)
@@ -907,8 +906,9 @@ namespace Share_Across_Devices.Views
         private async void animateShowNotificationTimed()
         {
             this.animateShowNotification();
-            await Task.Delay(4000);
+            await Task.Delay(3000);
             this.animateHideNotification();
+            this.resetView();
             if (this.sharingInitiated)
             {
                 this.shareOperation.DismissUI();
