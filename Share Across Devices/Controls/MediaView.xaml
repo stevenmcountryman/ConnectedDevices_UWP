@@ -6,12 +6,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="360"
-    d:DesignWidth="300">
+    d:DesignHeight="260"
+    d:DesignWidth="200">
 
-    <StackPanel Width="300">
-        <RelativePanel Height="300"
-                           Width="300">
+    <StackPanel Width="200">
+        <RelativePanel Height="200"
+                           Width="200">
             <Image x:Name="ImageFileViewer"
                        Stretch="Uniform"
                        RelativePanel.AlignBottomWithPanel="True"
@@ -21,8 +21,8 @@
             <MediaElement x:Name="VideoFileViewer"
                               Stretch="Uniform"
                               Visibility="Collapsed"
-                              Width="300"
-                              Height="300"
+                              Width="200"
+                              Height="200"
                               RelativePanel.AlignBottomWithPanel="True"
                               RelativePanel.AlignLeftWithPanel="True"
                               RelativePanel.AlignRightWithPanel="True"
@@ -38,8 +38,8 @@
                 <Grid x:Name="PlayPauseGrid"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Center"
-                          Height="80"
-                          Width="80" 
+                          Height="60"
+                          Width="60" 
                           Background="#7F000000"
                           CornerRadius="40">
                     <TextBlock x:Name="PlayPauseButton" 
@@ -51,14 +51,13 @@
                                VerticalAlignment="Center"
                                 Foreground="White"
                                 FontWeight="Bold"
-                                FontSize="32"
+                                FontSize="18"
                                IsHitTestVisible="False"/>
                 </Grid>
             </Grid>
             <Button x:Name="CancelButton" 
                 Content="&#xE711;" 
                 FontFamily="Segoe MDL2 Assets"
-                Margin="8"
                 Padding="12"
                 Foreground="White"
                 FontWeight="Bold"
@@ -78,6 +77,7 @@
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
                        TextWrapping="Wrap"
+                       FontSize="14"
                        MaxLines="2"
                        Margin="8"/>
     </StackPanel>

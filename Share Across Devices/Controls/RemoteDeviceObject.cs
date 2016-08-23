@@ -168,8 +168,12 @@ namespace Share_Across_Devices.Controls
             openPicker.FileTypeFilter.Add("*");
             openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
             this.fileToSend = await openPicker.PickSingleFileAsync();
-            StorageApplicationPermissions.FutureAccessList.Add(this.fileToSend);
-            return this.fileToSend;
+            if (this.fileToSend != null)
+            {
+                StorageApplicationPermissions.FutureAccessList.Add(this.fileToSend);
+                return this.fileToSend;
+            }
+            return null;
         }
         public void SetFileToSend(StorageFile file)
         {

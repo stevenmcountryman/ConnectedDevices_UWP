@@ -6,10 +6,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="420"
-    d:DesignWidth="300">
+    d:DesignHeight="280"
+    d:DesignWidth="200">
 
-    <RelativePanel Width="300" Margin="0,8,0,0">
+    <RelativePanel Width="200" Margin="0,8,0,0">
         <local:MediaView x:Name="MediaViewer"
                              RelativePanel.AlignTopWithPanel="True"
                              RelativePanel.AlignLeftWithPanel="True"
@@ -24,22 +24,24 @@
                         Padding="12"
                         Foreground="White"
                         FontWeight="Bold"
-                        FontSize="16"
+                        FontSize="14"
                         HorizontalAlignment="Center"
                         Click="OpenFileButton_Click" 
                         BorderBrush="{x:Null}" 
-                        Background="#33FFFFFF"  />
+                        Background="#3876BF"
+                        Style="{StaticResource MyToggleButtonStyle}"  />
             <Button x:Name="SaveFileButton" 
                         Content="save" 
                         Margin="8"
                         Padding="12"
                         Foreground="White"
                         FontWeight="Bold"
-                        FontSize="16"
+                        FontSize="14"
                         HorizontalAlignment="Center"
                         Click="SaveFileButton_Click" 
                         BorderBrush="{x:Null}" 
-                        Background="#33FFFFFF"  />
+                        Background="#3876BF"
+                        Style="{StaticResource MyToggleButtonStyle}"  />
         </StackPanel>
     </RelativePanel>
 </UserControl>
