@@ -983,8 +983,11 @@ namespace Share_Across_Devices.Views
             {
                 this.MessageToSend.Text = "";
                 this.openInBrowser = false;
+                this.OpenInBrowserButton.BorderBrush = new SolidColorBrush(Colors.Transparent);
                 this.openInMyTube = false;
+                this.OpenInMyTubeButton.BorderBrush = new SolidColorBrush(Colors.Transparent);
                 this.openInTubeCast = false;
+                this.OpenInTubeCastButton.BorderBrush = new SolidColorBrush(Colors.Transparent);
                 this.transferFile = false;
                 this.hideMediaViewGrid();
                 this.hideMediaRetrieveViewGrid();
