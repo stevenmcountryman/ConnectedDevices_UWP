@@ -265,6 +265,7 @@ namespace Share_Across_Devices.Views
                         this.MediaSendViewGrid.Children.Clear();
                         this.MediaSendViewGrid.Children.Add(mediaView);
                         this.showMediaViewGrid();
+                        this.transferFile = true;
                     }
                 });
             });
