@@ -892,6 +892,7 @@ namespace Share_Across_Devices.Views
                 this.SendButton.IsEnabled = true;
                 this.hideSendOptionsPanel();
                 var mediaViewer = new MediaView(file);
+                this.selectedDevice.SetFileToSend(file);
                 mediaViewer.CancelEvent += MediaViewer_CancelEvent;
                 this.MediaSendViewGrid.Children.Clear();
                 this.MediaSendViewGrid.Children.Add(mediaViewer);
