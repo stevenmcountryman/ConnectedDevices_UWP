@@ -12,20 +12,6 @@
     <StackPanel Width="300">
         <RelativePanel Height="300"
                            Width="300">
-            <Button x:Name="CancelButton" 
-                Content="&#xE711;" 
-                FontFamily="Segoe MDL2 Assets"
-                Margin="8"
-                Padding="12"
-                Foreground="White"
-                FontWeight="Bold"
-                FontSize="16"
-                HorizontalAlignment="Center"
-                Click="CancelButton_Click"
-                BorderBrush="{x:Null}" 
-                Background="Transparent"
-                RelativePanel.AlignTopWithPanel="True"
-                RelativePanel.AlignRightWithPanel="True"/>
             <Image x:Name="ImageFileViewer"
                        Stretch="Uniform"
                        RelativePanel.AlignBottomWithPanel="True"
@@ -69,6 +55,20 @@
                                IsHitTestVisible="False"/>
                 </Grid>
             </Grid>
+            <Button x:Name="CancelButton" 
+                Content="&#xE711;" 
+                FontFamily="Segoe MDL2 Assets"
+                Margin="8"
+                Padding="12"
+                Foreground="White"
+                FontWeight="Bold"
+                FontSize="16"
+                HorizontalAlignment="Center"
+                Click="CancelButton_Click"
+                BorderBrush="{x:Null}" 
+                Background="Transparent"
+                RelativePanel.AlignTopWithPanel="True"
+                RelativePanel.AlignRightWithPanel="True"/>
         </RelativePanel>
         <TextBlock x:Name="FileNameBlock"
                        Foreground="White"
