@@ -111,6 +111,8 @@ namespace Share_Across_Devices.Views
                                 Clipboard.SetContent(package);
                                 Clipboard.Flush();
                                 this.NotificationText.Text = "Copied!";
+                                this.SelectedDeviceIcon.Glyph = "\uE166";
+                                this.SelectedDeviceName.Text = "Received!";
                                 this.animateShowNotification();
                             }
                         }
@@ -345,7 +347,7 @@ namespace Share_Across_Devices.Views
                         this.SelectedDeviceIcon.Glyph = "\uE166";
                         this.SelectedDeviceName.Text = "Received!";
                         this.NotificationText.Text = "File received";
-                        this.animateShowNotificationTimed();
+                        this.animateShowNotification();
                         TransferView transferView = new TransferView(this.file);
                         this.MediaRetrieveViewGrid.Children.Clear();
                         this.MediaRetrieveViewGrid.Children.Add(transferView);
