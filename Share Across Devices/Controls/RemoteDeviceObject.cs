@@ -103,7 +103,14 @@ namespace Share_Across_Devices.Controls
             this.startTimer();
             var status = await RemoteLaunch.TrySharetext(this.remoteSystem, message);
             this.timer.Stop();
-            this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
+            if (status == RemoteLaunchUriStatus.Success)
+            {
+                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
+            }
+            else
+            {
+                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Indefinite));
+            }
         }
 
         public async void OpenLinkInBrowser(string url)
@@ -112,7 +119,14 @@ namespace Share_Across_Devices.Controls
             this.startTimer();
             var status = await RemoteLaunch.TryShareURL(this.remoteSystem, url);
             this.timer.Stop();
-            this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
+            if (status == RemoteLaunchUriStatus.Success)
+            {
+                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
+            }
+            else
+            {
+                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Indefinite));
+            }
         }
         public async void OpenLinkInTubeCast(string url)
         {
@@ -120,7 +134,14 @@ namespace Share_Across_Devices.Controls
             this.startTimer();
             var status = await RemoteLaunch.TryShareURL(this.remoteSystem, RemoteLaunch.ParseYoutubeLinkToTubeCastUri(url));
             this.timer.Stop();
-            this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
+            if (status == RemoteLaunchUriStatus.Success)
+            {
+                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
+            }
+            else
+            {
+                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Indefinite));
+            }
         }
         public async void OpenLinkInMyTube(string url)
         {
@@ -128,7 +149,14 @@ namespace Share_Across_Devices.Controls
             this.startTimer();
             var status = await RemoteLaunch.TryShareURL(this.remoteSystem, RemoteLaunch.ParseYoutubeLinkToMyTubeUri(url));
             this.timer.Stop();
-            this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
+            if (status == RemoteLaunchUriStatus.Success)
+            {
+                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
+            }
+            else
+            {
+                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Indefinite));
+            }
         }
         public async Task<StorageFile> OpenFileToSend()
         {

@@ -795,6 +795,8 @@ namespace Share_Across_Devices.Views
             this.transferFile = false;
             this.hideMediaViewGrid();
             this.hideMediaRetrieveViewGrid();
+            var notificationVisual = ElementCompositionPreview.GetElementVisual(this.NotificationPanel);
+            notificationVisual.Opacity = 0f;
         }
         #endregion
         
