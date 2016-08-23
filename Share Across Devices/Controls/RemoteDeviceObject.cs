@@ -171,6 +171,10 @@ namespace Share_Across_Devices.Controls
             StorageApplicationPermissions.FutureAccessList.Add(this.fileToSend);
             return this.fileToSend;
         }
+        public void SetFileToSend(StorageFile file)
+        {
+            this.fileToSend = file;
+        }
 
         public void SendFile()
         {

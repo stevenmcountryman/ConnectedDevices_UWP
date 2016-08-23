@@ -429,6 +429,7 @@ namespace Share_Across_Devices.Views
 
             if (!this.notificationsHidden)
             {
+                this.notificationsHidden = true;
                 Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
                 offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
                 offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, 0f, 0f));
@@ -441,7 +442,6 @@ namespace Share_Across_Devices.Views
 
                 itemVisual.StartAnimation("Offset", offsetAnimation);
                 itemVisual.StartAnimation("Opacity", fadeAnimation);
-                this.notificationsHidden = true;
             }
         }
         private void animateShowNotification()
@@ -450,6 +450,7 @@ namespace Share_Across_Devices.Views
 
             if (this.notificationsHidden)
             {
+                this.notificationsHidden = false;
                 Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
                 offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
                 offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, -100f, 0f));
@@ -462,7 +463,6 @@ namespace Share_Across_Devices.Views
 
                 itemVisual.StartAnimation("Offset", offsetAnimation);
                 itemVisual.StartAnimation("Opacity", fadeAnimation);
-                this.notificationsHidden = false;
             }
         }
         private void animateButtonEnabled(Button button)
@@ -494,6 +494,7 @@ namespace Share_Across_Devices.Views
 
             if (!this.sendOptionsHidden)
             {
+                this.sendOptionsHidden = true;
                 Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
                 offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
                 offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, 0f, 0f));
@@ -506,7 +507,6 @@ namespace Share_Across_Devices.Views
 
                 itemVisual.StartAnimation("Offset", offsetAnimation);
                 itemVisual.StartAnimation("Opacity", fadeAnimation);
-                this.sendOptionsHidden = true;
             }
             this.openInBrowser = false;
             this.openInMyTube = false;
@@ -519,6 +519,7 @@ namespace Share_Across_Devices.Views
 
             if (this.sendOptionsHidden)
             {
+                this.sendOptionsHidden = false;
                 Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
                 offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
                 offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, 100f, 0f));
@@ -531,7 +532,6 @@ namespace Share_Across_Devices.Views
 
                 itemVisual.StartAnimation("Offset", offsetAnimation);
                 itemVisual.StartAnimation("Opacity", fadeAnimation);
-                this.sendOptionsHidden = false;
             }
         }
         private void showMediaViewGrid()
@@ -542,6 +542,7 @@ namespace Share_Across_Devices.Views
 
                 if (this.mediaViewGridHidden)
                 {
+                    this.mediaViewGridHidden = false;
                     Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
                     offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
                     offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, 300f, 0f));
@@ -554,8 +555,6 @@ namespace Share_Across_Devices.Views
 
                     itemVisual.StartAnimation("Offset", offsetAnimation);
                     itemVisual.StartAnimation("Opacity", fadeAnimation);
-
-                    this.mediaViewGridHidden = false;
                 }
             }
         }
@@ -567,6 +566,7 @@ namespace Share_Across_Devices.Views
 
                 if (this.mediaRetrievalGridHidden)
                 {
+                    this.mediaRetrievalGridHidden = false;
                     Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
                     offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
                     offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, -300f, 0f));
@@ -579,8 +579,6 @@ namespace Share_Across_Devices.Views
 
                     itemVisual.StartAnimation("Offset", offsetAnimation);
                     itemVisual.StartAnimation("Opacity", fadeAnimation);
-
-                    this.mediaRetrievalGridHidden = false;
                 }
             }
         }
@@ -592,6 +590,7 @@ namespace Share_Across_Devices.Views
 
                 if (!this.mediaViewGridHidden)
                 {
+                    this.mediaViewGridHidden = true;
                     Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
                     offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
                     offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, 0f, 0f));
@@ -606,7 +605,6 @@ namespace Share_Across_Devices.Views
                     itemVisual.StartAnimation("Opacity", fadeAnimation);
                     await Task.Delay(1000);
                     this.MediaSendViewGrid.Children.Clear();
-                    this.mediaViewGridHidden = true;
                 }
             }
         }
@@ -618,6 +616,7 @@ namespace Share_Across_Devices.Views
 
                 if (!this.mediaRetrievalGridHidden)
                 {
+                    this.mediaRetrievalGridHidden = true;
                     Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
                     offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
                     offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, 0f, 0f));
@@ -633,7 +632,6 @@ namespace Share_Across_Devices.Views
 
                     await Task.Delay(1000);
                     this.MediaRetrieveViewGrid.Children.Clear();
-                    this.mediaRetrievalGridHidden = true;
                     this.resetView();
                 }
             }
@@ -762,6 +760,10 @@ namespace Share_Across_Devices.Views
             {
                 this.HamburgerMenu.IsPaneOpen = false;
             }
+            if (this.file != null)
+            {
+                this.selectedDevice.SetFileToSend(this.file);
+            }
             this.resetView();
             this.MessageToSend.IsEnabled = true;
             this.animateDeviceChosen();
@@ -816,7 +818,6 @@ namespace Share_Across_Devices.Views
                 this.openInMyTube = false;
                 this.openInTubeCast = false;
                 this.SendButton.IsEnabled = true;
-                this.MessageToSend.IsEnabled = false;
                 this.hideSendOptionsPanel();
                 var mediaViewer = new MediaView(file);
                 mediaViewer.CancelEvent += MediaViewer_CancelEvent;
@@ -910,12 +911,13 @@ namespace Share_Across_Devices.Views
         private async void animateShowNotificationTimed()
         {
             this.animateShowNotification();
-            await Task.Delay(3000);
+            await Task.Delay(2000);
             this.animateHideNotification();
+            await Task.Delay(1000);
             this.resetView();
+            this.validateTextAndButtons();
             if (this.sharingInitiated)
             {
-                await Task.Delay(1000);
                 this.shareOperation.DismissUI();
             }
         }
@@ -927,13 +929,15 @@ namespace Share_Across_Devices.Views
                 this.AttachButton.IsEnabled = false;
                 if (this.selectedDevice != null)
                 {
-                    if (this.remoteSystemIsLocal())
+                    if (this.remoteSystemIsLocal() && this.transferFile)
                     {
                         this.SendButton.IsEnabled = true;
+                        return;
                     }
-                    else
+                    else if (this.transferFile)
                     {
                         this.SendButton.IsEnabled = false;
+                        return;
                     }
 
                     if (this.MessageToSend.Text.Length > 0)
@@ -976,12 +980,22 @@ namespace Share_Across_Devices.Views
                         this.SendButton.IsEnabled = false;
                         this.hideSendOptionsPanel();
                     }
+
+                    if (this.transferFile)
+                    {
+                        this.MessageToSend.IsEnabled = false;
+                    }
+                    else
+                    {
+                        this.MessageToSend.IsEnabled = true;
+                    }
                 }
                 else
                 {
                     this.AttachButton.IsEnabled = false;
                     this.SendButton.IsEnabled = false;
                     this.hideSendOptionsPanel();
+                    this.MessageToSend.IsEnabled = false;
                 }
             }
         }
