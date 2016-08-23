@@ -634,6 +634,7 @@ namespace Share_Across_Devices.Views
                     await Task.Delay(1000);
                     this.MediaRetrieveViewGrid.Children.Clear();
                     this.mediaRetrievalGridHidden = true;
+                    this.resetView();
                 }
             }
         }
@@ -762,6 +763,7 @@ namespace Share_Across_Devices.Views
                 this.HamburgerMenu.IsPaneOpen = false;
             }
             this.resetView();
+            this.MessageToSend.IsEnabled = true;
             this.animateDeviceChosen();
             this.validateTextAndButtons();
         }
@@ -1014,7 +1016,7 @@ namespace Share_Across_Devices.Views
         }
         private void resetView()
         {
-            this.MessageToSend.IsEnabled = true;
+            this.MessageToSend.IsEnabled = false;
             if (!this.sharingInitiated)
             {
                 this.MessageToSend.Text = "";
