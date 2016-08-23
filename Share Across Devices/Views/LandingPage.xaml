@@ -106,6 +106,7 @@
                         <TextBlock x:Name="NotificationText"
                                    TextAlignment="Center"
                                    Text="notification"
+                                   TextWrapping="WrapWholeWords"
                                    HorizontalAlignment="Stretch"
                                    Foreground="White"
                                    Margin="8"/>
