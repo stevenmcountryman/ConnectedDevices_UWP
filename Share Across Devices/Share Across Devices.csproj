@@ -102,6 +102,7 @@
     <Compile Include="Controls\MediaView.xaml.cs">
       <DependentUpon>MediaView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\Options.cs" />
     <Compile Include="Controls\RemoteDeviceObject.cs" />
     <Compile Include="Controls\TransferView.xaml.cs">
       <DependentUpon>TransferView.xaml</DependentUpon>

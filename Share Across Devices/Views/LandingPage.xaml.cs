@@ -68,11 +68,13 @@ namespace Share_Across_Devices.Views
         private const string dataFormatName = "http://schema.org/Book";
 
         ObservableCollection<RemoteDeviceObject> DeviceList = new ObservableCollection<RemoteDeviceObject>();
+        ObservableCollection<Options> OptionsList = new ObservableCollection<Options>();
 
         public LandingPage()
         {
             this.InitializeComponent();
             this.setUpDevicesList();
+            this.setUpOptionsList();
             this.setUpCompositor();
             this.setTitleBar();
             this.DeviceList.CollectionChanged += DeviceList_CollectionChanged;
@@ -343,7 +345,7 @@ namespace Share_Across_Devices.Views
                     await writer.WriteLineAsync("File Received!");
                     await writer.FlushAsync();
 
-                    await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                     {
                         this.SelectedDeviceIcon.Glyph = "\uE166";
                         this.SelectedDeviceName.Text = "Received!";
@@ -359,7 +361,7 @@ namespace Share_Across_Devices.Views
                 }
                 catch
                 {
-                    await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                     {
                         this.NotificationText.Text = "Transfer interrupted";
                         this.animateShowNotification();
@@ -659,6 +661,43 @@ namespace Share_Across_Devices.Views
                 }
             }
         }
+        private async void animateTutorialGridClosing()
+        {
+            var itemVisual = ElementCompositionPreview.GetElementVisual(TutorialGrid);
+
+            ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
+            fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+            fadeAnimation.InsertKeyFrame(0f, 1f);
+            fadeAnimation.InsertKeyFrame(1f, 0f);
+
+            itemVisual.StartAnimation("Opacity", fadeAnimation);
+
+            await Task.Delay(1000);
+            this.TutorialGrid.Visibility = Visibility.Collapsed;
+
+            var rectVisual = ElementCompositionPreview.GetElementVisual(SelectionRectangle);
+            rectVisual.StopAnimation("Opacity");
+        }
+        private void animateTutorialGridOpening()
+        {
+            var itemVisual = ElementCompositionPreview.GetElementVisual(TutorialGrid);
+
+            ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
+            fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+            fadeAnimation.InsertKeyFrame(0f, 0f);
+            fadeAnimation.InsertKeyFrame(1f, 1f);
+
+            itemVisual.StartAnimation("Opacity", fadeAnimation);
+
+            var rectVisual = ElementCompositionPreview.GetElementVisual(SelectionRectangle);
+            ScalarKeyFrameAnimation rectFadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
+            rectFadeAnimation.Duration = TimeSpan.FromMilliseconds(2000);
+            rectFadeAnimation.IterationBehavior = AnimationIterationBehavior.Forever;
+            rectFadeAnimation.InsertKeyFrame(0f, 0f);
+            rectFadeAnimation.InsertKeyFrame(0.5f, 1f);
+            rectFadeAnimation.InsertKeyFrame(1f, 0f);
+            rectVisual.StartAnimation("Opacity", rectFadeAnimation);
+        }
         #endregion
 
         #region Remote system methods
@@ -734,6 +773,15 @@ namespace Share_Across_Devices.Views
             this.hideMediaRetrieveViewGrid();
             this.NotificationText.Text = "File saved!";
             this.animateShowNotificationTimed();
+        }
+        private void CloseTutorialButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.animateTutorialGridClosing();
+        }
+        private void HamburgerMenu_OptionsItemClick(object sender, ItemClickEventArgs e)
+        {
+            this.TutorialGrid.Visibility = Visibility.Visible;
+            this.animateTutorialGridOpening();
         }
         private void NotificationText_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
@@ -945,6 +993,13 @@ namespace Share_Across_Devices.Views
                 this.shareOperation.DismissUI();
             }
         }
+
+        private void setUpOptionsList()
+        {
+            Options helpOption = new Options("\uE11B", "Where are my devices?");
+            this.OptionsList.Add(helpOption);
+            this.HamburgerMenu.OptionsItemsSource = this.OptionsList;
+        }
         private void validateTextAndButtons()
         {
             if (this.sharingInitiated)
@@ -1072,6 +1127,5 @@ namespace Share_Across_Devices.Views
             }
         }
         #endregion
-        
     }
 }

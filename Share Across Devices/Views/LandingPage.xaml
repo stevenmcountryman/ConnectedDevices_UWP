@@ -9,7 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     <Page.Resources>
-        <DataTemplate x:Key="ButtonTemplate" x:DataType="controls:RemoteDeviceObject">
+        <DataTemplate x:Key="DeviceTemplate" x:DataType="controls:RemoteDeviceObject">
             <Grid Width="240" Height="48">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="48"></ColumnDefinition>
@@ -22,6 +22,24 @@
                           Foreground="White"/>
                 <TextBlock Grid.Column="1" 
                            Text="{x:Bind DeviceName}" 
+                           Foreground="White" 
+                           FontSize="16" 
+                           VerticalAlignment="Center" SelectionHighlightColor="White"/>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="OptionsTemplate" x:DataType="controls:Options">
+            <Grid Width="240" Height="48">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="48"></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <FontIcon Grid.Column="0" 
+                          Margin="12,12,11,12" 
+                          FontFamily="Segoe MDL2 Assets" 
+                          Glyph="{Binding Glyph}" 
+                          Foreground="White"/>
+                <TextBlock Grid.Column="1" 
+                           Text="{x:Bind Name}" 
                            Foreground="White" 
                            FontSize="16" 
                            VerticalAlignment="Center" SelectionHighlightColor="White"/>
@@ -62,8 +80,10 @@
         <uwp:HamburgerMenu x:Name="HamburgerMenu"
                            PaneBackground="#4B9DFF" 
                            Foreground="White"                                
-                           ItemTemplate="{StaticResource ButtonTemplate}"
+                           ItemTemplate="{StaticResource DeviceTemplate}"
+                           OptionsItemTemplate="{StaticResource OptionsTemplate}"
                            ItemClick="HamburgerMenu_ItemClick"
+                           OptionsItemClick="HamburgerMenu_OptionsItemClick"
                            OpenPaneLength="240"
                            DisplayMode="CompactInline"
                            CompactPaneLength="48"
@@ -227,6 +247,38 @@
                 </RelativePanel>
             </RelativePanel>
         </uwp:HamburgerMenu>
-
+        <Grid HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              x:Name="TutorialGrid"
+              Background="#33000000"
+              Visibility="Collapsed">
+            <Rectangle x:Name="SelectionRectangle"
+                       Stroke="White"
+                       Fill="Transparent"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Left"
+                       Height="400"
+                       Width="52"
+                       StrokeThickness="4"/>
+            <TextBlock Text="A list of your other Windows 10 Anniversary devices will appear here. If you are having issues seeing one or more of your devices: check to make sure the device in question is on the Anniversary Update of Windows 10, check that the 'Continue App Experience' setting is enabled on both devices, and check that you are connected to the internet. In some cases, you may need to enable Cortana if you haven't already."
+                       Foreground="White" HorizontalAlignment="Stretch"
+                       TextWrapping="WrapWholeWords"
+                       VerticalAlignment="Center"
+                       Margin="56,-48,8,0"/>
+            <Button x:Name="CloseTutorialButton" 
+                    VerticalAlignment="Center"                    
+                    Content="close" 
+                    Margin="0,200,0,0"
+                    Padding="12"
+                    Foreground="White"
+                    FontWeight="Bold"
+                    FontSize="16"
+                    HorizontalAlignment="Center"
+                    Click="CloseTutorialButton_Click"
+                    BorderBrush="{x:Null}" 
+                    Background="Transparent"
+                    RelativePanel.AlignTopWithPanel="True"
+                    RelativePanel.AlignRightWithPanel="True"/>
+        </Grid>
     </Grid>
 </Page>
