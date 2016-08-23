@@ -29,7 +29,7 @@
         </DataTemplate>
     </Page.Resources>
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="#FF535353">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="VisualStateGroup">
                 <VisualState x:Name="VisualStatePhone">
@@ -68,7 +68,8 @@
                            DisplayMode="CompactInline"
                            CompactPaneLength="48"
                            HamburgerHeight="48"
-                           IsPaneOpen="True">
+                           IsPaneOpen="True" 
+                           Background="#FF535353">
             <RelativePanel Background="#FF535353">
                 <Grid x:Name="MediaRetrieveViewGrid"
                       RelativePanel.AlignHorizontalCenterWithPanel="True"

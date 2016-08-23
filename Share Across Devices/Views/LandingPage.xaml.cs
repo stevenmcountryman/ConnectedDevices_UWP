@@ -25,6 +25,7 @@ using Windows.ApplicationModel.DataTransfer.ShareTarget;
 using System.Collections.Generic;
 using Windows.Storage.AccessCache;
 using Windows.UI.Xaml.Documents;
+using Windows.ApplicationModel.Core;
 
 namespace Share_Across_Devices.Views
 {
@@ -371,6 +372,9 @@ namespace Share_Across_Devices.Views
         #region Beauty and animations
         private void setTitleBar()
         {
+            CoreApplicationView coreView = CoreApplication.GetCurrentView();
+            CoreApplicationViewTitleBar coreTitleBar = coreView.TitleBar;
+            coreTitleBar.ExtendViewIntoTitleBar = true;
             var appBlue = Color.FromArgb(255, 56, 118, 191);
             if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.ApplicationView"))
             {
@@ -395,6 +399,25 @@ namespace Share_Across_Devices.Views
                 statusBar.BackgroundColor = appBlue;
                 statusBar.ForegroundColor = Colors.White;
             }
+
+            var _offSet = 0;
+
+            InputPane.GetForCurrentView().Showing += (s, args) =>
+            {
+                _offSet = (int)args.OccludedRect.Height;
+                args.EnsuredFocusedElementInView = true;
+                var trans = new TranslateTransform();
+                trans.Y = -_offSet;
+                this.RenderTransform = trans;
+            };
+
+            InputPane.GetForCurrentView().Hiding += (s, args) =>
+            {
+                var trans = new TranslateTransform();
+                trans.Y = 0;
+                this.RenderTransform = trans;
+                args.EnsuredFocusedElementInView = false;
+            };
         }
         private void setUpCompositor()
         {
@@ -740,6 +763,7 @@ namespace Share_Across_Devices.Views
                 this.resetView();
             }
         }
+
         private void MessageToSend_TextChanged(object sender, TextChangedEventArgs e)
         {
             this.validateTextAndButtons();
