@@ -57,7 +57,6 @@ namespace Share_Across_Devices
         private RemoteSystemWatcher deviceWatcher;
         private Compositor _compositor;
         StorageFile file;
-        private bool cancelAttempted = false;
         private RemoteSystem selectedDevice;
         AppServiceConnection connection;
         StreamSocket socket;

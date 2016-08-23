@@ -84,10 +84,14 @@ namespace Share_Across_Devices.Controls
         private void Timer_Tick(object sender, object e)
         {
             var currentTime = DateTime.Now.ToUniversalTime();
-            if (this.lastUpdatedTime != null && currentTime.Subtract(this.lastUpdatedTime).TotalSeconds >= 5)
+            if (this.lastUpdatedTime != null && currentTime.Subtract(this.lastUpdatedTime).TotalSeconds >= 10)
             {
                 this.NotifyEvent(this, new MyEventArgs("Network timeout. Check your connection and try again", messageType.Indefinite));
                 this.timer.Stop();
+            }
+            else if (this.lastUpdatedTime != null && currentTime.Subtract(this.lastUpdatedTime).TotalSeconds >= 5)
+            {
+                this.NotifyEvent(this, new MyEventArgs("This is taking longer than expected...", messageType.Indefinite));
             }
         }
 

@@ -46,7 +46,7 @@ namespace Share_Across_Devices
         protected override void OnShareTargetActivated(ShareTargetActivatedEventArgs args)
         {
             var rootFrame = CreateRootFrame();
-            rootFrame.Navigate(typeof(ShareWebLink), args.ShareOperation);
+            rootFrame.Navigate(typeof(LandingPage), args.ShareOperation);
             Window.Current.Activate();
         }
 

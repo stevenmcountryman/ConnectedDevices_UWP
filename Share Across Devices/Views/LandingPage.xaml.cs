@@ -21,6 +21,10 @@ using Windows.Storage;
 using System.IO;
 using Windows.Storage.Streams;
 using Windows.UI.Xaml.Media;
+using Windows.ApplicationModel.DataTransfer.ShareTarget;
+using System.Collections.Generic;
+using Windows.Storage.AccessCache;
+using Windows.UI.Xaml.Documents;
 
 namespace Share_Across_Devices.Views
 {
@@ -37,9 +41,30 @@ namespace Share_Across_Devices.Views
         private bool openInTubeCast = false;
         private bool openInMyTube = false;
         private bool transferFile = false;
+        private bool sharingInitiated = false;
         private string fileName;
         private string textToCopy;
         private StorageFile file;
+
+        ShareOperation shareOperation;
+        private string sharedDataTitle;
+        private string sharedDataDescription;
+        private string sharedDataPackageFamilyName;
+        private Uri sharedDataContentSourceWebLink;
+        private Uri sharedDataContentSourceApplicationLink;
+        private Color sharedDataLogoBackgroundColor;
+        private IRandomAccessStreamReference sharedDataSquare30x30Logo;
+        private string shareQuickLinkId;
+        private string sharedText;
+        private Uri sharedWebLink;
+        private Uri sharedApplicationLink;
+        private IReadOnlyList<IStorageItem> sharedStorageItems;
+        private string sharedCustomData;
+        private string sharedHtmlFormat;
+        private IReadOnlyDictionary<string, RandomAccessStreamReference> sharedResourceMap;
+        private IRandomAccessStreamReference sharedBitmapStreamRef;
+        private IRandomAccessStreamReference sharedThumbnailStreamRef;
+        private const string dataFormatName = "http://schema.org/Book";
 
         ObservableCollection<RemoteDeviceObject> DeviceList = new ObservableCollection<RemoteDeviceObject>();
 
@@ -54,48 +79,193 @@ namespace Share_Across_Devices.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            var protocolArgs = e.Parameter as ProtocolActivatedEventArgs;
-            
-            if (protocolArgs != null)
+            if (e.Parameter.GetType() == typeof(ShareOperation))
             {
-                this.SelectedDeviceIcon.Glyph = "\uE119";
-                this.SelectedDeviceName.Text = "Receiving!";
-                this.resetView();
-                this.animateDeviceChosen();
+                this.sharingInitiated = true;
+                this.handleShare(e);
+            }
+            else
+            {
+                var protocolArgs = e.Parameter as ProtocolActivatedEventArgs;
 
-                var queryStrings = new WwwFormUrlDecoder(protocolArgs.Uri.Query);
-                if (!protocolArgs.Uri.Query.StartsWith("?FileName="))
+                if (protocolArgs != null)
                 {
-                    this.textToCopy = queryStrings.GetFirstValueByName("Text");
-                    try
+                    this.SelectedDeviceIcon.Glyph = "\uE119";
+                    this.SelectedDeviceName.Text = "Receiving!";
+                    this.resetView();
+                    this.animateDeviceChosen();
+
+                    var queryStrings = new WwwFormUrlDecoder(protocolArgs.Uri.Query);
+                    if (!protocolArgs.Uri.Query.StartsWith("?FileName="))
                     {
-                        if (textToCopy.Length > 0)
+                        this.textToCopy = queryStrings.GetFirstValueByName("Text");
+                        try
                         {
-                            DataPackage package = new DataPackage()
+                            if (textToCopy.Length > 0)
                             {
-                                RequestedOperation = DataPackageOperation.Copy
-                            };
-                            package.SetText(textToCopy);
-                            Clipboard.SetContent(package);
-                            Clipboard.Flush();
-                            this.NotificationText.Text = "Copied!";
-                            this.animateShowNotification();
+                                DataPackage package = new DataPackage()
+                                {
+                                    RequestedOperation = DataPackageOperation.Copy
+                                };
+                                package.SetText(textToCopy);
+                                Clipboard.SetContent(package);
+                                Clipboard.Flush();
+                                this.NotificationText.Text = "Copied!";
+                                this.animateShowNotification();
+                            }
                         }
-                    }
-                    catch
-                    {
-                        this.NotificationText.Text = "Manual copy required, tap here to copy";
-                        this.animateShowNotification();
-                        this.NotificationText.Tapped += NotificationText_Tapped;
-                    }
+                        catch
+                        {
+                            this.NotificationText.Text = "Manual copy required, tap here to copy";
+                            this.animateShowNotification();
+                            this.NotificationText.Tapped += NotificationText_Tapped;
+                        }
 
-                }
-                else
-                {
-                    this.fileName = queryStrings.GetFirstValueByName("FileName");
-                    this.beginListeningForFile();
+                    }
+                    else
+                    {
+                        this.fileName = queryStrings.GetFirstValueByName("FileName");
+                        this.beginListeningForFile();
+                    }
                 }
             }
+        }
+
+        private async void handleShare(NavigationEventArgs e)
+        {
+            this.shareOperation = (ShareOperation)e.Parameter;
+
+            await Task.Factory.StartNew(async () =>
+            {
+                // Retrieve the data package properties.
+                this.sharedDataTitle = this.shareOperation.Data.Properties.Title;
+                this.sharedDataDescription = this.shareOperation.Data.Properties.Description;
+                this.sharedDataPackageFamilyName = this.shareOperation.Data.Properties.PackageFamilyName;
+                this.sharedDataContentSourceWebLink = this.shareOperation.Data.Properties.ContentSourceWebLink;
+                this.sharedDataContentSourceApplicationLink = this.shareOperation.Data.Properties.ContentSourceApplicationLink;
+                this.sharedDataLogoBackgroundColor = this.shareOperation.Data.Properties.LogoBackgroundColor;
+                this.sharedDataSquare30x30Logo = this.shareOperation.Data.Properties.Square30x30Logo;
+                this.sharedThumbnailStreamRef = this.shareOperation.Data.Properties.Thumbnail;
+                this.shareQuickLinkId = this.shareOperation.QuickLinkId;
+
+                // Retrieve the data package content.
+                // The GetWebLinkAsync(), GetTextAsync(), GetStorageItemsAsync(), etc. APIs will throw if there was an error retrieving the data from the source app.
+                // In this sample, we just display the error. It is recommended that a share target app handles these in a way appropriate for that particular app.
+                if (this.shareOperation.Data.Contains(StandardDataFormats.WebLink))
+                {
+                    try
+                    {
+                        this.sharedWebLink = await this.shareOperation.Data.GetWebLinkAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        this.NotificationText.Text = "Failed GetWebLinkAsync - " + ex.Message;
+                        this.animateShowNotification();
+                    }
+                }
+                if (this.shareOperation.Data.Contains(StandardDataFormats.ApplicationLink))
+                {
+                    try
+                    {
+                        this.sharedApplicationLink = await this.shareOperation.Data.GetApplicationLinkAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        this.NotificationText.Text = "Failed GetApplicationLinkAsync - " + ex.Message;
+                        this.animateShowNotification();
+                    }
+                }
+                if (this.shareOperation.Data.Contains(StandardDataFormats.Text))
+                {
+                    try
+                    {
+                        this.sharedText = await this.shareOperation.Data.GetTextAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        this.NotificationText.Text = "Failed GetTextAsync - " + ex.Message;
+                        this.animateShowNotification();
+                    }
+                }
+                if (this.shareOperation.Data.Contains(StandardDataFormats.StorageItems))
+                {
+                    try
+                    {
+                        this.sharedStorageItems = await this.shareOperation.Data.GetStorageItemsAsync();
+                        StorageApplicationPermissions.FutureAccessList.AddOrReplace("FileToSend", this.sharedStorageItems[0]);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.NotificationText.Text = "Failed GetStorageItemsAsync - " + ex.Message;
+                        this.animateShowNotification();
+                    }
+                }
+                if (this.shareOperation.Data.Contains(dataFormatName))
+                {
+                    try
+                    {
+                        this.sharedCustomData = await this.shareOperation.Data.GetTextAsync(dataFormatName);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.NotificationText.Text = "Failed GetTextAsync(" + dataFormatName + ") - " + ex.Message;
+                        this.animateShowNotification();
+                    }
+                }
+                if (this.shareOperation.Data.Contains(StandardDataFormats.Html))
+                {
+                    try
+                    {
+                        this.sharedHtmlFormat = await this.shareOperation.Data.GetHtmlFormatAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        this.NotificationText.Text = "Failed GetHtmlFormatAsync - " + ex.Message;
+                        this.animateShowNotification();
+                    }
+
+                    try
+                    {
+                        this.sharedResourceMap = await this.shareOperation.Data.GetResourceMapAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        this.NotificationText.Text = "Failed GetResourceMapAsync - " + ex.Message;
+                        this.animateShowNotification();
+                    }
+                }
+                if (this.shareOperation.Data.Contains(StandardDataFormats.Bitmap))
+                {
+                    try
+                    {
+                        this.sharedBitmapStreamRef = await this.shareOperation.Data.GetBitmapAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        this.NotificationText.Text = "Failed GetBitmapAsync - " + ex.Message;
+                        this.animateShowNotification();
+                    }
+                }
+
+                // In this sample, we just display the shared data content.
+
+                // Get back to the UI thread using the dispatcher.
+                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                {
+                    if (this.sharedWebLink != null)
+                    {
+                        this.MessageToSend.Text = this.sharedWebLink.AbsoluteUri;
+                    }
+                    if (this.sharedStorageItems != null && this.sharedStorageItems.Count == 1)
+                    {
+                        this.file = await StorageFile.GetFileFromPathAsync(this.sharedStorageItems[0].Path);
+                        MediaView mediaView = new MediaView(file);
+                        this.MediaSendViewGrid.Children.Clear();
+                        this.MediaSendViewGrid.Children.Add(mediaView);
+                        this.showMediaViewGrid();
+                    }
+                });
+            });
         }
 
         #region File retrieval 
@@ -728,6 +898,10 @@ namespace Share_Across_Devices.Views
             this.animateShowNotification();
             await Task.Delay(4000);
             this.animateHideNotification();
+            if (this.sharingInitiated)
+            {
+                this.shareOperation.DismissUI();
+            }
         }
         private void validateTextAndButtons()
         {
@@ -792,15 +966,18 @@ namespace Share_Across_Devices.Views
         private void resetView()
         {
             this.MessageToSend.IsEnabled = true;
-            this.MessageToSend.Text = "";
-            this.openInBrowser = false;
-            this.openInMyTube = false;
-            this.openInTubeCast = false;
-            this.transferFile = false;
-            this.hideMediaViewGrid();
-            this.hideMediaRetrieveViewGrid();
-            var notificationVisual = ElementCompositionPreview.GetElementVisual(this.NotificationPanel);
-            notificationVisual.Opacity = 0f;
+            if (!this.sharingInitiated)
+            {
+                this.MessageToSend.Text = "";
+                this.openInBrowser = false;
+                this.openInMyTube = false;
+                this.openInTubeCast = false;
+                this.transferFile = false;
+                this.hideMediaViewGrid();
+                this.hideMediaRetrieveViewGrid();
+                var notificationVisual = ElementCompositionPreview.GetElementVisual(this.NotificationPanel);
+                notificationVisual.Opacity = 0f;
+            }
         }
         #endregion
         
