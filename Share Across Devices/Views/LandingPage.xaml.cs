@@ -909,6 +909,7 @@ namespace Share_Across_Devices.Views
             await Task.Delay(3000);
             this.animateHideNotification();
             this.resetView();
+            await Task.Delay(1000);
             if (this.sharingInitiated)
             {
                 this.shareOperation.DismissUI();
