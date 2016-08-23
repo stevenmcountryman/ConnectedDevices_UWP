@@ -730,7 +730,14 @@ namespace Share_Across_Devices.Views
         }
         private void MediaViewer_CancelEvent(object sender, EventArgs e)
         {
-            this.resetView();
+            if (this.sharingInitiated)
+            {
+                this.shareOperation.DismissUI();
+            }
+            else
+            {
+                this.resetView();
+            }
         }
         private void MessageToSend_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -909,30 +916,31 @@ namespace Share_Across_Devices.Views
         }
         private void validateTextAndButtons()
         {
-            if (this.selectedDevice != null)
+            if (this.sharingInitiated)
             {
-                if (this.remoteSystemIsLocal())
+                this.MessageToSend.IsEnabled = false;
+                this.AttachButton.IsEnabled = false;
+                if (this.selectedDevice != null)
                 {
-                    if (this.sharingInitiated)
+                    if (this.remoteSystemIsLocal())
                     {
-                        this.MessageToSend.IsEnabled = false;
                         this.SendButton.IsEnabled = true;
-                        return;
                     }
                     else
                     {
-                        this.AttachButton.IsEnabled = true;
+                        this.SendButton.IsEnabled = false;
                     }
-                }
-                else
-                {
-                    this.AttachButton.IsEnabled = false;
-                }
 
-                if (this.MessageToSend.Text.Length > 0)
-                {
-                    this.SendButton.IsEnabled = true;
-                    this.checkIfWebLink();
+                    if (this.MessageToSend.Text.Length > 0)
+                    {
+                        this.SendButton.IsEnabled = true;
+                        this.checkIfWebLink();
+                    }
+                    else
+                    {
+                        this.SendButton.IsEnabled = false;
+                        this.hideSendOptionsPanel();
+                    }
                 }
                 else
                 {
@@ -942,9 +950,34 @@ namespace Share_Across_Devices.Views
             }
             else
             {
-                this.AttachButton.IsEnabled = false;
-                this.SendButton.IsEnabled = false;
-                this.hideSendOptionsPanel();
+                if (this.selectedDevice != null)
+                {
+                    if (this.remoteSystemIsLocal())
+                    {
+                        this.AttachButton.IsEnabled = true;
+                    }
+                    else
+                    {
+                        this.AttachButton.IsEnabled = false;
+                    }
+
+                    if (this.MessageToSend.Text.Length > 0)
+                    {
+                        this.SendButton.IsEnabled = true;
+                        this.checkIfWebLink();
+                    }
+                    else
+                    {
+                        this.SendButton.IsEnabled = false;
+                        this.hideSendOptionsPanel();
+                    }
+                }
+                else
+                {
+                    this.AttachButton.IsEnabled = false;
+                    this.SendButton.IsEnabled = false;
+                    this.hideSendOptionsPanel();
+                }
             }
         }
         private void checkIfWebLink()
