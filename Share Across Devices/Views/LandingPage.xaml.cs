@@ -376,7 +376,7 @@ namespace Share_Across_Devices.Views
         {
             CoreApplicationView coreView = CoreApplication.GetCurrentView();
             CoreApplicationViewTitleBar coreTitleBar = coreView.TitleBar;
-            coreTitleBar.ExtendViewIntoTitleBar = true;
+            coreTitleBar.ExtendViewIntoTitleBar = false;
             var appBlue = Color.FromArgb(255, 56, 118, 191);
             if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.ApplicationView"))
             {
