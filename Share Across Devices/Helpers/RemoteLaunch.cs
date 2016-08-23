@@ -11,7 +11,7 @@ namespace Share_Across_Devices.Helpers
         public static async Task<RemoteLaunchUriStatus> TrySharetext(RemoteSystem device, string text)
         {
             RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(device);
-            return await RemoteLauncher.LaunchUriAsync(connectionRequest, new Uri("share-app:?Text=" + text));
+            return await RemoteLauncher.LaunchUriAsync(connectionRequest, new Uri("share-app:?Text=" + Uri.EscapeDataString(text)));
         }
 
         public static async Task<RemoteLaunchUriStatus> TryShareURL(RemoteSystem device, string url)

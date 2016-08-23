@@ -145,7 +145,8 @@
                                 HorizontalAlignment="Right"
                                 BorderBrush="Transparent" 
                                 Click="OpenInButton_Click"
-                                IsEnabledChanged="Button_IsEnabledChanged" />
+                                IsEnabledChanged="Button_IsEnabledChanged" 
+                                Style="{StaticResource MyToggleButtonStyle}" />
                             <Button x:Name="OpenInTubeCastButton" 
                                     IsEnabled="False"
                                     Width="85"
@@ -159,7 +160,8 @@
                                     HorizontalAlignment="Center"
                                     BorderBrush="{x:Null}" 
                                     Click="OpenInButton_Click"
-                                    IsEnabledChanged="Button_IsEnabledChanged" />
+                                    IsEnabledChanged="Button_IsEnabledChanged"
+                                    Style="{StaticResource MyToggleButtonStyle}" />
                             <Button x:Name="OpenInMyTubeButton" 
                                 IsEnabled="False"
                                 Width="85"
@@ -173,7 +175,8 @@
                                 HorizontalAlignment="Center"
                                 BorderBrush="{x:Null}" 
                                 Click="OpenInButton_Click"
-                                IsEnabledChanged="Button_IsEnabledChanged" />
+                                IsEnabledChanged="Button_IsEnabledChanged"
+                                Style="{StaticResource MyToggleButtonStyle}" />
                         </GridView>
                     </StackPanel>
                 </Grid>
