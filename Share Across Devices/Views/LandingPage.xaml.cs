@@ -911,32 +911,38 @@ namespace Share_Across_Devices.Views
         {
             if (this.selectedDevice != null)
             {
-                if (this.remoteSystemIsLocal())
+                if (this.transferFile)
                 {
-                    if (this.sharingInitiated)
+                    if (this.remoteSystemIsLocal())
                     {
-                        this.MessageToSend.IsEnabled = false;
-                        this.SendButton.IsEnabled = true;
+                        if (this.sharingInitiated)
+                        {
+                            this.MessageToSend.IsEnabled = false;
+                            this.SendButton.IsEnabled = true;
+                            this.AttachButton.IsEnabled = false;
+                        }
+                        else
+                        {
+                            this.AttachButton.IsEnabled = true;
+                        }
                     }
                     else
                     {
-                        this.AttachButton.IsEnabled = true;
+                        this.AttachButton.IsEnabled = false;
                     }
                 }
                 else
                 {
-                    this.AttachButton.IsEnabled = false;
-                }
-
-                if (this.MessageToSend.Text.Length > 0 && this.MessageToSend.IsEnabled == true)
-                {
-                    this.SendButton.IsEnabled = true;
-                    this.checkIfWebLink();
-                }
-                else
-                {
-                    this.SendButton.IsEnabled = false;
-                    this.hideSendOptionsPanel();
+                    if (this.MessageToSend.Text.Length > 0 && this.MessageToSend.IsEnabled == true)
+                    {
+                        this.SendButton.IsEnabled = true;
+                        this.checkIfWebLink();
+                    }
+                    else
+                    {
+                        this.SendButton.IsEnabled = false;
+                        this.hideSendOptionsPanel();
+                    }
                 }
             }
             else
