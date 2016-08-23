@@ -13,6 +13,8 @@ namespace Share_Across_Devices.Controls
 {
     public sealed partial class MediaView : UserControl
     {
+        public delegate void CancelHandler(object sender, EventArgs e);
+        public event CancelHandler CancelEvent;
         private StorageFile file;
         private List<string> imageTypes = new List<string>()
         {
@@ -173,6 +175,11 @@ namespace Share_Across_Devices.Controls
 
             itemVisual.StartAnimation("Opacity", opacityAnimation);
             itemVisual.StartAnimation("Scale", scaleAnimation);
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.CancelEvent(this, new EventArgs());
         }
     }
 }

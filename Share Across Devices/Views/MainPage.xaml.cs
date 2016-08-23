@@ -772,14 +772,4 @@ namespace Share_Across_Devices
             NotifyUser("File saved!");
         }
     }
-
-    sealed partial class App : Application
-    {
-        protected override void OnShareTargetActivated(ShareTargetActivatedEventArgs args)
-        {
-            var rootFrame = CreateRootFrame();
-            rootFrame.Navigate(typeof(ShareWebLink), args.ShareOperation);
-            Window.Current.Activate();
-        }
-    }
 }

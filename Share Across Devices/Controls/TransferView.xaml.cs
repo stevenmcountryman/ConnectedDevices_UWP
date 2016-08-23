@@ -48,11 +48,6 @@ namespace Share_Across_Devices.Controls
             }
         }
 
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.close();
-        }
-
         private void close()
         {
             this.CancelEvent(this, new EventArgs());
@@ -74,6 +69,11 @@ namespace Share_Across_Devices.Controls
                 // Could not find file
             }
 
+        }
+
+        private void MediaViewer_CancelEvent(object sender, EventArgs e)
+        {
+            this.close();
         }
     }
 }

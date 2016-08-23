@@ -43,6 +43,13 @@ namespace Share_Across_Devices
             Window.Current.Activate();
         }
 
+        protected override void OnShareTargetActivated(ShareTargetActivatedEventArgs args)
+        {
+            var rootFrame = CreateRootFrame();
+            rootFrame.Navigate(typeof(ShareWebLink), args.ShareOperation);
+            Window.Current.Activate();
+        }
+
         /// <summary>
         /// Invoked when the application is launched normally by the end user.  Other entry points
         /// will be used such as when the application is launched to open a specific file.

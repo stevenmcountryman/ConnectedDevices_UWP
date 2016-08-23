@@ -554,6 +554,10 @@ namespace Share_Across_Devices.Views
         {
             this.hideMediaRetrieveViewGrid();
         }
+        private void MediaViewer_CancelEvent(object sender, EventArgs e)
+        {
+            this.resetView();
+        }
         private void MessageToSend_TextChanged(object sender, TextChangedEventArgs e)
         {
             this.validateTextAndButtons();
@@ -631,13 +635,13 @@ namespace Share_Across_Devices.Views
                 this.MessageToSend.IsEnabled = false;
                 this.hideSendOptionsPanel();
                 var mediaViewer = new MediaView(file);
+                mediaViewer.CancelEvent += MediaViewer_CancelEvent;
                 this.MediaSendViewGrid.Children.Clear();
                 this.MediaSendViewGrid.Children.Add(mediaViewer);
                 this.showMediaViewGrid();
                 this.MessageToSend.Text = "attached file";
             }
         }
-
         private void OpenInGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (this.OpenInGridView.SelectedIndex >= 0)
