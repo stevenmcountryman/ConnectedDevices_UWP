@@ -4,6 +4,8 @@ using System.IO;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.AppService;
 using Windows.Foundation.Collections;
+using Windows.Networking;
+using Windows.Networking.Connectivity;
 using Windows.Networking.Sockets;
 using Windows.Storage;
 using Windows.Storage.Streams;
@@ -20,22 +22,18 @@ namespace Share_Across_Devices.Controls
         private int BlockSize;
         private RemoteSystem RemoteSystem;
         private StorageFile FileToSend;
-        private string AppServiceName;
-        private string PackageFamilyName;
         private DispatcherTimer timer;
         private DateTime lastUpdatedTime;
 
         public delegate void NotifyHandler(object sender, MyEventArgs e);
         public event NotifyHandler NotifyEvent;
         
-        public FileTransfer(string portNumber, int blockSize, RemoteSystem remoteSys, StorageFile file, string appServiceName, string packageFamilyName)
+        public FileTransfer(string portNumber, int blockSize, RemoteSystem remoteSys, StorageFile file)
         {
             this.PortNumber = portNumber;
             this.BlockSize = blockSize;
             this.RemoteSystem = remoteSys;
             this.FileToSend = file;
-            this.AppServiceName = appServiceName;
-            this.PackageFamilyName = packageFamilyName;
             this.timer = new DispatcherTimer();
             this.timer.Interval = new TimeSpan(0, 0, 1);
         }
@@ -71,164 +69,43 @@ namespace Share_Across_Devices.Controls
         public async void sendFile()
         {
             var sendAttempt = 1;
-            AppServiceConnectionStatus status = AppServiceConnectionStatus.Unknown;
-            if (this.FileToSend != null && this.RemoteSystem != null)
-            {
-                while (sendAttempt <= 3)
-                {
-                    using (var connection = new AppServiceConnection
-                    {
-                        AppServiceName = this.AppServiceName,
-                        PackageFamilyName = this.PackageFamilyName
-                    })
-                    {
-                        // Create a remote system connection request.
-                        RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(this.RemoteSystem);
-
-                        this.NotifyEvent(this, new MyEventArgs("Requesting connection to " + this.RemoteSystem.DisplayName + "...", messageType.Indefinite));
-
-                        this.startTimer();
-                        status = await connection.OpenRemoteAsync(connectionRequest);
-                        this.stopTimer();
-                        if (status == AppServiceConnectionStatus.Success)
-                        {
-                            this.NotifyEvent(this, new MyEventArgs("Successfully connected to " + this.RemoteSystem.DisplayName + "...", messageType.Indefinite));
-                            await this.RequestIPAddress(connection);
-                            return;
-                        }
-                        else
-                        {
-                            sendAttempt++;
-                            this.NotifyEvent(this, new MyEventArgs("Failed. Retrying attempt " + sendAttempt + " of 3", messageType.Indefinite));
-                        }
-                    }
-                }
-                this.NotifyEvent(this, new MyEventArgs("Attempt to open a remote app service connection failed with error - " + status.ToString(), messageType.Indefinite));
-            }
-            else
-            {
-                this.NotifyEvent(this, new MyEventArgs("Select a device for remote connection.", messageType.Indefinite));
-            }
-        }
-        private async Task RequestIPAddress(AppServiceConnection connection)
-        {
-            var sendAttempt = 1;
-            AppServiceResponse response = null;
-            // Send message if connection to the remote app service is open.
-            if (connection != null)
-            {
-                while (sendAttempt <= 3)
-                {
-                    //Set up the inputs and send a message to the service.
-                    ValueSet inputs = new ValueSet();
-                    this.NotifyEvent(this, new MyEventArgs("Requesting IP address....", messageType.Indefinite));
-                    this.startTimer();
-                    response = await connection.SendMessageAsync(inputs);
-                    this.stopTimer();
-                    if (response.Status == AppServiceResponseStatus.Success)
-                    {
-                        if (response.Message.ContainsKey("result"))
-                        {
-                            string ipAddress = response.Message["result"].ToString();
-                            if (!string.IsNullOrEmpty(ipAddress))
-                            {
-                                this.beginConnection(ipAddress);
-                                return;
-                            }
-                            else
-                            {
-                                this.NotifyEvent(this, new MyEventArgs("Remote app service did not respond with a result.", messageType.Indefinite));
-                            }
-                            break;
-                        }
-                        else
-                        {
-                            this.NotifyEvent(this, new MyEventArgs("Response from remote app service does not contain a result.", messageType.Indefinite));
-                        }
-                    }
-                    else
-                    {
-                        sendAttempt++;
-                        this.NotifyEvent(this, new MyEventArgs("Failed. Retrying attempt " + sendAttempt + " of 3", messageType.Indefinite));
-                    }
-                }
-                this.NotifyEvent(this, new MyEventArgs("Sending message to remote app service failed with error - " + response.Status.ToString(), messageType.Indefinite));
-            }
-            else
-            {
-                this.NotifyEvent(this, new MyEventArgs("Not connected to any app service. Select a device to open a connection.", messageType.Indefinite));
-            }
-        }
-        private async void beginConnection(string ipAddress)
-        {
-            var sendAttempt = 1;
             while (sendAttempt <= 3)
             {
                 try
                 {
                     this.NotifyEvent(this, new MyEventArgs("Launching app on device....", messageType.Indefinite));
-                    var status = await RemoteLaunch.TryBeginShareFile(this.RemoteSystem, this.FileToSend.Name);
+                    var icp = NetworkInformation.GetInternetConnectionProfile();
+
+                    if (icp?.NetworkAdapter == null) return;
+                    var hostnames = NetworkInformation.GetHostNames();
+                    HostName hostname = null;
+                    foreach (var name in hostnames)
+                    {
+                        if (name.IPInformation?.NetworkAdapter != null && name.IPInformation.NetworkAdapter.NetworkAdapterId == icp.NetworkAdapter.NetworkAdapterId)
+                        {
+                            hostname = name;
+                            break;
+                        }
+                    }
+                    var status = await RemoteLaunch.TryBeginShareFile(this.RemoteSystem, this.FileToSend.Name, hostname?.CanonicalName);
 
                     if (status == RemoteLaunchUriStatus.Success)
                     {
                         //Create the StreamSocket and establish a connection to the echo server.
-                        using (var socket = new StreamSocket())
+                        try
                         {
+                            this.NotifyEvent(this, new MyEventArgs("Waiting for connection....", messageType.Indefinite));
+                            //Create a StreamSocketListener to start listening for TCP connections.
+                            StreamSocketListener socketListener = new StreamSocketListener();
 
-                            //The server hostname that we will be establishing a connection to. We will be running the server and client locally,
-                            //so we will use localhost as the hostname.
-                            Windows.Networking.HostName serverHost = new Windows.Networking.HostName(ipAddress);
+                            //Hook up an event handler to call when connections are received.
+                            socketListener.ConnectionReceived += SocketListener_ConnectionReceived;
 
-                            //Every protocol typically has a standard port number. For example HTTP is typically 80, FTP is 20 and 21, etc.
-                            //For the echo server/client application we will use a random port 1337.
-                            this.NotifyEvent(this, new MyEventArgs("Opening connection....", messageType.Indefinite));
-                            string serverPort = this.PortNumber;
-
-                            this.startTimer();
-                            await socket.ConnectAsync(serverHost, serverPort);
-                            this.stopTimer();
-
-                            //Write data to the echo server.
-                            using (Stream streamOut = socket.OutputStream.AsStreamForWrite())
-                            {
-                                using (var fileStream = await this.FileToSend.OpenStreamForReadAsync())
-                                {
-                                    byte[] bytes;
-                                    DataWriter dataWriter = new DataWriter(streamOut.AsOutputStream());
-                                    fileStream.Seek(0, SeekOrigin.Begin);
-                                    while (fileStream.Position < fileStream.Length)
-                                    {
-                                        if (fileStream.Length - fileStream.Position >= this.BlockSize)
-                                        {
-                                            bytes = new byte[this.BlockSize];
-                                        }
-                                        else
-                                        {
-                                            bytes = new byte[fileStream.Length - fileStream.Position];
-                                        }
-                                        dataWriter.WriteBoolean(true);
-                                        await dataWriter.StoreAsync();
-                                        dataWriter.WriteInt32(bytes.Length);
-                                        await dataWriter.StoreAsync();
-                                        var percentage = ((double)fileStream.Position / (double)fileStream.Length) * 100.0;
-                                        dataWriter.WriteInt32(Convert.ToInt32(percentage));
-                                        await dataWriter.StoreAsync();
-                                        this.NotifyEvent(this, new MyEventArgs(Convert.ToInt32(percentage) + "% transferred", messageType.Indefinite));
-                                        await fileStream.ReadAsync(bytes, 0, bytes.Length);
-                                        dataWriter.WriteBytes(bytes);
-                                        await dataWriter.StoreAsync();
-                                    }
-                                    dataWriter.WriteBoolean(false);
-                                    await dataWriter.StoreAsync();
-                                }
-                            }
-
-                            //Read data from the echo server.
-                            Stream streamIn = socket.InputStream.AsStreamForRead();
-                            StreamReader reader = new StreamReader(streamIn);
-                            string response = await reader.ReadLineAsync();
-                            this.NotifyEvent(this, new MyEventArgs(response, messageType.Timed));
-                            return;
+                            //Start listening for incoming TCP connections on the specified port. You can specify any port that' s not currently in use.
+                            await socketListener.BindServiceNameAsync(this.PortNumber);
+                        }
+                        catch (Exception e)
+                        {
                         }
                     }
                 }
@@ -238,7 +115,59 @@ namespace Share_Across_Devices.Controls
                     this.NotifyEvent(this, new MyEventArgs("Failed. Retrying attempt " + sendAttempt + " of 3", messageType.Indefinite));
                 }
             }
-            this.NotifyEvent(this, new MyEventArgs("Connection failed. Network destination not allowed.", messageType.Indefinite));
+        }
+        private async void SocketListener_ConnectionReceived(StreamSocketListener sender, StreamSocketListenerConnectionReceivedEventArgs args)
+        {
+            sender.ConnectionReceived -= SocketListener_ConnectionReceived;
+            this.NotifyEvent(this, new MyEventArgs("Connected! Retrieving file....", messageType.Indefinite));
+            try
+            {
+                //Write data to the echo server.
+                using (Stream streamOut = args.Socket.OutputStream.AsStreamForWrite())
+                {
+                    using (var fileStream = await this.FileToSend.OpenStreamForReadAsync())
+                    {
+                        byte[] bytes;
+                        DataWriter dataWriter = new DataWriter(streamOut.AsOutputStream());
+                        fileStream.Seek(0, SeekOrigin.Begin);
+                        while (fileStream.Position < fileStream.Length)
+                        {
+                            if (fileStream.Length - fileStream.Position >= this.BlockSize)
+                            {
+                                bytes = new byte[this.BlockSize];
+                            }
+                            else
+                            {
+                                bytes = new byte[fileStream.Length - fileStream.Position];
+                            }
+                            dataWriter.WriteBoolean(true);
+                            await dataWriter.StoreAsync();
+                            dataWriter.WriteInt32(bytes.Length);
+                            await dataWriter.StoreAsync();
+                            var percentage = ((double)fileStream.Position / (double)fileStream.Length) * 100.0;
+                            dataWriter.WriteInt32(Convert.ToInt32(percentage));
+                            await dataWriter.StoreAsync();
+                            this.NotifyEvent(this, new MyEventArgs(Convert.ToInt32(percentage) + "% transferred", messageType.Indefinite));
+                            await fileStream.ReadAsync(bytes, 0, bytes.Length);
+                            dataWriter.WriteBytes(bytes);
+                            await dataWriter.StoreAsync();
+                        }
+                        dataWriter.WriteBoolean(false);
+                        await dataWriter.StoreAsync();
+                    }
+                }
+
+                //Read data from the echo server.
+                Stream streamIn = args.Socket.InputStream.AsStreamForRead();
+                StreamReader reader = new StreamReader(streamIn);
+                string response = await reader.ReadLineAsync();
+                this.NotifyEvent(this, new MyEventArgs(response, messageType.Timed));
+                return;
+            }
+            catch (Exception e)
+            {
+                this.NotifyEvent(this, new MyEventArgs("Transfer interrupted", messageType.Indefinite));
+            }
         }
     }
 

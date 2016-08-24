@@ -61,7 +61,9 @@ namespace ShareAcrossAppService
             // the ip address
             returnData.Add("result", hostname?.CanonicalName);
 
-            await args.Request.SendResponseAsync(returnData); // Return the data to the caller.// Complete the deferral so that the platform knows that we're done responding to the app service call.
+            await args.Request.SendResponseAsync(returnData);// Return the data to the caller.
+
+            this.backgroundTaskDeferral.Complete();// Complete the deferral so that the platform knows that we're done responding to the app service call.
         }
     }
 }

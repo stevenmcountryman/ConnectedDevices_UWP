@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using Windows.Storage.AccessCache;
 using Windows.UI.Xaml.Documents;
 using Windows.ApplicationModel.Core;
+using Windows.Networking;
 
 namespace Share_Across_Devices.Views
 {
@@ -44,6 +45,7 @@ namespace Share_Across_Devices.Views
         private bool transferFile = false;
         private bool sharingInitiated = false;
         private string fileName;
+        private string ipAddress;
         private string textToCopy;
         private StorageFile file;
 
@@ -130,6 +132,7 @@ namespace Share_Across_Devices.Views
                     else
                     {
                         this.fileName = queryStrings.GetFirstValueByName("FileName");
+                        this.ipAddress = queryStrings.GetFirstValueByName("IpAddress");
                         this.beginListeningForFile();
                     }
                 }
@@ -282,90 +285,82 @@ namespace Share_Across_Devices.Views
         {
             this.NotificationText.Text = "Receiving file...";
             this.animateShowNotification();
-            try
+            using (var socket = new StreamSocket())
             {
-                //Create a StreamSocketListener to start listening for TCP connections.
-                StreamSocketListener socketListener = new StreamSocketListener();
 
-                //Hook up an event handler to call when connections are received.
-                socketListener.ConnectionReceived += SocketListener_ConnectionReceived;
-
-                //Start listening for incoming TCP connections on the specified port. You can specify any port that' s not currently in use.
-                await socketListener.BindServiceNameAsync("1717");
-            }
-            catch (Exception e)
-            {
-                this.NotificationText.Text = "Failed to receive file";
+                //The server hostname that we will be establishing a connection to. We will be running the server and client locally,
+                //so we will use localhost as the hostname.
+                HostName serverHost = new HostName(this.ipAddress);
+                this.NotificationText.Text = "Opening connection....";
                 this.animateShowNotification();
-            }
-        }
-        private async void SocketListener_ConnectionReceived(StreamSocketListener sender, StreamSocketListenerConnectionReceivedEventArgs args)
-        {
-            sender.ConnectionReceived -= SocketListener_ConnectionReceived;
-            if (fileName != null)
-            {
-                try
+
+                await socket.ConnectAsync(serverHost, "1717");
+
+                if (fileName != null)
                 {
-                    file = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
-                    //Read line from the remote client.
-                    using (var fileStream = await file.OpenStreamForWriteAsync())
+                    try
                     {
-                        using (var inStream = args.Socket.InputStream.AsStreamForRead())
+                        file = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
+                        
+                        using (var fileStream = await file.OpenStreamForWriteAsync())
                         {
-                            byte[] bytes;
-                            DataReader dataReader = new DataReader(inStream.AsInputStream());
-                            fileStream.Seek(0, SeekOrigin.Begin);
-                            while (inStream.CanRead)
+                            using (var inStream = socket.InputStream.AsStreamForRead())
                             {
-                                await dataReader.LoadAsync(sizeof(bool));
-                                if (dataReader.ReadBoolean() == false)
+                                byte[] bytes;
+                                DataReader dataReader = new DataReader(inStream.AsInputStream());
+                                fileStream.Seek(0, SeekOrigin.Begin);
+                                while (inStream.CanRead)
                                 {
-                                    break;
+                                    await dataReader.LoadAsync(sizeof(bool));
+                                    if (dataReader.ReadBoolean() == false)
+                                    {
+                                        break;
+                                    }
+                                    await dataReader.LoadAsync(sizeof(Int32));
+                                    var byteSize = dataReader.ReadInt32();
+                                    bytes = new byte[byteSize];
+                                    await dataReader.LoadAsync(sizeof(Int32));
+                                    var percentComplete = dataReader.ReadInt32();
+                                    await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                                    {
+                                        this.NotificationText.Text = percentComplete + "% transferred";
+                                        this.animateShowNotification();
+                                    });
+                                    await dataReader.LoadAsync((uint)byteSize);
+                                    dataReader.ReadBytes(bytes);
+                                    await fileStream.WriteAsync(bytes, 0, byteSize);
                                 }
-                                await dataReader.LoadAsync(sizeof(Int32));
-                                var byteSize = dataReader.ReadInt32();
-                                bytes = new byte[byteSize];
-                                await dataReader.LoadAsync(sizeof(Int32));
-                                var percentComplete = dataReader.ReadInt32();
-                                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                                {
-                                    this.NotificationText.Text = percentComplete + "% transferred";
-                                    this.animateShowNotification();
-                                });
-                                await dataReader.LoadAsync((uint)byteSize);
-                                dataReader.ReadBytes(bytes);
-                                await fileStream.WriteAsync(bytes, 0, byteSize);
                             }
                         }
+
+                        //Send the line back to the remote client.
+                        Stream outStream = socket.OutputStream.AsStreamForWrite();
+                        StreamWriter writer = new StreamWriter(outStream);
+                        await writer.WriteLineAsync("File Received!");
+                        await writer.FlushAsync();
+
+                        await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                        {
+                            this.SelectedDeviceIcon.Glyph = "\uE166";
+                            this.SelectedDeviceName.Text = "Received!";
+                            this.NotificationText.Text = "File received";
+                            this.animateShowNotification();
+                            TransferView transferView = new TransferView(this.file);
+                            this.MediaRetrieveViewGrid.Children.Clear();
+                            this.MediaRetrieveViewGrid.Children.Add(transferView);
+                            this.showMediaRetrieveViewGrid();
+                            transferView.CancelEvent += TransferView_CancelEvent;
+                            transferView.SaveEvent += TransferView_SaveEvent;
+                        });
                     }
-
-                    //Send the line back to the remote client.
-                    Stream outStream = args.Socket.OutputStream.AsStreamForWrite();
-                    StreamWriter writer = new StreamWriter(outStream);
-                    await writer.WriteLineAsync("File Received!");
-                    await writer.FlushAsync();
-
-                    await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    catch
                     {
-                        this.SelectedDeviceIcon.Glyph = "\uE166";
-                        this.SelectedDeviceName.Text = "Received!";
-                        this.NotificationText.Text = "File received";
-                        this.animateShowNotification();
-                        TransferView transferView = new TransferView(this.file);
-                        this.MediaRetrieveViewGrid.Children.Clear();
-                        this.MediaRetrieveViewGrid.Children.Add(transferView);
-                        this.showMediaRetrieveViewGrid();
-                        transferView.CancelEvent += TransferView_CancelEvent;
-                        transferView.SaveEvent += TransferView_SaveEvent;
-                    });
-                }
-                catch
-                {
-                    await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                    {
-                        this.NotificationText.Text = "Transfer interrupted";
-                        this.animateShowNotification();
-                    });
+                        await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                        {
+                            this.NotificationText.Text = "Transfer interrupted";
+                            this.animateShowNotification();
+                        });
+                    }
                 }
             }
         }

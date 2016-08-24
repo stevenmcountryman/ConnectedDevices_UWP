@@ -193,7 +193,7 @@ namespace Share_Across_Devices.Controls
         {
             if (this.fileToSend != null)
             {
-                this.fileTransfer = new FileTransfer("1717", 7171, this.remoteSystem, this.fileToSend, "simplisidy.appservice", "34507Simplisidy.ShareAcrossDevices_wtkr3v20s86d8");
+                this.fileTransfer = new FileTransfer("1717", 7171, this.remoteSystem, this.fileToSend);
                 this.fileTransfer.NotifyEvent += FileTransfer_NotifyEvent;
                 fileTransfer.sendFile();
             }

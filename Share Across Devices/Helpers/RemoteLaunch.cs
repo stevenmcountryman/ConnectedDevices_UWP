@@ -20,10 +20,10 @@ namespace Share_Across_Devices.Helpers
             return await RemoteLauncher.LaunchUriAsync(connectionRequest, new Uri(url));
         }
 
-        public static async Task<RemoteLaunchUriStatus> TryBeginShareFile(RemoteSystem device, string fileName)
+        public static async Task<RemoteLaunchUriStatus> TryBeginShareFile(RemoteSystem device, string fileName, string ipAddress)
         {
             RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(device);
-            return await RemoteLauncher.LaunchUriAsync(connectionRequest, new Uri("share-app:?FileName=" + fileName));
+            return await RemoteLauncher.LaunchUriAsync(connectionRequest, new Uri("share-app:?FileName=" + fileName + "?IpAddress=" + ipAddress));
         }
 
         public static string ParseYoutubeLinkToTubeCastUri(string url)

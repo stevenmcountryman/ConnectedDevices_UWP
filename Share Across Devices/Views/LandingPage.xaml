@@ -231,8 +231,7 @@
                              RelativePanel.LeftOf="SendButton"
                              RelativePanel.AlignVerticalCenterWithPanel="True" 
                              Style="{StaticResource MessageEnterField}"
-                             MaxHeight="100"
-                             AcceptsReturn="True"/>
+                             MaxHeight="100"/>
                     <Button x:Name="SendButton"
                             RelativePanel.AlignRightWithPanel="True"
                             RelativePanel.AlignBottomWithPanel="True"
