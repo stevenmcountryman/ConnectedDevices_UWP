@@ -298,69 +298,58 @@ namespace Share_Across_Devices.Views
 
                 if (fileName != null)
                 {
-                    try
+                    file = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
+
+                    using (var fileStream = await file.OpenStreamForWriteAsync())
                     {
-                        file = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
-                        
-                        using (var fileStream = await file.OpenStreamForWriteAsync())
+                        using (var inStream = socket.InputStream.AsStreamForRead())
                         {
-                            using (var inStream = socket.InputStream.AsStreamForRead())
+                            byte[] bytes;
+                            DataReader dataReader = new DataReader(inStream.AsInputStream());
+                            fileStream.Seek(0, SeekOrigin.Begin);
+                            while (inStream.CanRead)
                             {
-                                byte[] bytes;
-                                DataReader dataReader = new DataReader(inStream.AsInputStream());
-                                fileStream.Seek(0, SeekOrigin.Begin);
-                                while (inStream.CanRead)
+                                await dataReader.LoadAsync(sizeof(bool));
+                                if (dataReader.ReadBoolean() == false)
                                 {
-                                    await dataReader.LoadAsync(sizeof(bool));
-                                    if (dataReader.ReadBoolean() == false)
-                                    {
-                                        break;
-                                    }
-                                    await dataReader.LoadAsync(sizeof(Int32));
-                                    var byteSize = dataReader.ReadInt32();
-                                    bytes = new byte[byteSize];
-                                    await dataReader.LoadAsync(sizeof(Int32));
-                                    var percentComplete = dataReader.ReadInt32();
-                                    await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                                    {
-                                        this.NotificationText.Text = percentComplete + "% transferred";
-                                        this.animateShowNotification();
-                                    });
-                                    await dataReader.LoadAsync((uint)byteSize);
-                                    dataReader.ReadBytes(bytes);
-                                    await fileStream.WriteAsync(bytes, 0, byteSize);
+                                    break;
                                 }
+                                await dataReader.LoadAsync(sizeof(Int32));
+                                var byteSize = dataReader.ReadInt32();
+                                bytes = new byte[byteSize];
+                                await dataReader.LoadAsync(sizeof(Int32));
+                                var percentComplete = dataReader.ReadInt32();
+                                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                                {
+                                    this.NotificationText.Text = percentComplete + "% transferred";
+                                    this.animateShowNotification();
+                                });
+                                await dataReader.LoadAsync((uint)byteSize);
+                                dataReader.ReadBytes(bytes);
+                                await fileStream.WriteAsync(bytes, 0, byteSize);
                             }
                         }
-
-                        //Send the line back to the remote client.
-                        Stream outStream = socket.OutputStream.AsStreamForWrite();
-                        StreamWriter writer = new StreamWriter(outStream);
-                        await writer.WriteLineAsync("File Received!");
-                        await writer.FlushAsync();
-
-                        await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                        {
-                            this.SelectedDeviceIcon.Glyph = "\uE166";
-                            this.SelectedDeviceName.Text = "Received!";
-                            this.NotificationText.Text = "File received";
-                            this.animateShowNotification();
-                            TransferView transferView = new TransferView(this.file);
-                            this.MediaRetrieveViewGrid.Children.Clear();
-                            this.MediaRetrieveViewGrid.Children.Add(transferView);
-                            this.showMediaRetrieveViewGrid();
-                            transferView.CancelEvent += TransferView_CancelEvent;
-                            transferView.SaveEvent += TransferView_SaveEvent;
-                        });
                     }
-                    catch
+
+                    //Send the line back to the remote client.
+                    Stream outStream = socket.OutputStream.AsStreamForWrite();
+                    StreamWriter writer = new StreamWriter(outStream);
+                    await writer.WriteLineAsync("File Received!");
+                    await writer.FlushAsync();
+
+                    await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                     {
-                        await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                        {
-                            this.NotificationText.Text = "Transfer interrupted";
-                            this.animateShowNotification();
-                        });
-                    }
+                        this.SelectedDeviceIcon.Glyph = "\uE166";
+                        this.SelectedDeviceName.Text = "Received!";
+                        this.NotificationText.Text = "File received";
+                        this.animateShowNotification();
+                        TransferView transferView = new TransferView(this.file);
+                        this.MediaRetrieveViewGrid.Children.Clear();
+                        this.MediaRetrieveViewGrid.Children.Add(transferView);
+                        this.showMediaRetrieveViewGrid();
+                        transferView.CancelEvent += TransferView_CancelEvent;
+                        transferView.SaveEvent += TransferView_SaveEvent;
+                    });
                 }
             }
         }
@@ -840,18 +829,21 @@ namespace Share_Across_Devices.Views
             this.animateDeviceChosen();
             this.validateTextAndButtons();
         }
-        private void SelectedDevice_NotifyEvent(object sender, MyEventArgs e)
+        private async void SelectedDevice_NotifyEvent(object sender, MyEventArgs e)
         {
-            var message = e.Message;
-            this.NotificationText.Text = message;
-            if (e.MessageType == MyEventArgs.messageType.Indefinite)
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                this.animateShowNotification();
-            }
-            else
-            {
-                this.animateShowNotificationTimed();
-            }
+                var message = e.Message;
+                this.NotificationText.Text = message;
+                if (e.MessageType == MyEventArgs.messageType.Indefinite)
+                {
+                    this.animateShowNotification();
+                }
+                else
+                {
+                    this.animateShowNotificationTimed();
+                }
+            });
         }
         private void SendButton_Click(object sender, RoutedEventArgs e)
         {

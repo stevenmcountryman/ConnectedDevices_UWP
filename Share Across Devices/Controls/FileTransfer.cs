@@ -103,9 +103,12 @@ namespace Share_Across_Devices.Controls
 
                             //Start listening for incoming TCP connections on the specified port. You can specify any port that' s not currently in use.
                             await socketListener.BindServiceNameAsync(this.PortNumber);
+                            break;
                         }
                         catch (Exception e)
                         {
+                            sendAttempt++;
+                            this.NotifyEvent(this, new MyEventArgs("Failed. Retrying attempt " + sendAttempt + " of 3", messageType.Indefinite));
                         }
                     }
                 }
