@@ -489,6 +489,10 @@ namespace Share_Across_Devices.Views
                 itemVisual.StartAnimation("Offset", offsetAnimation);
                 itemVisual.StartAnimation("Opacity", fadeAnimation);
             }
+            else
+            {
+                itemVisual.Opacity = 1f;
+            }
         }
         private void animateButtonEnabled(Button button)
         {
