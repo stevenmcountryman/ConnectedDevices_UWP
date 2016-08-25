@@ -671,9 +671,6 @@ namespace Share_Across_Devices.Views
 
             await Task.Delay(1000);
             this.TutorialGrid.Visibility = Visibility.Collapsed;
-
-            var rectVisual = ElementCompositionPreview.GetElementVisual(SelectionRectangle);
-            rectVisual.StopAnimation("Opacity");
         }
         private void animateTutorialGridOpening()
         {
@@ -685,15 +682,6 @@ namespace Share_Across_Devices.Views
             fadeAnimation.InsertKeyFrame(1f, 1f);
 
             itemVisual.StartAnimation("Opacity", fadeAnimation);
-
-            var rectVisual = ElementCompositionPreview.GetElementVisual(SelectionRectangle);
-            ScalarKeyFrameAnimation rectFadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
-            rectFadeAnimation.Duration = TimeSpan.FromMilliseconds(2000);
-            rectFadeAnimation.IterationBehavior = AnimationIterationBehavior.Forever;
-            rectFadeAnimation.InsertKeyFrame(0f, 0f);
-            rectFadeAnimation.InsertKeyFrame(0.5f, 1f);
-            rectFadeAnimation.InsertKeyFrame(1f, 0f);
-            rectVisual.StartAnimation("Opacity", rectFadeAnimation);
         }
         #endregion
 
@@ -1012,11 +1000,15 @@ namespace Share_Across_Devices.Views
                     if (this.remoteSystemIsLocal() && this.transferFile)
                     {
                         this.SendButton.IsEnabled = true;
+                        this.NotificationText.Text = "Device available for local file transfer";
+                        this.animateShowNotification();
                         return;
                     }
                     else if (this.transferFile)
                     {
                         this.SendButton.IsEnabled = false;
+                        this.NotificationText.Text = "Device not available for local file transfer";
+                        this.animateShowNotification();
                         return;
                     }
 
@@ -1044,10 +1036,14 @@ namespace Share_Across_Devices.Views
                     if (this.remoteSystemIsLocal())
                     {
                         this.AttachButton.IsEnabled = true;
+                        this.NotificationText.Text = "Device available for local file transfer";
+                        this.animateShowNotification();
                     }
                     else
                     {
                         this.AttachButton.IsEnabled = false;
+                        this.NotificationText.Text = "Device not available for local file transfer";
+                        this.animateShowNotification();
                     }
 
                     if (this.MessageToSend.Text.Length > 0)
@@ -1123,6 +1119,7 @@ namespace Share_Across_Devices.Views
                 this.transferFile = false;
                 this.hideMediaViewGrid();
                 this.hideMediaRetrieveViewGrid();
+                this.notificationsHidden = true;
                 var notificationVisual = ElementCompositionPreview.GetElementVisual(this.NotificationPanel);
                 notificationVisual.Opacity = 0f;
             }

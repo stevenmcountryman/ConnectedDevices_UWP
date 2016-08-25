@@ -65,7 +65,8 @@
                 HorizontalAlignment="Center"
                 Click="CancelButton_Click"
                 BorderBrush="{x:Null}" 
-                Background="Transparent"
+                Style="{StaticResource MyButtonStyle}"
+                Background="#7F000000"
                 RelativePanel.AlignTopWithPanel="True"
                 RelativePanel.AlignRightWithPanel="True"/>
         </RelativePanel>
