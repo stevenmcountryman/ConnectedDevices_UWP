@@ -1,6 +1,7 @@
 ﻿using Share_Across_Devices.Helpers;
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.AppService;
 using Windows.Foundation.Collections;
@@ -173,11 +174,32 @@ namespace Share_Across_Devices.Controls
             FileOpenPicker openPicker = new FileOpenPicker();
             openPicker.FileTypeFilter.Add("*");
             openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            this.fileToSend = await openPicker.PickSingleFileAsync();
-            if (this.fileToSend != null)
+            var files = await openPicker.PickMultipleFilesAsync();            
+            if (files != null)
             {
-                StorageApplicationPermissions.FutureAccessList.Add(this.fileToSend);
-                return this.fileToSend;
+                if (files.Count == 1)
+                {
+                    this.fileToSend = files[0];
+                    return this.fileToSend;
+                }
+                else
+                {
+                    StorageFile collectionZip = await ApplicationData.Current.LocalFolder.CreateFileAsync("FileCollection.zip", CreationCollisionOption.ReplaceExisting);
+                    foreach (StorageFile file in files)
+                    {
+                        await Task.Run(() =>
+                        {
+                            using (FileStream stream = new FileStream(collectionZip.Path, FileMode.Open))
+                            {
+                                using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Update))
+                                {
+                                    archive.CreateEntryFromFile(file.Path, file.Name);
+                                }
+                            }
+                        });
+                    }
+                    return collectionZip;
+                }
             }
             return null;
         }
