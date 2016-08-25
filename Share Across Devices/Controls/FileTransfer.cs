@@ -22,8 +22,6 @@ namespace Share_Across_Devices.Controls
         private int BlockSize;
         private RemoteSystem RemoteSystem;
         private StorageFile FileToSend;
-        private DispatcherTimer timer;
-        private DateTime lastUpdatedTime;
 
         public delegate void NotifyHandler(object sender, MyEventArgs e);
         public event NotifyHandler NotifyEvent;
@@ -34,36 +32,6 @@ namespace Share_Across_Devices.Controls
             this.BlockSize = blockSize;
             this.RemoteSystem = remoteSys;
             this.FileToSend = file;
-            this.timer = new DispatcherTimer();
-            this.timer.Interval = new TimeSpan(0, 0, 1);
-        }
-
-        private void Timer_Tick(object sender, object e)
-        {
-            var currentTime = DateTime.Now.ToUniversalTime();
-            if (this.lastUpdatedTime != null && currentTime.Subtract(this.lastUpdatedTime).TotalSeconds >= 10)
-            {
-                this.NotifyEvent(this, new MyEventArgs("Network timeout. Check your connection and try again", messageType.Indefinite));
-                this.stopTimer();
-            }
-            else if (this.lastUpdatedTime != null && currentTime.Subtract(this.lastUpdatedTime).TotalSeconds == 5)
-            {
-                this.NotifyEvent(this, new MyEventArgs("This is taking longer than expected...", messageType.Indefinite));
-            }
-        }
-
-        private void startTimer()
-        {
-            this.timer.Start();
-            this.lastUpdatedTime = DateTime.Now.ToUniversalTime();
-            this.timer.Tick += Timer_Tick;
-        }
-
-        private void stopTimer()
-        {
-            this.timer.Start();
-            this.lastUpdatedTime = DateTime.Now.ToUniversalTime();
-            this.timer.Tick -= Timer_Tick;
         }
 
         public async void sendFile()
@@ -73,7 +41,6 @@ namespace Share_Across_Devices.Controls
             {
                 try
                 {
-                    this.NotifyEvent(this, new MyEventArgs("Launching app on device....", messageType.Indefinite));
                     var icp = NetworkInformation.GetInternetConnectionProfile();
 
                     if (icp?.NetworkAdapter == null) return;
@@ -87,29 +54,28 @@ namespace Share_Across_Devices.Controls
                             break;
                         }
                     }
-                    var status = await RemoteLaunch.TryBeginShareFile(this.RemoteSystem, this.FileToSend.Name, hostname?.CanonicalName);
-
-                    if (status == RemoteLaunchUriStatus.Success)
+                    //Create the StreamSocket and establish a connection to the echo server.
+                    try
                     {
-                        //Create the StreamSocket and establish a connection to the echo server.
-                        try
-                        {
-                            this.NotifyEvent(this, new MyEventArgs("Waiting for connection....", messageType.Indefinite));
-                            //Create a StreamSocketListener to start listening for TCP connections.
-                            StreamSocketListener socketListener = new StreamSocketListener();
+                        this.NotifyEvent(this, new MyEventArgs("Launching app on device....", messageType.Indefinite));
+                        RemoteLaunch.TryBeginShareFile(this.RemoteSystem, this.FileToSend.Name, hostname?.CanonicalName);
 
-                            //Hook up an event handler to call when connections are received.
-                            socketListener.ConnectionReceived += SocketListener_ConnectionReceived;
+                        this.NotifyEvent(this, new MyEventArgs("Waiting for connection....", messageType.Indefinite));
+                        //Create a StreamSocketListener to start listening for TCP connections.
+                        StreamSocketListener socketListener = new StreamSocketListener();
 
-                            //Start listening for incoming TCP connections on the specified port. You can specify any port that' s not currently in use.
-                            await socketListener.BindServiceNameAsync(this.PortNumber);
-                            break;
-                        }
-                        catch (Exception e)
-                        {
-                            sendAttempt++;
-                            this.NotifyEvent(this, new MyEventArgs("Failed. Retrying attempt " + sendAttempt + " of 3", messageType.Indefinite));
-                        }
+                        //Hook up an event handler to call when connections are received.
+                        socketListener.ConnectionReceived += SocketListener_ConnectionReceived;
+
+                        //Start listening for incoming TCP connections on the specified port. You can specify any port that' s not currently in use.
+                        await socketListener.BindServiceNameAsync(this.PortNumber);
+
+                        break;
+                    }
+                    catch (Exception e)
+                    {
+                        sendAttempt++;
+                        this.NotifyEvent(this, new MyEventArgs("Failed. Retrying attempt " + sendAttempt + " of 3", messageType.Indefinite));
                     }
                 }
                 catch (Exception e)
@@ -122,7 +88,7 @@ namespace Share_Across_Devices.Controls
         private async void SocketListener_ConnectionReceived(StreamSocketListener sender, StreamSocketListenerConnectionReceivedEventArgs args)
         {
             sender.ConnectionReceived -= SocketListener_ConnectionReceived;
-            this.NotifyEvent(this, new MyEventArgs("Connected! Retrieving file....", messageType.Indefinite));
+            this.NotifyEvent(this, new MyEventArgs("Connected! Sending file....", messageType.Indefinite));
             try
             {
                 //Write data to the echo server.

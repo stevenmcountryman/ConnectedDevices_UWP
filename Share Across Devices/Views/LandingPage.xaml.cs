@@ -101,6 +101,7 @@ namespace Share_Across_Devices.Views
                     this.animateDeviceChosen();
 
                     var queryStrings = new WwwFormUrlDecoder(protocolArgs.Uri.Query);
+                    
                     if (!protocolArgs.Uri.Query.StartsWith("?FileName="))
                     {
                         this.textToCopy = queryStrings.GetFirstValueByName("Text");
@@ -283,8 +284,6 @@ namespace Share_Across_Devices.Views
         #region File retrieval 
         private async void beginListeningForFile()
         {
-            this.NotificationText.Text = "Receiving file...";
-            this.animateShowNotification();
             try
             {
                 using (var socket = new StreamSocket())
@@ -300,6 +299,9 @@ namespace Share_Across_Devices.Views
                     if (fileName != null)
                     {
                         file = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
+
+                        this.NotificationText.Text = "Receiving file...";
+                        this.animateShowNotification();
 
                         using (var fileStream = await file.OpenStreamForWriteAsync())
                         {

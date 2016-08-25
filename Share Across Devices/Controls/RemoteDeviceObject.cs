@@ -88,7 +88,6 @@ namespace Share_Across_Devices.Controls
             {
                 this.NotifyEvent(this, new MyEventArgs("Network timeout. Check your connection and try again", messageType.Indefinite));
                 this.timer.Stop();
-                this.disposeOfFileTransfer();
             }
             else if (this.lastUpdatedTime != null && currentTime.Subtract(this.lastUpdatedTime).TotalSeconds == 5)
             {
@@ -202,23 +201,6 @@ namespace Share_Across_Devices.Controls
         private void FileTransfer_NotifyEvent(object sender, MyEventArgs e)
         {
             this.NotifyEvent(this, e);
-            if (e.MessageType == messageType.Timed)
-            {
-                this.disposeOfFileTransfer();
-            }
-        }
-
-        private async void disposeOfFileTransfer()
-        {
-            try
-            {
-                this.fileTransfer = null;
-                this.fileTransfer.NotifyEvent -= FileTransfer_NotifyEvent;
-            }
-            catch
-            {
-
-            }
         }
     }
 }
