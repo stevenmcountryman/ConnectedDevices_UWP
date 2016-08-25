@@ -22,6 +22,7 @@ namespace Share_Across_Devices.Controls
         private int BlockSize;
         private RemoteSystem RemoteSystem;
         private StorageFile FileToSend;
+        private StreamSocketListener socketListener;
 
         public delegate void NotifyHandler(object sender, MyEventArgs e);
         public event NotifyHandler NotifyEvent;
@@ -36,54 +37,35 @@ namespace Share_Across_Devices.Controls
 
         public async void sendFile()
         {
-            var sendAttempt = 1;
-            while (sendAttempt <= 3)
-            {
-                try
+                var icp = NetworkInformation.GetInternetConnectionProfile();
+
+                if (icp?.NetworkAdapter == null) return;
+                var hostnames = NetworkInformation.GetHostNames();
+                HostName hostname = null;
+                foreach (var name in hostnames)
                 {
-                    var icp = NetworkInformation.GetInternetConnectionProfile();
-
-                    if (icp?.NetworkAdapter == null) return;
-                    var hostnames = NetworkInformation.GetHostNames();
-                    HostName hostname = null;
-                    foreach (var name in hostnames)
+                    if (name.IPInformation?.NetworkAdapter != null && name.IPInformation.NetworkAdapter.NetworkAdapterId == icp.NetworkAdapter.NetworkAdapterId)
                     {
-                        if (name.IPInformation?.NetworkAdapter != null && name.IPInformation.NetworkAdapter.NetworkAdapterId == icp.NetworkAdapter.NetworkAdapterId)
-                        {
-                            hostname = name;
-                            break;
-                        }
-                    }
-                    //Create the StreamSocket and establish a connection to the echo server.
-                    try
-                    {
-                        this.NotifyEvent(this, new MyEventArgs("Launching app on device....", messageType.Indefinite));
-                        RemoteLaunch.TryBeginShareFile(this.RemoteSystem, this.FileToSend.Name, hostname?.CanonicalName);
-
-                        this.NotifyEvent(this, new MyEventArgs("Waiting for connection....", messageType.Indefinite));
-                        //Create a StreamSocketListener to start listening for TCP connections.
-                        StreamSocketListener socketListener = new StreamSocketListener();
-
-                        //Hook up an event handler to call when connections are received.
-                        socketListener.ConnectionReceived += SocketListener_ConnectionReceived;
-
-                        //Start listening for incoming TCP connections on the specified port. You can specify any port that' s not currently in use.
-                        await socketListener.BindServiceNameAsync(this.PortNumber);
-
+                        hostname = name;
                         break;
                     }
-                    catch (Exception e)
-                    {
-                        sendAttempt++;
-                        this.NotifyEvent(this, new MyEventArgs("Failed. Retrying attempt " + sendAttempt + " of 3", messageType.Indefinite));
-                    }
                 }
-                catch (Exception e)
+                this.NotifyEvent(this, new MyEventArgs("Launching app on device....", messageType.Indefinite));
+                RemoteLaunch.TryBeginShareFile(this.RemoteSystem, this.FileToSend.Name, hostname?.CanonicalName);
+
+                this.NotifyEvent(this, new MyEventArgs("Waiting for connection....", messageType.Indefinite));
+                //Create a StreamSocketListener to start listening for TCP connections.
+                if (this.socketListener != null)
                 {
-                    sendAttempt++;
-                    this.NotifyEvent(this, new MyEventArgs("Failed. Retrying attempt " + sendAttempt + " of 3", messageType.Indefinite));
+                    this.socketListener.Dispose();
                 }
-            }
+                this.socketListener = new StreamSocketListener();
+
+                //Hook up an event handler to call when connections are received.
+                socketListener.ConnectionReceived += SocketListener_ConnectionReceived;
+
+                //Start listening for incoming TCP connections on the specified port. You can specify any port that' s not currently in use.
+                await socketListener.BindServiceNameAsync(this.PortNumber);
         }
         private async void SocketListener_ConnectionReceived(StreamSocketListener sender, StreamSocketListenerConnectionReceivedEventArgs args)
         {
@@ -121,22 +103,22 @@ namespace Share_Across_Devices.Controls
                             dataWriter.WriteBytes(bytes);
                             await dataWriter.StoreAsync();
                         }
+                        this.NotifyEvent(this, new MyEventArgs("File sent!", messageType.Timed));
                         dataWriter.WriteBoolean(false);
                         await dataWriter.StoreAsync();
                     }
                 }
-
-                //Read data from the echo server.
-                Stream streamIn = args.Socket.InputStream.AsStreamForRead();
-                StreamReader reader = new StreamReader(streamIn);
-                string response = await reader.ReadLineAsync();
-                this.NotifyEvent(this, new MyEventArgs(response, messageType.Timed));
-                return;
+                this.socketListener.Dispose();
             }
             catch (Exception e)
             {
                 this.NotifyEvent(this, new MyEventArgs("Transfer interrupted", messageType.Indefinite));
             }
+        }
+
+        internal void Dispose()
+        {
+            this.socketListener.Dispose();
         }
     }
 

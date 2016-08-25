@@ -19,12 +19,10 @@ namespace Share_Across_Devices.Controls
     public class RemoteDeviceObject
     {
         private StorageFile fileToSend;
-        private FileTransfer fileTransfer;
-        private AppServiceConnection connection;
-        private StreamSocket socket;
         private RemoteSystem remoteSystem;
         private DispatcherTimer timer;
         private DateTime lastUpdatedTime;
+        private FileTransfer fileTransfer;
 
         public delegate void NotifyHandler(object sender, MyEventArgs e);
         public event NotifyHandler NotifyEvent;
@@ -192,8 +190,12 @@ namespace Share_Across_Devices.Controls
         {
             if (this.fileToSend != null)
             {
-                this.fileTransfer = new FileTransfer("1717", 7171, this.remoteSystem, this.fileToSend);
-                this.fileTransfer.NotifyEvent += FileTransfer_NotifyEvent;
+                if (this.fileTransfer != null)
+                {
+                    this.fileTransfer.Dispose();
+                }
+                fileTransfer = new FileTransfer("1717", 7171, this.remoteSystem, this.fileToSend);
+                fileTransfer.NotifyEvent += FileTransfer_NotifyEvent;
                 fileTransfer.sendFile();
             }
         }

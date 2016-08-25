@@ -66,7 +66,7 @@
                 Click="CancelButton_Click"
                 BorderBrush="{x:Null}" 
                 Style="{StaticResource MyButtonStyle}"
-                Background="#7F000000"
+                Background="#4C000000"
                 RelativePanel.AlignTopWithPanel="True"
                 RelativePanel.AlignRightWithPanel="True"/>
         </RelativePanel>

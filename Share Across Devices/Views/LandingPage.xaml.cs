@@ -333,28 +333,22 @@ namespace Share_Across_Devices.Views
                                 }
                             }
                         }
-
-                        //Send the line back to the remote client.
-                        Stream outStream = socket.OutputStream.AsStreamForWrite();
-                        StreamWriter writer = new StreamWriter(outStream);
-                        await writer.WriteLineAsync("File Received!");
-                        await writer.FlushAsync();
-
-                        await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                        {
-                            this.SelectedDeviceIcon.Glyph = "\uE166";
-                            this.SelectedDeviceName.Text = "Received!";
-                            this.NotificationText.Text = "File received";
-                            this.animateShowNotification();
-                            TransferView transferView = new TransferView(this.file);
-                            this.MediaRetrieveViewGrid.Children.Clear();
-                            this.MediaRetrieveViewGrid.Children.Add(transferView);
-                            this.showMediaRetrieveViewGrid();
-                            transferView.CancelEvent += TransferView_CancelEvent;
-                            transferView.SaveEvent += TransferView_SaveEvent;
-                        });
                     }
                 }
+
+                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                {
+                    this.SelectedDeviceIcon.Glyph = "\uE166";
+                    this.SelectedDeviceName.Text = "Received!";
+                    this.NotificationText.Text = "File received";
+                    this.animateShowNotification();
+                    TransferView transferView = new TransferView(this.file);
+                    this.MediaRetrieveViewGrid.Children.Clear();
+                    this.MediaRetrieveViewGrid.Children.Add(transferView);
+                    this.showMediaRetrieveViewGrid();
+                    transferView.CancelEvent += TransferView_CancelEvent;
+                    transferView.SaveEvent += TransferView_SaveEvent;
+                });
             }
             catch
             {
@@ -1000,14 +994,14 @@ namespace Share_Across_Devices.Views
                     if (this.remoteSystemIsLocal() && this.transferFile)
                     {
                         this.SendButton.IsEnabled = true;
-                        this.NotificationText.Text = "Device available for local file transfer";
+                        this.NotificationText.Text = "Ready for local file transfer";
                         this.animateShowNotification();
                         return;
                     }
                     else if (this.transferFile)
                     {
                         this.SendButton.IsEnabled = false;
-                        this.NotificationText.Text = "Device not available for local file transfer";
+                        this.NotificationText.Text = "Not ready for local file transfer";
                         this.animateShowNotification();
                         return;
                     }
@@ -1036,13 +1030,13 @@ namespace Share_Across_Devices.Views
                     if (this.remoteSystemIsLocal())
                     {
                         this.AttachButton.IsEnabled = true;
-                        this.NotificationText.Text = "Device available for local file transfer";
+                        this.NotificationText.Text = "Ready for local file transfer";
                         this.animateShowNotification();
                     }
                     else
                     {
                         this.AttachButton.IsEnabled = false;
-                        this.NotificationText.Text = "Device not available for local file transfer";
+                        this.NotificationText.Text = "Not ready for local file transfer";
                         this.animateShowNotification();
                     }
 
