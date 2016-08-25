@@ -277,17 +277,18 @@ namespace Share_Across_Devices.Views
                             StorageFile collectionZip = await ApplicationData.Current.LocalFolder.CreateFileAsync("FileCollection.zip", CreationCollisionOption.ReplaceExisting);
                             foreach (StorageFile item  in this.sharedStorageItems)
                             {
-                                await Task.Run(async () =>
+                                var newFile = await item.CopyAsync(ApplicationData.Current.LocalFolder, item.Name, NameCollisionOption.ReplaceExisting);
+                                await Task.Run(() =>
                                 {
                                     using (FileStream stream = new FileStream(collectionZip.Path, FileMode.Open))
                                     {
                                         using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Update))
-                                        {
-                                            var newFile = await item.CopyAsync(ApplicationData.Current.LocalFolder, item.Name, NameCollisionOption.ReplaceExisting);
+                                        {                                            
                                             archive.CreateEntryFromFile(newFile.Path, newFile.Name);
                                         }
                                     }
                                 });
+                                await newFile.DeleteAsync();
                             }
                             this.file = collectionZip;
                         }
