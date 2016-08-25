@@ -27,6 +27,7 @@ using Windows.Storage.AccessCache;
 using Windows.UI.Xaml.Documents;
 using Windows.ApplicationModel.Core;
 using Windows.Networking;
+using System.IO.Compression;
 
 namespace Share_Across_Devices.Views
 {
@@ -202,7 +203,6 @@ namespace Share_Across_Devices.Views
                     try
                     {
                         this.sharedStorageItems = await this.shareOperation.Data.GetStorageItemsAsync();
-                        StorageApplicationPermissions.FutureAccessList.AddOrReplace("FileToSend", this.sharedStorageItems[0]);
                     }
                     catch (Exception ex)
                     {
@@ -266,9 +266,30 @@ namespace Share_Across_Devices.Views
                     {
                         this.MessageToSend.Text = this.sharedWebLink.AbsoluteUri;
                     }
-                    if (this.sharedStorageItems != null && this.sharedStorageItems.Count == 1)
+                    if (this.sharedStorageItems != null)
                     {
-                        this.file = await StorageFile.GetFileFromPathAsync(this.sharedStorageItems[0].Path);
+                        if (this.sharedStorageItems.Count == 1)
+                        {
+                            this.file = await StorageFile.GetFileFromPathAsync(this.sharedStorageItems[0].Path);                            
+                        }
+                        else
+                        {
+                            StorageFile collectionZip = await ApplicationData.Current.LocalFolder.CreateFileAsync("FileCollection.zip", CreationCollisionOption.ReplaceExisting);
+                            foreach (StorageFile file in this.sharedStorageItems)
+                            {
+                                await Task.Run(() =>
+                                {
+                                    using (FileStream stream = new FileStream(collectionZip.Path, FileMode.Open))
+                                    {
+                                        using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Update))
+                                        {
+                                            archive.CreateEntryFromFile(file.Path, file.Name);
+                                        }
+                                    }
+                                });
+                            }
+                            this.file = collectionZip;
+                        }
                         this.MessageToSend.Text = "attached file";
                         MediaView mediaView = new MediaView(file);
                         this.MediaSendViewGrid.Children.Clear();
