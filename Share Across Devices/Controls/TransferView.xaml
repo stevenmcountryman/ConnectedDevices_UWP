@@ -12,7 +12,7 @@
     <StackPanel Width="200" Margin="0,8,0,0">
         <FlipView x:Name="MediaFlip"
                   MaxHeight="250"
-                  SelectionChanged="MediaFlip_SelectionChanged">
+                  SelectionChanged="MediaFlip_SelectionChanged" Background="#00000000">
         </FlipView>
         
         <StackPanel Orientation="Horizontal"
