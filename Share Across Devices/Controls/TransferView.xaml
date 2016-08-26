@@ -9,15 +9,14 @@
     d:DesignHeight="280"
     d:DesignWidth="200">
 
-    <RelativePanel Width="200" Margin="0,8,0,0">
-        <local:MediaView x:Name="MediaViewer"
-                             RelativePanel.AlignTopWithPanel="True"
-                             RelativePanel.AlignLeftWithPanel="True"
-                             RelativePanel.AlignRightWithPanel="True"
-                             CancelEvent="MediaViewer_CancelEvent"/>
+    <StackPanel Width="200" Margin="0,8,0,0">
+        <FlipView x:Name="MediaFlip"
+                  MaxHeight="250"
+                  SelectionChanged="MediaFlip_SelectionChanged">
+        </FlipView>
+        
         <StackPanel Orientation="Horizontal"
-                        RelativePanel.Below="MediaViewer"
-                        RelativePanel.AlignHorizontalCenterWithPanel="True">
+                    HorizontalAlignment="Center">
             <Button x:Name="OpenFileButton" 
                         Content="open" 
                         Margin="8"
@@ -43,5 +42,5 @@
                         Background="#3876BF"
                         Style="{StaticResource MyToggleButtonStyle}"  />
         </StackPanel>
-    </RelativePanel>
+    </StackPanel>
 </UserControl>

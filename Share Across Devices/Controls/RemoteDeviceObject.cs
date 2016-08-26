@@ -85,12 +85,12 @@ namespace Share_Across_Devices.Controls
             var currentTime = DateTime.Now.ToUniversalTime();
             if (this.lastUpdatedTime != null && currentTime.Subtract(this.lastUpdatedTime).TotalSeconds >= 10)
             {
-                this.NotifyEvent(this, new MyEventArgs("Network timeout. Check your connection and try again", messageType.Indefinite));
+                this.NotifyEvent(this, new MyEventArgs("Network timeout. Check your connection and try again", messageType.Indefinite, false));
                 this.timer.Stop();
             }
             else if (this.lastUpdatedTime != null && currentTime.Subtract(this.lastUpdatedTime).TotalSeconds == 5)
             {
-                this.NotifyEvent(this, new MyEventArgs("This is taking longer than expected...", messageType.Indefinite));
+                this.NotifyEvent(this, new MyEventArgs("This is taking longer than expected...", messageType.Indefinite, false));
             }
         }
 
@@ -110,63 +110,63 @@ namespace Share_Across_Devices.Controls
 
         public async void ShareMessage(string message)
         {
-            this.NotifyEvent(this, new MyEventArgs("Sending to remote clipboard...", messageType.Indefinite));
+            this.NotifyEvent(this, new MyEventArgs("Sending to remote clipboard...", messageType.Indefinite, false));
             this.startTimer();
             var status = await RemoteLaunch.TrySharetext(this.remoteSystem, message);
             this.stopTimer();
             if (status == RemoteLaunchUriStatus.Success)
             {
-                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
+                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed, false));
             }
             else
             {
-                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Indefinite));
+                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Indefinite, false));
             }
         }
 
         public async void OpenLinkInBrowser(string url)
         {
-            this.NotifyEvent(this, new MyEventArgs("Opening in remote browser...", messageType.Indefinite));
+            this.NotifyEvent(this, new MyEventArgs("Opening in remote browser...", messageType.Indefinite, false));
             this.startTimer();
             var status = await RemoteLaunch.TryShareURL(this.remoteSystem, url);
             this.stopTimer();
             if (status == RemoteLaunchUriStatus.Success)
             {
-                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
+                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed, false));
             }
             else
             {
-                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Indefinite));
+                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Indefinite, false));
             }
         }
         public async void OpenLinkInTubeCast(string url)
         {
-            this.NotifyEvent(this, new MyEventArgs("Opening in remote TubeCast...", messageType.Indefinite));
+            this.NotifyEvent(this, new MyEventArgs("Opening in remote TubeCast...", messageType.Indefinite, false));
             this.startTimer();
             var status = await RemoteLaunch.TryShareURL(this.remoteSystem, RemoteLaunch.ParseYoutubeLinkToTubeCastUri(url));
             this.stopTimer();
             if (status == RemoteLaunchUriStatus.Success)
             {
-                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
+                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed, false));
             }
             else
             {
-                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Indefinite));
+                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Indefinite, false));
             }
         }
         public async void OpenLinkInMyTube(string url)
         {
-            this.NotifyEvent(this, new MyEventArgs("Opening in remote myTube!...", messageType.Indefinite));
+            this.NotifyEvent(this, new MyEventArgs("Opening in remote myTube!...", messageType.Indefinite, false));
             this.startTimer();
             var status = await RemoteLaunch.TryShareURL(this.remoteSystem, RemoteLaunch.ParseYoutubeLinkToMyTubeUri(url));
             this.stopTimer();
             if (status == RemoteLaunchUriStatus.Success)
             {
-                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed));
+                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed, false));
             }
             else
             {
-                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Indefinite));
+                this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Indefinite, false));
             }
         }
         public async Task<StorageFile> OpenFileToSend()
@@ -185,19 +185,22 @@ namespace Share_Across_Devices.Controls
                 else
                 {
                     StorageFile collectionZip = await ApplicationData.Current.LocalFolder.CreateFileAsync("FileCollection.zip", CreationCollisionOption.ReplaceExisting);
-                    foreach (StorageFile file in files)
+                    foreach (StorageFile item in files)
                     {
+                        var newFile = await item.CopyAsync(ApplicationData.Current.LocalFolder, item.Name, NameCollisionOption.ReplaceExisting);
                         await Task.Run(() =>
                         {
                             using (FileStream stream = new FileStream(collectionZip.Path, FileMode.Open))
                             {
                                 using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Update))
                                 {
-                                    archive.CreateEntryFromFile(file.Path, file.Name);
+                                    archive.CreateEntryFromFile(newFile.Path, newFile.Name);
                                 }
                             }
                         });
+                        await newFile.DeleteAsync();
                     }
+                    this.fileToSend = collectionZip;
                     return collectionZip;
                 }
             }

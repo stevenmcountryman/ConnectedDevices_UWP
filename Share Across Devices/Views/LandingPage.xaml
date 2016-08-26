@@ -97,12 +97,14 @@
                       RelativePanel.AlignHorizontalCenterWithPanel="True"
                       RelativePanel.Below="NotificationGrid"
                       VerticalAlignment="Top"
-                      Width="300">
+                      Width="300"
+                      Canvas.ZIndex="8">
                 </Grid>
                 <Grid x:Name="NotificationGrid"
                       RelativePanel.AlignLeftWithPanel="True"
                       RelativePanel.AlignRightWithPanel="True"
-                      RelativePanel.Below="DevicePanel">
+                      RelativePanel.Below="DevicePanel"
+                            Canvas.ZIndex="9">
                     <StackPanel x:Name="NotificationPanel"
                                 Background="#4B9DFF">
                         <TextBlock x:Name="NotificationText"
@@ -119,7 +121,8 @@
                             Height="144"
                             RelativePanel.AlignTopWithPanel="True"
                             RelativePanel.AlignLeftWithPanel="True"
-                            RelativePanel.AlignRightWithPanel="True">
+                            RelativePanel.AlignRightWithPanel="True"
+                            Canvas.ZIndex="10">
                     <FontIcon x:Name="SelectedDeviceIcon"
                               FontFamily="Segoe MDL2 Assets" 
                               FontSize="80"

@@ -50,10 +50,10 @@ namespace Share_Across_Devices.Controls
                         break;
                     }
                 }
-                this.NotifyEvent(this, new MyEventArgs("Launching app on device....", messageType.Indefinite));
+                this.NotifyEvent(this, new MyEventArgs("Launching app on device....", messageType.Indefinite, false));
                 RemoteLaunch.TryBeginShareFile(this.RemoteSystem, this.FileToSend.Name, hostname?.CanonicalName);
 
-                this.NotifyEvent(this, new MyEventArgs("Waiting for connection....", messageType.Indefinite));
+                this.NotifyEvent(this, new MyEventArgs("Waiting for connection....", messageType.Indefinite, false));
                 //Create a StreamSocketListener to start listening for TCP connections.
                 if (this.socketListener != null)
                 {
@@ -70,7 +70,7 @@ namespace Share_Across_Devices.Controls
         private async void SocketListener_ConnectionReceived(StreamSocketListener sender, StreamSocketListenerConnectionReceivedEventArgs args)
         {
             sender.ConnectionReceived -= SocketListener_ConnectionReceived;
-            this.NotifyEvent(this, new MyEventArgs("Connected! Sending file....", messageType.Indefinite));
+            this.NotifyEvent(this, new MyEventArgs("Connected! Sending file....", messageType.Indefinite, true));
             try
             {
                 //Write data to the echo server.
@@ -98,12 +98,12 @@ namespace Share_Across_Devices.Controls
                             var percentage = ((double)fileStream.Position / (double)fileStream.Length) * 100.0;
                             dataWriter.WriteInt32(Convert.ToInt32(percentage));
                             await dataWriter.StoreAsync();
-                            this.NotifyEvent(this, new MyEventArgs(Convert.ToInt32(percentage) + "% transferred", messageType.Indefinite));
+                            this.NotifyEvent(this, new MyEventArgs(Convert.ToInt32(percentage) + "% transferred", messageType.Indefinite, true));
                             await fileStream.ReadAsync(bytes, 0, bytes.Length);
                             dataWriter.WriteBytes(bytes);
                             await dataWriter.StoreAsync();
                         }
-                        this.NotifyEvent(this, new MyEventArgs("File sent!", messageType.Timed));
+                        this.NotifyEvent(this, new MyEventArgs("File sent!", messageType.Timed, true));
                         dataWriter.WriteBoolean(false);
                         await dataWriter.StoreAsync();
                     }
@@ -112,7 +112,7 @@ namespace Share_Across_Devices.Controls
             }
             catch (Exception e)
             {
-                this.NotifyEvent(this, new MyEventArgs("Transfer interrupted", messageType.Indefinite));
+                this.NotifyEvent(this, new MyEventArgs("Transfer interrupted", messageType.Indefinite, true));
             }
         }
 
@@ -134,6 +134,11 @@ namespace Share_Across_Devices.Controls
             get;
             set;
         }
+        public bool Marshalled
+        {
+            get;
+            set;
+        }
         public enum messageType
         {
             Indefinite,
@@ -144,10 +149,11 @@ namespace Share_Across_Devices.Controls
         {
 
         }
-        public MyEventArgs(string message, messageType type)
+        public MyEventArgs(string message, messageType type, bool marshalled)
         {
             this.Message = message;
             this.MessageType = type;
+            this.Marshalled = marshalled;
         }
     }
 }

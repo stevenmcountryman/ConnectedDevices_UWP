@@ -270,7 +270,8 @@ namespace Share_Across_Devices.Views
                     {
                         if (this.sharedStorageItems.Count == 1)
                         {
-                            this.file = await StorageFile.GetFileFromPathAsync(this.sharedStorageItems[0].Path);                            
+                            var newFile = await (this.sharedStorageItems[0] as StorageFile).CopyAsync(ApplicationData.Current.LocalFolder, this.sharedStorageItems[0].Name, NameCollisionOption.ReplaceExisting);
+                            this.file = await StorageFile.GetFileFromPathAsync(newFile.Path);                            
                         }
                         else
                         {
@@ -845,7 +846,23 @@ namespace Share_Across_Devices.Views
         }
         private async void SelectedDevice_NotifyEvent(object sender, MyEventArgs e)
         {
-            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            if (e.Marshalled)
+            {
+                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                {
+                    var message = e.Message;
+                    this.NotificationText.Text = message;
+                    if (e.MessageType == MyEventArgs.messageType.Indefinite)
+                    {
+                        this.animateShowNotification();
+                    }
+                    else
+                    {
+                        this.animateShowNotificationTimed();
+                    }
+                });
+            }
+            else
             {
                 var message = e.Message;
                 this.NotificationText.Text = message;
@@ -857,7 +874,7 @@ namespace Share_Across_Devices.Views
                 {
                     this.animateShowNotificationTimed();
                 }
-            });
+            }
         }
         private void SendButton_Click(object sender, RoutedEventArgs e)
         {
