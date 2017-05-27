@@ -91,6 +91,17 @@ namespace Share_Across_Devices.Views
             this.animateDeviceChosen();
 
             this.applyAcrylicAccent(BackgroundPanel);
+            var color = (Color)this.Resources["SystemAccentColor"];
+            float red = (float)color.R;
+            float green = (float)color.G;
+            float blue = (float)color.B;
+            red = (255 - red) * (float)0.16 + red;
+            green = (255 - green) * (float)0.16 + green;
+            blue = (255 - blue) * (float)0.16 + blue;
+            var accent = Color.FromArgb(color.A, (byte)(int)red, (byte)(int)green, (byte)(int)blue);
+
+            this.NotificationPanel.Background = new SolidColorBrush(accent);
+            this.HamburgerMenu.PaneBackground = new SolidColorBrush(accent);
         }
         
         private void applyAcrylicAccent(Panel e)
@@ -506,12 +517,12 @@ namespace Share_Across_Devices.Views
             {
                 this.notificationsHidden = false;
                 Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
-                offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                offsetAnimation.Duration = TimeSpan.FromMilliseconds(1100);
                 offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, -100f, 0f));
                 offsetAnimation.InsertKeyFrame(1f, new Vector3(0f, 0f, 0f));
 
                 ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
-                fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+                fadeAnimation.Duration = TimeSpan.FromMilliseconds(1100);
                 fadeAnimation.InsertKeyFrame(0f, 0f);
                 fadeAnimation.InsertKeyFrame(1f, 1f);
 
@@ -531,7 +542,7 @@ namespace Share_Across_Devices.Views
             itemVisual.CenterPoint = new Vector3(width / 2, height / 2, 0f);
 
             Vector3KeyFrameAnimation scaleAnimation = _compositor.CreateVector3KeyFrameAnimation();
-            scaleAnimation.Duration = TimeSpan.FromMilliseconds(1000);
+            scaleAnimation.Duration = TimeSpan.FromMilliseconds(1100);
             scaleAnimation.InsertKeyFrame(0f, new Vector3(1f, 1f, 1f));
 
             if (button.IsEnabled)

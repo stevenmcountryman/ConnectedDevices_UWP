@@ -109,7 +109,7 @@
                       RelativePanel.Below="DevicePanel"
                             Canvas.ZIndex="9">
                     <StackPanel x:Name="NotificationPanel"
-                                Background="#FD4B9DFF" Tapped="NotificationPanel_Tapped">
+                                Background="#FF4B9DFF" Tapped="NotificationPanel_Tapped">
                         <TextBlock x:Name="NotificationText"
                                    TextAlignment="Center"
                                    Text="notification"
@@ -120,7 +120,7 @@
                     </StackPanel>
                 </Grid>
                 <StackPanel x:Name="DevicePanel"
-                            Background="#FF3876BF"
+                            Background="{ThemeResource AccentButtonBackground}"
                             Height="144"
                             RelativePanel.AlignTopWithPanel="True"
                             RelativePanel.AlignLeftWithPanel="True"
