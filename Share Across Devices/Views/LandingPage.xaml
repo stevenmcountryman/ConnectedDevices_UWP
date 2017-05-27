@@ -56,7 +56,7 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="HamburgerMenu.IsPaneOpen" Value="False"/>
-                        <Setter Target="HamburgerMenu.DisplayMode" Value="CompactOverlay"/>
+                        <Setter Target="HamburgerMenu.DisplayMode" Value="Overlay"/>
                         <Setter Target="FadePanel.Margin" Value="48,0,0,0" />
                     </VisualState.Setters>
                 </VisualState>
@@ -75,10 +75,16 @@
                         <AdaptiveTrigger MinWindowWidth="1008" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
+                        <Setter Target="HamburgerMenu.IsPaneOpen" Value="True"/>
+                        <Setter Target="HamburgerMenu.DisplayMode" Value="CompactInline"/>
+                        <Setter Target="FadePanel.Margin" Value="240,0,0,0" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
+        <RelativePanel x:Name="BackgroundPanel" SizeChanged="Page_SizeChanged">
+            
+        </RelativePanel>
         <uwp:HamburgerMenu x:Name="HamburgerMenu"
                            PaneBackground="#4B9DFF" 
                            Foreground="White"                                
@@ -87,12 +93,12 @@
                            ItemClick="HamburgerMenu_ItemClick"
                            OptionsItemClick="HamburgerMenu_OptionsItemClick"
                            OpenPaneLength="240"
-                           DisplayMode="CompactInline"
+                           DisplayMode="Overlay"
                            CompactPaneLength="48"
                            HamburgerHeight="48"
                            IsPaneOpen="True" 
                            Background="#FF535353">
-            <RelativePanel Background="#FF535353">
+            <RelativePanel Background="Transparent">
                 <Grid x:Name="MediaRetrieveViewGrid"
                       RelativePanel.AlignHorizontalCenterWithPanel="True"
                       RelativePanel.Below="NotificationGrid"
@@ -106,7 +112,7 @@
                       RelativePanel.Below="DevicePanel"
                             Canvas.ZIndex="9">
                     <StackPanel x:Name="NotificationPanel"
-                                Background="#4B9DFF">
+                                Background="#E54B9DFF">
                         <TextBlock x:Name="NotificationText"
                                    TextAlignment="Center"
                                    Text="notification"
@@ -117,18 +123,21 @@
                     </StackPanel>
                 </Grid>
                 <StackPanel x:Name="DevicePanel"
-                            Background="#3876BF"
+                            Background="#E53876BF"
                             Height="144"
                             RelativePanel.AlignTopWithPanel="True"
                             RelativePanel.AlignLeftWithPanel="True"
                             RelativePanel.AlignRightWithPanel="True"
-                            Canvas.ZIndex="10">
-                    <FontIcon x:Name="SelectedDeviceIcon"
+                            Canvas.ZIndex="10" Tapped="DevicePanel_Tapped">
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center">
+                        <FontIcon x:Name="SelectedDeviceIcon"
                               FontFamily="Segoe MDL2 Assets" 
                               FontSize="80"
-                              Margin="12,16,12,8"
+                              Margin="40,16,40,8"
                               HorizontalAlignment="Center"
                               Foreground="White"/>
+                    </StackPanel>
                     <TextBlock x:Name="SelectedDeviceName"
                                Text="device name" 
                                Foreground="White" 
@@ -193,7 +202,7 @@
                                 IsEnabled="False"
                                 Width="85"
                                 Content="myTube!" 
-                                Background="#3876BF"
+                                Background="#E53876BF"
                                 Margin="4"
                                 Padding="0,12,0,12"
                                 Foreground="White"
@@ -212,7 +221,7 @@
                                RelativePanel.AlignLeftWithPanel="True"
                                RelativePanel.AlignRightWithPanel="True"
                                BorderBrush="Gray"
-                               BorderThickness="0,1,0,0" Background="#FF535353">
+                               BorderThickness="0,1,0,0" Background="#E5535353">
                     <Button x:Name="AttachButton"
                             RelativePanel.AlignLeftWithPanel="True"
                             RelativePanel.AlignBottomWithPanel="True"

@@ -51,7 +51,7 @@ namespace Share_Across_Devices.Controls
                     }
                 }
                 this.NotifyEvent(this, new MyEventArgs("Launching app on device....", messageType.Indefinite, false));
-                RemoteLaunch.TryBeginShareFile(this.RemoteSystem, this.FileToSend.Name, hostname?.CanonicalName);
+                await RemoteLaunch.TryBeginShareFile(this.RemoteSystem, this.FileToSend.Name, hostname?.CanonicalName);
 
                 this.NotifyEvent(this, new MyEventArgs("Waiting for connection....", messageType.Indefinite, false));
                 //Create a StreamSocketListener to start listening for TCP connections.

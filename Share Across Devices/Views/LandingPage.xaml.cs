@@ -28,6 +28,7 @@ using Windows.UI.Xaml.Documents;
 using Windows.ApplicationModel.Core;
 using Windows.Networking;
 using System.IO.Compression;
+using System.Linq;
 
 namespace Share_Across_Devices.Views
 {
@@ -35,6 +36,7 @@ namespace Share_Across_Devices.Views
     {
         private RemoteSystemWatcher deviceWatcher;
         private Compositor _compositor;
+        SpriteVisual _hostSprite;
         private RemoteDeviceObject selectedDevice;
         private bool sendOptionsHidden = true;
         private bool notificationsHidden = true;
@@ -81,7 +83,32 @@ namespace Share_Across_Devices.Views
             this.setUpCompositor();
             this.setTitleBar();
             this.DeviceList.CollectionChanged += DeviceList_CollectionChanged;
+
+
+            this.SelectedDeviceIcon.Glyph = "\uF140";
+            this.SelectedDeviceName.Text = "Choose a Device";
+            this.animateDeviceChosen();
+
+            this.applyAcrylicAccent(BackgroundPanel);
         }
+        
+        private void applyAcrylicAccent(Panel e)
+        {
+            _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
+            _hostSprite = _compositor.CreateSpriteVisual();
+            _hostSprite.Size = new Vector2((float)e.ActualWidth, (float)e.ActualHeight);
+
+            ElementCompositionPreview.SetElementChildVisual(
+                    e, _hostSprite);
+            _hostSprite.Brush = _compositor.CreateHostBackdropBrush();
+        }
+
+        private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (_hostSprite != null)
+                _hostSprite.Size = e.NewSize.ToVector2();
+        }
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
@@ -391,19 +418,9 @@ namespace Share_Across_Devices.Views
             var appBlue = Color.FromArgb(255, 56, 118, 191);
             if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.ApplicationView"))
             {
-                ApplicationView AppView = ApplicationView.GetForCurrentView();
-                AppView.TitleBar.BackgroundColor = appBlue;
-                AppView.TitleBar.ButtonInactiveBackgroundColor = appBlue;
-                AppView.TitleBar.ButtonInactiveForegroundColor = Colors.White;
-                AppView.TitleBar.ButtonBackgroundColor = appBlue;
-                AppView.TitleBar.ButtonForegroundColor = Colors.White;
-                AppView.TitleBar.ButtonHoverBackgroundColor = appBlue;
-                AppView.TitleBar.ButtonHoverForegroundColor = Colors.White;
-                AppView.TitleBar.ButtonPressedBackgroundColor = appBlue;
-                AppView.TitleBar.ButtonPressedForegroundColor = Colors.White;
-                AppView.TitleBar.ForegroundColor = Colors.White;
-                AppView.TitleBar.InactiveBackgroundColor = appBlue;
-                AppView.TitleBar.InactiveForegroundColor = Colors.White;
+                ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
+                formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
+                coreTitleBar.ExtendViewIntoTitleBar = true;
             }
             if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
             {
@@ -728,6 +745,9 @@ namespace Share_Across_Devices.Views
             {
                 RemoteDeviceObject device = new RemoteDeviceObject(remoteSystem);
                 this.DeviceList.Add(device);
+                var sorted = this.DeviceList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName).ToList();
+                for (int i = 0; i < sorted.Count(); i++)
+                    this.DeviceList.Move(this.DeviceList.IndexOf(sorted[i]), i);
             });
         }
         private async void DeviceWatcher_RemoteSystemUpdated(RemoteSystemWatcher sender, RemoteSystemUpdatedEventArgs args)
@@ -1159,5 +1179,10 @@ namespace Share_Across_Devices.Views
             }
         }
         #endregion
+
+        private void DevicePanel_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            this.HamburgerMenu.IsPaneOpen = true;
+        }
     }
 }
