@@ -91,17 +91,6 @@ namespace Share_Across_Devices.Views
             this.animateDeviceChosen();
 
             this.applyAcrylicAccent(BackgroundPanel);
-            var color = (Color)this.Resources["SystemAccentColor"];
-            float red = (float)color.R;
-            float green = (float)color.G;
-            float blue = (float)color.B;
-            red = (255 - red) * (float)0.16 + red;
-            green = (255 - green) * (float)0.16 + green;
-            blue = (255 - blue) * (float)0.16 + blue;
-            var accent = Color.FromArgb(color.A, (byte)(int)red, (byte)(int)green, (byte)(int)blue);
-
-            this.NotificationPanel.Background = new SolidColorBrush(accent);
-            this.HamburgerMenu.PaneBackground = new SolidColorBrush(accent);
         }
         
         private void applyAcrylicAccent(Panel e)

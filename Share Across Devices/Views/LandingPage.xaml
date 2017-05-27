@@ -80,10 +80,10 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
         <RelativePanel x:Name="BackgroundPanel" SizeChanged="Page_SizeChanged">
-            
+
         </RelativePanel>
         <uwp:HamburgerMenu x:Name="HamburgerMenu"
-                           PaneBackground="#4B9DFF" 
+                           PaneBackground="{ThemeResource SystemControlHighlightAltListAccentHighBrush}" 
                            Foreground="White"                                
                            ItemTemplate="{StaticResource DeviceTemplate}"
                            OptionsItemTemplate="{StaticResource OptionsTemplate}"
@@ -109,7 +109,7 @@
                       RelativePanel.Below="DevicePanel"
                             Canvas.ZIndex="9">
                     <StackPanel x:Name="NotificationPanel"
-                                Background="#FF4B9DFF" Tapped="NotificationPanel_Tapped">
+                                Background="{ThemeResource SystemControlHighlightListAccentHighBrush}" Tapped="NotificationPanel_Tapped">
                         <TextBlock x:Name="NotificationText"
                                    TextAlignment="Center"
                                    Text="notification"
@@ -120,12 +120,11 @@
                     </StackPanel>
                 </Grid>
                 <StackPanel x:Name="DevicePanel"
-                            Background="{ThemeResource AccentButtonBackground}"
                             Height="144"
                             RelativePanel.AlignTopWithPanel="True"
                             RelativePanel.AlignLeftWithPanel="True"
                             RelativePanel.AlignRightWithPanel="True"
-                            Canvas.ZIndex="10" Tapped="DevicePanel_Tapped">
+                            Canvas.ZIndex="10" Tapped="DevicePanel_Tapped" Background="{ThemeResource SystemControlHighlightListAccentLowBrush}">
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
                         <FontIcon x:Name="SelectedDeviceIcon"
