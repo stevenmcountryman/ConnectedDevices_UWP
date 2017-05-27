@@ -57,7 +57,6 @@
                     <VisualState.Setters>
                         <Setter Target="HamburgerMenu.IsPaneOpen" Value="False"/>
                         <Setter Target="HamburgerMenu.DisplayMode" Value="Overlay"/>
-                        <Setter Target="FadePanel.Margin" Value="48,0,0,0" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="VisualStateTablet">
@@ -66,8 +65,7 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="HamburgerMenu.IsPaneOpen" Value="True"/>
-                        <Setter Target="HamburgerMenu.DisplayMode" Value="CompactInline"/>
-                        <Setter Target="FadePanel.Margin" Value="240,0,0,0" />
+                        <Setter Target="HamburgerMenu.DisplayMode" Value="Inline"/>
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="VisualStateDesktop">
@@ -76,8 +74,7 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="HamburgerMenu.IsPaneOpen" Value="True"/>
-                        <Setter Target="HamburgerMenu.DisplayMode" Value="CompactInline"/>
-                        <Setter Target="FadePanel.Margin" Value="240,0,0,0" />
+                        <Setter Target="HamburgerMenu.DisplayMode" Value="Inline"/>
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -112,7 +109,7 @@
                       RelativePanel.Below="DevicePanel"
                             Canvas.ZIndex="9">
                     <StackPanel x:Name="NotificationPanel"
-                                Background="#E54B9DFF">
+                                Background="#FD4B9DFF" Tapped="NotificationPanel_Tapped">
                         <TextBlock x:Name="NotificationText"
                                    TextAlignment="Center"
                                    Text="notification"
@@ -123,7 +120,7 @@
                     </StackPanel>
                 </Grid>
                 <StackPanel x:Name="DevicePanel"
-                            Background="#E53876BF"
+                            Background="#FF3876BF"
                             Height="144"
                             RelativePanel.AlignTopWithPanel="True"
                             RelativePanel.AlignLeftWithPanel="True"
@@ -261,37 +258,5 @@
                 </RelativePanel>
             </RelativePanel>
         </uwp:HamburgerMenu>
-        <Grid HorizontalAlignment="Stretch"
-              VerticalAlignment="Stretch"
-              x:Name="TutorialGrid"
-              Background="#33000000"
-              Visibility="Collapsed">
-            <StackPanel x:Name="FadePanel"
-                       VerticalAlignment="Stretch"
-                       HorizontalAlignment="Stretch"
-                       Background="#E5000000"
-                       Margin="48,0,0,0">
-                <TextBlock Text="A list of your other Windows 10 Anniversary devices will appear here. If you are having issues seeing one or more of your devices: check to make sure the device in question is on the Anniversary Update of Windows 10, check that the 'Continue App Experience' setting is enabled on both devices, and check that you are connected to the internet. In some cases, you may need to enable Cortana if you haven't already."
-                       Foreground="White" 
-                       HorizontalAlignment="Stretch"
-                       Margin="8,200,8,0"
-                       TextWrapping="WrapWholeWords"/>
-                <Button x:Name="CloseTutorialButton" 
-                    VerticalAlignment="Center"                    
-                    Content="close" 
-                    Padding="12"
-                    Margin="8"
-                    Foreground="White"
-                    FontWeight="Bold"
-                    FontSize="16"
-                    HorizontalAlignment="Center"
-                    Click="CloseTutorialButton_Click"
-                    BorderBrush="{x:Null}" 
-                    Style="{StaticResource MyButtonStyle}"
-                    Background="Transparent"
-                    RelativePanel.AlignTopWithPanel="True"
-                    RelativePanel.AlignRightWithPanel="True"/>
-            </StackPanel>            
-        </Grid>
     </Grid>
 </Page>

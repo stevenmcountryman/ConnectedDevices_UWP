@@ -29,6 +29,7 @@ using Windows.ApplicationModel.Core;
 using Windows.Networking;
 using System.IO.Compression;
 using System.Linq;
+using Windows.UI.Popups;
 
 namespace Share_Across_Devices.Views
 {
@@ -693,31 +694,6 @@ namespace Share_Across_Devices.Views
                 }
             }
         }
-        private async void animateTutorialGridClosing()
-        {
-            var itemVisual = ElementCompositionPreview.GetElementVisual(TutorialGrid);
-
-            ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
-            fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
-            fadeAnimation.InsertKeyFrame(0f, 1f);
-            fadeAnimation.InsertKeyFrame(1f, 0f);
-
-            itemVisual.StartAnimation("Opacity", fadeAnimation);
-
-            await Task.Delay(1000);
-            this.TutorialGrid.Visibility = Visibility.Collapsed;
-        }
-        private void animateTutorialGridOpening()
-        {
-            var itemVisual = ElementCompositionPreview.GetElementVisual(TutorialGrid);
-
-            ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
-            fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
-            fadeAnimation.InsertKeyFrame(0f, 0f);
-            fadeAnimation.InsertKeyFrame(1f, 1f);
-
-            itemVisual.StartAnimation("Opacity", fadeAnimation);
-        }
         #endregion
 
         #region Remote system methods
@@ -797,14 +773,13 @@ namespace Share_Across_Devices.Views
             this.NotificationText.Text = "File saved!";
             this.animateShowNotificationTimed();
         }
-        private void CloseTutorialButton_Click(object sender, RoutedEventArgs e)
+        private async void HamburgerMenu_OptionsItemClick(object sender, ItemClickEventArgs e)
         {
-            this.animateTutorialGridClosing();
-        }
-        private void HamburgerMenu_OptionsItemClick(object sender, ItemClickEventArgs e)
-        {
-            this.TutorialGrid.Visibility = Visibility.Visible;
-            this.animateTutorialGridOpening();
+            MessageDialog helpDialogue = new MessageDialog("A list of your other Windows 10 Anniversary devices will appear here. If you are having issues seeing one or more of your devices: check to make sure the device in question is on the Anniversary Update of Windows 10, check that the 'Continue App Experience' setting is enabled on both devices, and check that you are connected to the internet. In some cases, you may need to enable Cortana if you haven't already.", "Where are my devices?");
+            helpDialogue.Commands.Add(new UICommand("close"));
+            helpDialogue.CancelCommandIndex = 0;
+            helpDialogue.DefaultCommandIndex = 0;
+            await helpDialogue.ShowAsync();
         }
         private void NotificationText_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
@@ -1183,6 +1158,18 @@ namespace Share_Across_Devices.Views
         private void DevicePanel_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
             this.HamburgerMenu.IsPaneOpen = true;
+        }
+
+        private async void NotificationPanel_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            if (this.NotificationText.Text == "Not ready for local file transfer")
+            {
+                MessageDialog helpDialogue = new MessageDialog("Due to firewall and other network restrictions, file transfers are only allowed when both devices are currently on the same wireless or wired networks. If both of your devices are on the same network and you still see this message, try sending text to and from the devices first to force the API to update.", "Why can't I send files?");
+                helpDialogue.Commands.Add(new UICommand("close"));
+                helpDialogue.CancelCommandIndex = 0;
+                helpDialogue.DefaultCommandIndex = 0;
+                await helpDialogue.ShowAsync();
+            }
         }
     }
 }
