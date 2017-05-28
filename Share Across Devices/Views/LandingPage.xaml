@@ -82,8 +82,12 @@
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
-        <RelativePanel x:Name="BackgroundPanel" SizeChanged="Page_SizeChanged">
+        <RelativePanel x:Name="BackgroundPanel" 
+                       SizeChanged="Page_SizeChanged">
 
+        </RelativePanel>
+        <RelativePanel Background="{ThemeResource SystemAltHighColor}"
+                       Opacity="0.3">
         </RelativePanel>
         <uwp:HamburgerMenu x:Name="HamburgerMenu"
                            PaneBackground="{ThemeResource SystemControlHighlightAltListAccentHighBrush}" 
@@ -97,7 +101,7 @@
                            CompactPaneLength="48"
                            HamburgerHeight="48"
                            IsPaneOpen="True" 
-                           Background="#FF535353">
+                           Background="Transparent">
             <RelativePanel Background="Transparent">
                 <Grid x:Name="MediaRetrieveViewGrid"
                       RelativePanel.AlignHorizontalCenterWithPanel="True"

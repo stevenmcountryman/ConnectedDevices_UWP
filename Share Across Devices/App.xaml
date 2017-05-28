@@ -4,7 +4,7 @@
     xmlns:local="using:Share_Across_Devices"
     xmlns:Controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     x:Class="Share_Across_Devices.App"
-    RequestedTheme="Light">
+    RequestedTheme="Dark">
     <Application.Resources>
         <Style x:Key="MyGridViewItemContainerStyle" TargetType="GridViewItem">
             <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}"/>

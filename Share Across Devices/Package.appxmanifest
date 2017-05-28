@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" IgnorableNamespaces="uap mp uap3">
-  <Identity Name="34507Simplisidy.ShareAcrossDevices" Publisher="CN=AD864502-9B74-44CD-B022-F1C5BD79601C" Version="3.6.0.0" />
+  <Identity Name="34507Simplisidy.ShareAcrossDevices" Publisher="CN=AD864502-9B74-44CD-B022-F1C5BD79601C" Version="3.8.0.0" />
   <mp:PhoneIdentity PhoneProductId="138677de-9188-4cce-9412-cc9a377c0fd8" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>Share Across Devices</DisplayName>
@@ -15,8 +15,8 @@
   </Resources>
   <Applications>
     <Application Id="ShareAcrossDevices.App" Executable="$targetnametoken$.exe" EntryPoint="Share_Across_Devices.App">
-      <uap:VisualElements DisplayName="Share Across Devices" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="With this app, you can share any web link from any app to any other Windows 10 Anniversary device that you own. This incudes: Windows 10 desktops, laptops, tablets, phones, Xbox One, and Hololens. When the link is shared with a device that is on and awake, the target device will launch its default browser and open the link immediately. No need to install this app on the target device!!" BackgroundColor="transparent">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square310x310Logo="Assets\Square310x310Logo.png" Square71x71Logo="Assets\Square71x71Logo.png" ShortName="Share Across Devices">
+      <uap:VisualElements DisplayName="Connected Devices" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="With this app, you can share any web link from any app to any other Windows 10 Anniversary device that you own. This incudes: Windows 10 desktops, laptops, tablets, phones, Xbox One, and Hololens. When the link is shared with a device that is on and awake, the target device will launch its default browser and open the link immediately. No need to install this app on the target device!!" BackgroundColor="transparent">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square310x310Logo="Assets\Square310x310Logo.png" Square71x71Logo="Assets\Square71x71Logo.png" ShortName="Connected Devices">
           <uap:ShowNameOnTiles>
             <uap:ShowOn Tile="square150x150Logo" />
             <uap:ShowOn Tile="wide310x150Logo" />
