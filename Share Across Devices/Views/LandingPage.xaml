@@ -57,6 +57,7 @@
                     <VisualState.Setters>
                         <Setter Target="HamburgerMenu.IsPaneOpen" Value="False"/>
                         <Setter Target="HamburgerMenu.DisplayMode" Value="Overlay"/>
+                        <Setter Target="HamburgerMenu.PaneBackground" Value="{ThemeResource SystemAccentColor}"/>
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="VisualStateTablet">
@@ -66,6 +67,7 @@
                     <VisualState.Setters>
                         <Setter Target="HamburgerMenu.IsPaneOpen" Value="True"/>
                         <Setter Target="HamburgerMenu.DisplayMode" Value="Inline"/>
+                        <Setter Target="HamburgerMenu.PaneBackground" Value="{ThemeResource SystemControlHighlightAltListAccentHighBrush}"/>
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="VisualStateDesktop">
@@ -75,6 +77,7 @@
                     <VisualState.Setters>
                         <Setter Target="HamburgerMenu.IsPaneOpen" Value="True"/>
                         <Setter Target="HamburgerMenu.DisplayMode" Value="Inline"/>
+                        <Setter Target="HamburgerMenu.PaneBackground" Value="{ThemeResource SystemControlHighlightAltListAccentHighBrush}"/>
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -109,7 +112,8 @@
                       RelativePanel.Below="DevicePanel"
                             Canvas.ZIndex="9">
                     <StackPanel x:Name="NotificationPanel"
-                                Background="{ThemeResource SystemControlHighlightListAccentHighBrush}" Tapped="NotificationPanel_Tapped">
+                                Background="{ThemeResource SystemControlHighlightListAccentHighBrush}" 
+                                Tapped="NotificationPanel_Tapped">
                         <TextBlock x:Name="NotificationText"
                                    TextAlignment="Center"
                                    Text="notification"
@@ -125,7 +129,8 @@
                             RelativePanel.AlignRightWithPanel="True"
                             Canvas.ZIndex="10">
                     <StackPanel.Background>
-                        <SolidColorBrush Color="{ThemeResource SystemAccentColor}" Opacity="0.4"/>
+                        <SolidColorBrush Color="{ThemeResource SystemAccentColor}" 
+                                         Opacity="0.5"/>
                     </StackPanel.Background>
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
