@@ -30,6 +30,8 @@ using Windows.Networking;
 using System.IO.Compression;
 using System.Linq;
 using Windows.UI.Popups;
+using System.Collections.Specialized;
+using System.Windows.Input;
 
 namespace Share_Across_Devices.Views
 {
@@ -74,6 +76,7 @@ namespace Share_Across_Devices.Views
         private const string dataFormatName = "http://schema.org/Book";
 
         ObservableCollection<RemoteDeviceObject> DeviceList = new ObservableCollection<RemoteDeviceObject>();
+        ObservableCollection<RemoteDeviceObject> FavoritesList = new ObservableCollection<RemoteDeviceObject>();
         ObservableCollection<Options> OptionsList = new ObservableCollection<Options>();
 
         public LandingPage()
@@ -84,6 +87,8 @@ namespace Share_Across_Devices.Views
             this.setUpCompositor();
             this.setTitleBar();
             this.DeviceList.CollectionChanged += DeviceList_CollectionChanged;
+            this.OptionsList.CollectionChanged += OptionsList_CollectionChanged;
+            this.FavoritesList.CollectionChanged += FavoritesList_CollectionChanged;
 
 
             this.SelectedDeviceIcon.Glyph = "\uF140";
@@ -92,7 +97,7 @@ namespace Share_Across_Devices.Views
 
             this.applyAcrylicAccent(BackgroundPanel);
         }
-        
+
         private void applyAcrylicAccent(Panel e)
         {
             _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
@@ -506,12 +511,12 @@ namespace Share_Across_Devices.Views
             {
                 this.notificationsHidden = false;
                 Vector3KeyFrameAnimation offsetAnimation = _compositor.CreateVector3KeyFrameAnimation();
-                offsetAnimation.Duration = TimeSpan.FromMilliseconds(1100);
+                offsetAnimation.Duration = TimeSpan.FromMilliseconds(1000);
                 offsetAnimation.InsertKeyFrame(0f, new Vector3(0f, -100f, 0f));
                 offsetAnimation.InsertKeyFrame(1f, new Vector3(0f, 0f, 0f));
 
                 ScalarKeyFrameAnimation fadeAnimation = _compositor.CreateScalarKeyFrameAnimation();
-                fadeAnimation.Duration = TimeSpan.FromMilliseconds(1100);
+                fadeAnimation.Duration = TimeSpan.FromMilliseconds(1000);
                 fadeAnimation.InsertKeyFrame(0f, 0f);
                 fadeAnimation.InsertKeyFrame(1f, 1f);
 
@@ -531,7 +536,7 @@ namespace Share_Across_Devices.Views
             itemVisual.CenterPoint = new Vector3(width / 2, height / 2, 0f);
 
             Vector3KeyFrameAnimation scaleAnimation = _compositor.CreateVector3KeyFrameAnimation();
-            scaleAnimation.Duration = TimeSpan.FromMilliseconds(1100);
+            scaleAnimation.Duration = TimeSpan.FromMilliseconds(1000);
             scaleAnimation.InsertKeyFrame(0f, new Vector3(1f, 1f, 1f));
 
             if (button.IsEnabled)
@@ -697,9 +702,17 @@ namespace Share_Across_Devices.Views
         #endregion
 
         #region Remote system methods
-        private void DeviceList_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void DeviceList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            this.HamburgerMenu.ItemsSource = DeviceList;
+            this.HamburgerMenu.ItemsSource = FavoritesList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName).Concat(DeviceList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName));
+        }
+        private void FavoritesList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            this.HamburgerMenu.ItemsSource = FavoritesList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName).Concat(DeviceList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName));
+        }
+        private void OptionsList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            this.HamburgerMenu.OptionsItemsSource = OptionsList;
         }
         private async void setUpDevicesList()
         {
@@ -720,10 +733,15 @@ namespace Share_Across_Devices.Views
             await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 RemoteDeviceObject device = new RemoteDeviceObject(remoteSystem);
-                this.DeviceList.Add(device);
-                var sorted = this.DeviceList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName).ToList();
-                for (int i = 0; i < sorted.Count(); i++)
-                    this.DeviceList.Move(this.DeviceList.IndexOf(sorted[i]), i);
+
+                if (this.getFavorites().Contains(remoteSystem.Id))
+                {
+                    this.FavoritesList.Add(device);
+                }
+                else
+                {
+                    this.DeviceList.Add(device);
+                }
             });
         }
         private async void DeviceWatcher_RemoteSystemUpdated(RemoteSystemWatcher sender, RemoteSystemUpdatedEventArgs args)
@@ -731,6 +749,20 @@ namespace Share_Across_Devices.Views
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 foreach (RemoteDeviceObject device in this.DeviceList)
+                {
+                    if (device.RemoteSystem.Id == args.RemoteSystem.Id)
+                    {
+                        device.RemoteSystem = args.RemoteSystem;
+                        if (this.selectedDevice != null && this.selectedDevice.RemoteSystem.Id == args.RemoteSystem.Id)
+                        {
+                            this.selectedDevice.RemoteSystem = args.RemoteSystem;
+                        }
+                        this.validateTextAndButtons();
+                        return;
+                    }
+                }
+
+                foreach (RemoteDeviceObject device in this.FavoritesList)
                 {
                     if (device.RemoteSystem.Id == args.RemoteSystem.Id)
                     {
@@ -1029,14 +1061,14 @@ namespace Share_Across_Devices.Views
                     if (this.remoteSystemIsLocal() && this.transferFile)
                     {
                         this.SendButton.IsEnabled = true;
-                        this.NotificationText.Text = "Ready for local file transfer";
+                        this.NotificationText.Text = "File sharing possible";
                         this.animateShowNotification();
                         return;
                     }
                     else if (this.transferFile)
                     {
-                        this.SendButton.IsEnabled = false;
-                        this.NotificationText.Text = "Not ready for local file transfer";
+                        this.SendButton.IsEnabled = true;
+                        this.NotificationText.Text = "File sharing unlikely - tap for more info";
                         this.animateShowNotification();
                         return;
                     }
@@ -1065,13 +1097,13 @@ namespace Share_Across_Devices.Views
                     if (this.remoteSystemIsLocal())
                     {
                         this.AttachButton.IsEnabled = true;
-                        this.NotificationText.Text = "Ready for local file transfer";
+                        this.NotificationText.Text = "File sharing possible";
                         this.animateShowNotification();
                     }
                     else
                     {
-                        this.AttachButton.IsEnabled = false;
-                        this.NotificationText.Text = "Not ready for local file transfer";
+                        this.AttachButton.IsEnabled = true;
+                        this.NotificationText.Text = "File sharing unlikely - tap for more info";
                         this.animateShowNotification();
                     }
 
@@ -1102,6 +1134,26 @@ namespace Share_Across_Devices.Views
                     this.hideSendOptionsPanel();
                     this.MessageToSend.IsEnabled = false;
                 }
+            }
+            if (this.selectedDevice != null)
+            {
+                this.FavoriteStar.Visibility = Visibility.Visible;
+                this.EditName.Visibility = Visibility.Visible;
+                var favs = this.getFavorites();
+
+                if (favs.Contains(this.selectedDevice.RemoteSystem.Id))
+                {
+                    this.FavoriteStar.Glyph = "\uE1CF";
+                }
+                else
+                {
+                    this.FavoriteStar.Glyph = "\uE1CE";
+                }
+            }
+            else
+            {
+                this.FavoriteStar.Visibility = Visibility.Collapsed;
+                this.EditName.Visibility = Visibility.Collapsed;
             }
         }
         private void checkIfWebLink()
@@ -1162,14 +1214,90 @@ namespace Share_Across_Devices.Views
 
         private async void NotificationPanel_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
-            if (this.NotificationText.Text == "Not ready for local file transfer")
+            if (this.NotificationText.Text == "File sharing unlikely - tap for more info")
             {
-                MessageDialog helpDialogue = new MessageDialog("Due to firewall and other network restrictions, file transfers are only allowed when both devices are currently on the same wireless or wired networks. If both of your devices are on the same network and you still see this message, try sending text to and from the devices first to force the API to update.", "Why can't I send files?");
+                MessageDialog helpDialogue = new MessageDialog("Due to firewalls and other network restrictions, it is likely that a file transfer will not succeed between these two devices. It is recommended to only attempt file transfers between devices on the same local wireless or wired networks.\n\nYou can still try to send files if you'd like, but there is no guarantee that it will succeed.", "Why can't I send files?");
                 helpDialogue.Commands.Add(new UICommand("close"));
                 helpDialogue.CancelCommandIndex = 0;
                 helpDialogue.DefaultCommandIndex = 0;
                 await helpDialogue.ShowAsync();
             }
+        }
+
+        private void FavoriteStar_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            var favs = this.getFavorites();
+            
+            if (favs.Contains(this.selectedDevice.RemoteSystem.Id))
+            {
+                favs.Remove(this.selectedDevice.RemoteSystem.Id);
+                this.DeviceList.Add(this.selectedDevice);
+                this.FavoritesList.Remove(this.selectedDevice);
+                this.FavoriteStar.Glyph = "\uE1CE";
+            }
+            else
+            {
+                favs.Add(this.selectedDevice.RemoteSystem.Id);
+                this.DeviceList.Remove(this.selectedDevice);
+                this.FavoritesList.Add(this.selectedDevice);
+                this.FavoriteStar.Glyph = "\uE1CF";
+            }
+
+            this.saveFavorites(favs);
+        }
+
+        private List<string> getFavorites()
+        {
+            List<string> favs;
+            var remoteFavs = ApplicationData.Current.RoamingSettings.Values["favs"];
+
+            if (remoteFavs == null) favs = new List<string>();
+            else favs = (remoteFavs as string[]).ToList();
+
+            return favs;
+        }
+
+        private void saveFavorites(List<string> favs)
+        {
+            if (favs.Count() > 0)
+            {
+                ApplicationData.Current.RoamingSettings.Values["favs"] = favs.ToArray();
+            }
+            else
+            {
+                ApplicationData.Current.RoamingSettings.Values.Remove("favs");
+            }
+        }
+
+        private async void EditName_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            TextBox inputTextBox = new TextBox();
+            inputTextBox.PlaceholderText = this.selectedDevice.DeviceName;
+            inputTextBox.AcceptsReturn = false;
+            inputTextBox.Height = 32;
+            ContentDialog dialog = new ContentDialog();
+            dialog.Content = inputTextBox;
+            dialog.Title = "Rename device";
+            dialog.IsSecondaryButtonEnabled = true;
+            dialog.PrimaryButtonText = "Save";
+            dialog.SecondaryButtonText = "Clear";
+            dialog.PrimaryButtonClick += SaveName;
+            dialog.SecondaryButtonClick += ClearName;
+            await dialog.ShowAsync();
+        }
+
+        private void ClearName(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            this.selectedDevice.DeviceName = null;
+            this.HamburgerMenu.ItemsSource = FavoritesList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName).Concat(DeviceList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName));
+            this.SelectedDeviceName.Text = this.selectedDevice.DeviceName;
+        }
+
+        private void SaveName(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            this.selectedDevice.DeviceName = (sender.Content as TextBox).Text;
+            this.HamburgerMenu.ItemsSource = FavoritesList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName).Concat(DeviceList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName));
+            this.SelectedDeviceName.Text = this.selectedDevice.DeviceName;
         }
     }
 }

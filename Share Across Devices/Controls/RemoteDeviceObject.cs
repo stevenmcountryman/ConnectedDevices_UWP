@@ -66,11 +66,27 @@ namespace Share_Across_Devices.Controls
                 else return null;
             }
         }
+        private string deviceName;
         public string DeviceName
         {
             get
             {
+                if (ApplicationData.Current.RoamingSettings.Values[this.RemoteSystem.Id] != null)
+                {
+                    return ApplicationData.Current.RoamingSettings.Values[this.RemoteSystem.Id] as string;
+                }
                 return this.remoteSystem.DisplayName;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    ApplicationData.Current.RoamingSettings.Values[this.RemoteSystem.Id] = value;
+                }
+                else
+                {
+                    ApplicationData.Current.RoamingSettings.Values.Remove(this.RemoteSystem.Id);
+                }
             }
         }
         public RemoteDeviceObject(RemoteSystem remoteSystem)

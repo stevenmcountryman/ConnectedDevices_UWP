@@ -120,26 +120,61 @@
                     </StackPanel>
                 </Grid>
                 <StackPanel x:Name="DevicePanel"
-                            Height="144"
                             RelativePanel.AlignTopWithPanel="True"
                             RelativePanel.AlignLeftWithPanel="True"
                             RelativePanel.AlignRightWithPanel="True"
-                            Canvas.ZIndex="10" Tapped="DevicePanel_Tapped" Background="{ThemeResource SystemControlHighlightListAccentLowBrush}">
+                            Canvas.ZIndex="10">
+                    <StackPanel.Background>
+                        <SolidColorBrush Color="{ThemeResource SystemAccentColor}" Opacity="0.4"/>
+                    </StackPanel.Background>
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
+                        <FontIcon x:Name="FavoriteStar"
+                              FontFamily="Segoe MDL2 Assets" 
+                              FontSize="20"
+                              Glyph="&#xE208;"
+                              Margin="0,16,0,8"
+                              Width="60"
+                              Height="60"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Foreground="White" 
+                              Tapped="FavoriteStar_Tapped"
+                              Visibility="Collapsed"/>
                         <FontIcon x:Name="SelectedDeviceIcon"
                               FontFamily="Segoe MDL2 Assets" 
-                              FontSize="80"
+                              FontSize="72"
                               Margin="40,16,40,8"
                               HorizontalAlignment="Center"
-                              Foreground="White"/>
+                              Foreground="White"
+                              Tapped="DevicePanel_Tapped"/>
+                        <FontIcon x:Name="EditName"
+                              FontFamily="Segoe MDL2 Assets" 
+                              FontSize="20"
+                              Glyph="&#xE70F;"
+                              Margin="0,16,0,8"
+                              Width="60"
+                              Height="60"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Foreground="White" 
+                              Tapped="EditName_Tapped"
+                              Visibility="Collapsed" />
                     </StackPanel>
                     <TextBlock x:Name="SelectedDeviceName"
                                Text="device name" 
                                Foreground="White" 
                                FontSize="20" 
                                Margin="4"
-                               HorizontalAlignment="Center"/>
+                               TextAlignment="Center"
+                               Tapped="DevicePanel_Tapped"/>
+                    <TextBlock
+                               Text="tap to choose a device" 
+                               Foreground="White" 
+                               FontSize="12" 
+                               Margin="4"
+                               TextAlignment="Center"
+                               Tapped="DevicePanel_Tapped"/>
                 </StackPanel>
                 <Grid x:Name="MediaSendViewGrid"
                       RelativePanel.AlignHorizontalCenterWithPanel="True"
@@ -168,7 +203,6 @@
                                 IsEnabled="False" 
                                 Width="85"
                                 Content="browser" 
-                                Background="#3876BF"
                                 Margin="4"
                                 Padding="0,12,0,12"
                                 Foreground="White"
@@ -183,7 +217,6 @@
                                     IsEnabled="False"
                                     Width="85"
                                     Content="TubeCast" 
-                                    Background="#3876BF"
                                     Margin="4"
                                     Padding="0,12,0,12"
                                     Foreground="White"
@@ -198,7 +231,6 @@
                                 IsEnabled="False"
                                 Width="85"
                                 Content="myTube!" 
-                                Background="#E53876BF"
                                 Margin="4"
                                 Padding="0,12,0,12"
                                 Foreground="White"

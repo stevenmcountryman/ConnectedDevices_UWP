@@ -790,7 +790,7 @@
             </Setter>
         </Style>
         <Style x:Key="MyToggleButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{ThemeResource ButtonBackground}"/>
+            <Setter Property="Background" Value="{ThemeResource SystemAccentColor}"/>
             <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}"/>
             <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}"/>
             <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}"/>
