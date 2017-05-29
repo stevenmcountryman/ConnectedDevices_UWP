@@ -27,6 +27,21 @@
                            VerticalAlignment="Center" SelectionHighlightColor="White"/>
             </Grid>
         </DataTemplate>
+        <DataTemplate x:Key="FavoriteTemplate" x:DataType="controls:RemoteDeviceObject">
+            <StackPanel Orientation="Horizontal" 
+                        HorizontalAlignment="Center">
+                <FontIcon Grid.Column="0" 
+                          Margin="12,12,11,12" 
+                          FontFamily="Segoe MDL2 Assets" 
+                          Glyph="{Binding DeviceIcon}" 
+                          Foreground="White"/>
+                <TextBlock Grid.Column="1" 
+                           Text="{x:Bind DeviceName}" 
+                           Foreground="White" 
+                           FontSize="16" 
+                           VerticalAlignment="Center" SelectionHighlightColor="White"/>
+            </StackPanel>
+        </DataTemplate>
         <DataTemplate x:Key="OptionsTemplate" x:DataType="controls:Options">
             <Grid Width="240" Height="48">
                 <Grid.ColumnDefinitions>
@@ -86,8 +101,8 @@
                        SizeChanged="Page_SizeChanged">
 
         </RelativePanel>
-        <RelativePanel Background="{ThemeResource SystemAltHighColor}"
-                       Opacity="0.3">
+        <RelativePanel Background="#FF444444"
+                       Opacity="0.4">
         </RelativePanel>
         <uwp:HamburgerMenu x:Name="HamburgerMenu"
                            PaneBackground="{ThemeResource SystemControlHighlightAltListAccentHighBrush}" 
@@ -127,6 +142,21 @@
                                    Margin="8"/>
                     </StackPanel>
                 </Grid>
+                <StackPanel x:Name="FavoritesPanel"
+                        RelativePanel.AlignLeftWithPanel="True"
+                        RelativePanel.AlignRightWithPanel="True"
+                        RelativePanel.Below="NotificationGrid">
+                    <TextBlock HorizontalAlignment="Center"
+                               Text="Favorites"
+                               FontFamily="Segoe UI"
+                               FontWeight="Bold"
+                               FontSize="20"/>
+                    <ListView x:Name="Favorites"
+                        IsItemClickEnabled="True"
+                        ItemClick="HamburgerMenu_ItemClick"
+                        HorizontalAlignment="Center"
+                        ItemTemplate="{StaticResource FavoriteTemplate}"/>
+                </StackPanel>
                 <StackPanel x:Name="DevicePanel"
                             RelativePanel.AlignTopWithPanel="True"
                             RelativePanel.AlignLeftWithPanel="True"
@@ -134,7 +164,7 @@
                             Canvas.ZIndex="10">
                     <StackPanel.Background>
                         <SolidColorBrush Color="{ThemeResource SystemAccentColor}" 
-                                         Opacity="0.5"/>
+                                         Opacity="0.7"/>
                     </StackPanel.Background>
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
@@ -153,7 +183,7 @@
                         <FontIcon x:Name="SelectedDeviceIcon"
                               FontFamily="Segoe MDL2 Assets" 
                               FontSize="72"
-                              Margin="40,16,40,8"
+                              Margin="20,16,20,8"
                               HorizontalAlignment="Center"
                               Foreground="White"
                               Tapped="DevicePanel_Tapped"/>

@@ -95,7 +95,14 @@ namespace Share_Across_Devices.Views
             this.SelectedDeviceName.Text = "Choose a Device";
             this.animateDeviceChosen();
 
-            this.applyAcrylicAccent(BackgroundPanel);
+            if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+            {
+                this.BackgroundPanel.Background = new SolidColorBrush(Colors.Gray);
+            }
+            else
+            {
+                this.applyAcrylicAccent(BackgroundPanel);
+            }
         }
 
         private void applyAcrylicAccent(Panel e)
@@ -421,7 +428,6 @@ namespace Share_Across_Devices.Views
             CoreApplicationView coreView = CoreApplication.GetCurrentView();
             CoreApplicationViewTitleBar coreTitleBar = coreView.TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = false;
-            var appBlue = Color.FromArgb(255, 56, 118, 191);
             if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.ApplicationView"))
             {
                 ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
@@ -432,7 +438,7 @@ namespace Share_Across_Devices.Views
             {
                 var statusBar = StatusBar.GetForCurrentView();
                 statusBar.BackgroundOpacity = 1;
-                statusBar.BackgroundColor = appBlue;
+                statusBar.BackgroundColor = (Color)this.Resources["SystemAccentColor"];
                 statusBar.ForegroundColor = Colors.White;
             }
 
@@ -709,6 +715,7 @@ namespace Share_Across_Devices.Views
         private void FavoritesList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             this.HamburgerMenu.ItemsSource = FavoritesList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName).Concat(DeviceList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName));
+            this.Favorites.ItemsSource = FavoritesList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName);
         }
         private void OptionsList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -1149,6 +1156,8 @@ namespace Share_Across_Devices.Views
                 {
                     this.FavoriteStar.Glyph = "\uE1CE";
                 }
+
+                if (this.FavoritesPanel.Visibility == Visibility.Visible) this.FavoritesPanel.Visibility = Visibility.Collapsed;
             }
             else
             {
@@ -1295,9 +1304,12 @@ namespace Share_Across_Devices.Views
 
         private void SaveName(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            this.selectedDevice.DeviceName = (sender.Content as TextBox).Text;
-            this.HamburgerMenu.ItemsSource = FavoritesList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName).Concat(DeviceList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName));
-            this.SelectedDeviceName.Text = this.selectedDevice.DeviceName;
+            if ((sender.Content as TextBox).Text.Length > 0)
+            {
+                this.selectedDevice.DeviceName = (sender.Content as TextBox).Text;
+                this.HamburgerMenu.ItemsSource = FavoritesList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName).Concat(DeviceList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName));
+                this.SelectedDeviceName.Text = this.selectedDevice.DeviceName;
+            }
         }
     }
 }

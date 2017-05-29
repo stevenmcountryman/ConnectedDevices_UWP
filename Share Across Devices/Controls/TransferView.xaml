@@ -27,7 +27,7 @@
                         HorizontalAlignment="Center"
                         Click="OpenFileButton_Click" 
                         BorderBrush="{x:Null}" 
-                        Background="#3876BF"
+                        Background="{ThemeResource SystemAccentColor}"
                         Style="{StaticResource MyToggleButtonStyle}"  />
             <Button x:Name="SaveFileButton" 
                         Content="save" 
@@ -39,7 +39,7 @@
                         HorizontalAlignment="Center"
                         Click="SaveFileButton_Click" 
                         BorderBrush="{x:Null}" 
-                        Background="#3876BF"
+                        Background="{ThemeResource SystemAccentColor}"
                         Style="{StaticResource MyToggleButtonStyle}"  />
         </StackPanel>
     </StackPanel>

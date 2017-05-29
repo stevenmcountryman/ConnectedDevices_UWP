@@ -66,7 +66,6 @@ namespace Share_Across_Devices.Controls
                 else return null;
             }
         }
-        private string deviceName;
         public string DeviceName
         {
             get
