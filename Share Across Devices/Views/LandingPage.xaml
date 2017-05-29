@@ -286,9 +286,7 @@
                 <RelativePanel x:Name="TypeAttachSendPanel"
                                RelativePanel.AlignBottomWithPanel="True"
                                RelativePanel.AlignLeftWithPanel="True"
-                               RelativePanel.AlignRightWithPanel="True"
-                               BorderBrush="Gray"
-                               BorderThickness="0,1,0,0" Background="#E5535353">
+                               RelativePanel.AlignRightWithPanel="True" Background="#E5535353">
                     <Button x:Name="AttachButton"
                             RelativePanel.AlignLeftWithPanel="True"
                             RelativePanel.AlignBottomWithPanel="True"
