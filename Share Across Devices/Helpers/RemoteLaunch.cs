@@ -20,6 +20,12 @@ namespace Share_Across_Devices.Helpers
             return await RemoteLauncher.LaunchUriAsync(connectionRequest, new Uri(url));
         }
 
+        public static async Task<RemoteLaunchUriStatus> TryOpenStoreToApp(RemoteSystem device)
+        {
+            RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(device);
+            return await RemoteLauncher.LaunchUriAsync(connectionRequest, new Uri("ms-windows-store://pdp/?productid=9nblggh4tssg"));
+        }
+
         public static async Task<RemoteLaunchUriStatus> TryBeginShareFile(RemoteSystem device, string fileName, string ipAddress)
         {
             RemoteSystemConnectionRequest connectionRequest = new RemoteSystemConnectionRequest(device);

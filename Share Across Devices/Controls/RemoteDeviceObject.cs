@@ -133,10 +133,20 @@ namespace Share_Across_Devices.Controls
             {
                 this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed, false));
             }
-            else
+            else if (status == RemoteLaunchUriStatus.ProtocolUnavailable)
             {
+                await this.OpenStore();
+            }
+            else
+            {                
                 this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Indefinite, false));
             }
+        }
+
+        private async Task OpenStore()
+        {
+            this.NotifyEvent(this, new MyEventArgs("App not installed on target device..", messageType.Indefinite, false));
+            var status = await RemoteLaunch.TryOpenStoreToApp(this.remoteSystem);
         }
 
         public async void OpenLinkInBrowser(string url)

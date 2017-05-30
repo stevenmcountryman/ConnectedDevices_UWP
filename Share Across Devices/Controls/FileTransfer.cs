@@ -35,37 +35,49 @@ namespace Share_Across_Devices.Controls
             this.FileToSend = file;
         }
 
+        private async Task OpenStore()
+        {
+            this.NotifyEvent(this, new MyEventArgs("App not installed on target device..", messageType.Indefinite, false));
+            var status = await RemoteLaunch.TryOpenStoreToApp(this.RemoteSystem);
+        }
+
         public async void sendFile()
         {
-                var icp = NetworkInformation.GetInternetConnectionProfile();
+            var icp = NetworkInformation.GetInternetConnectionProfile();
 
-                if (icp?.NetworkAdapter == null) return;
-                var hostnames = NetworkInformation.GetHostNames();
-                HostName hostname = null;
-                foreach (var name in hostnames)
+            if (icp?.NetworkAdapter == null) return;
+            var hostnames = NetworkInformation.GetHostNames();
+            HostName hostname = null;
+            foreach (var name in hostnames)
+            {
+                if (name.IPInformation?.NetworkAdapter != null && name.IPInformation.NetworkAdapter.NetworkAdapterId == icp.NetworkAdapter.NetworkAdapterId)
                 {
-                    if (name.IPInformation?.NetworkAdapter != null && name.IPInformation.NetworkAdapter.NetworkAdapterId == icp.NetworkAdapter.NetworkAdapterId)
-                    {
-                        hostname = name;
-                        break;
-                    }
+                    hostname = name;
+                    break;
                 }
-                this.NotifyEvent(this, new MyEventArgs("Launching app on device....", messageType.Indefinite, false));
-                await RemoteLaunch.TryBeginShareFile(this.RemoteSystem, this.FileToSend.Name, hostname?.CanonicalName);
+            }
+            this.NotifyEvent(this, new MyEventArgs("Launching app on device....", messageType.Indefinite, false));
+            var status = await RemoteLaunch.TryBeginShareFile(this.RemoteSystem, this.FileToSend.Name, hostname?.CanonicalName);
 
-                this.NotifyEvent(this, new MyEventArgs("Waiting for connection....", messageType.Indefinite, false));
-                //Create a StreamSocketListener to start listening for TCP connections.
-                if (this.socketListener != null)
-                {
-                    this.socketListener.Dispose();
-                }
-                this.socketListener = new StreamSocketListener();
+            if (status == RemoteLaunchUriStatus.ProtocolUnavailable)
+            {
+                await this.OpenStore();
+                return;
+            }
 
-                //Hook up an event handler to call when connections are received.
-                socketListener.ConnectionReceived += SocketListener_ConnectionReceived;
+            this.NotifyEvent(this, new MyEventArgs("Waiting for connection....", messageType.Indefinite, false));
+            //Create a StreamSocketListener to start listening for TCP connections.
+            if (this.socketListener != null)
+            {
+                this.socketListener.Dispose();
+            }
+            this.socketListener = new StreamSocketListener();
 
-                //Start listening for incoming TCP connections on the specified port. You can specify any port that' s not currently in use.
-                await socketListener.BindServiceNameAsync(this.PortNumber);
+            //Hook up an event handler to call when connections are received.
+            socketListener.ConnectionReceived += SocketListener_ConnectionReceived;
+
+            //Start listening for incoming TCP connections on the specified port. You can specify any port that' s not currently in use.
+            await socketListener.BindServiceNameAsync(this.PortNumber);
         }
         private async void SocketListener_ConnectionReceived(StreamSocketListener sender, StreamSocketListenerConnectionReceivedEventArgs args)
         {
