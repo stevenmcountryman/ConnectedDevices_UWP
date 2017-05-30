@@ -28,10 +28,7 @@ namespace Share_Across_Devices.Helpers
 
         public static string ParseYoutubeLinkToTubeCastUri(string url)
         {
-            var uri = new Uri(url);
-            var queryStrings = new WwwFormUrlDecoder(uri.Query);
-            string videoString = queryStrings.GetFirstValueByName("v");
-            return "tubecast:VideoID=" + videoString;
+            return "tubecast:link=" + url;
         }
 
         public static string ParseYoutubeLinkToMyTubeUri(string url)
