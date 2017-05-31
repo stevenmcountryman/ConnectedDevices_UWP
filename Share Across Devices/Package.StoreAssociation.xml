@@ -361,6 +361,7 @@
     <MainPackageIdentityName>34507Simplisidy.ShareAcrossDevices</MainPackageIdentityName>
     <ReservedNames>
       <ReservedName>Share Across Devices</ReservedName>
+      <ReservedName>Connected Devices</ReservedName>
     </ReservedNames>
   </ProductReservedInfo>
   <AccountPackageIdentityNames>

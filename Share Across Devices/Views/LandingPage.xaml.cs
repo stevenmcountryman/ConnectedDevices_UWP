@@ -348,6 +348,7 @@ namespace Share_Across_Devices.Views
         #region File retrieval 
         private async void beginListeningForFile()
         {
+            this.FavoritesPanel.Visibility = Visibility.Collapsed;
             try
             {
                 using (var socket = new StreamSocket())
@@ -418,6 +419,8 @@ namespace Share_Across_Devices.Views
             {
                 this.NotificationText.Text = "Something is blocking me :(";
                 this.animateShowNotification();
+
+                this.FavoritesPanel.Visibility = Visibility.Visible;
             }
         }
         #endregion
@@ -740,6 +743,14 @@ namespace Share_Across_Devices.Views
             await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 RemoteDeviceObject device = new RemoteDeviceObject(remoteSystem);
+                if (remoteSystem.Kind != RemoteSystemKinds.Desktop && 
+                    remoteSystem.Kind != RemoteSystemKinds.Holographic && 
+                    remoteSystem.Kind != RemoteSystemKinds.Hub && 
+                    remoteSystem.Kind != RemoteSystemKinds.Phone && 
+                    remoteSystem.Kind != RemoteSystemKinds.Xbox)
+                {
+                    return;
+                }
 
                 if (this.getFavorites().Contains(remoteSystem.Id))
                 {
