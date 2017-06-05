@@ -32,6 +32,7 @@ using System.Linq;
 using Windows.UI.Popups;
 using System.Collections.Specialized;
 using System.Windows.Input;
+using Windows.System.Profile;
 
 namespace Share_Across_Devices.Views
 {
@@ -95,14 +96,48 @@ namespace Share_Across_Devices.Views
             this.SelectedDeviceName.Text = "Choose a Device";
             this.animateDeviceChosen();
 
-            if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
-            {
-                this.BackgroundPanel.Background = new SolidColorBrush(Colors.Gray);
-            }
-            else
+
+
+            if (this.isDesktop() && this.isCreatorsUpdate())
             {
                 this.applyAcrylicAccent(BackgroundPanel);
             }
+            else
+            {
+                this.BackgroundPanel.Background = new SolidColorBrush(Colors.Gray);
+            }
+        }
+
+        private bool isCreatorsUpdate()
+        {
+            AnalyticsVersionInfo ai = AnalyticsInfo.VersionInfo;
+
+            // get the system version number
+            string sv = AnalyticsInfo.VersionInfo.DeviceFamilyVersion;
+            ulong v = ulong.Parse(sv);
+            ulong v1 = (v & 0xFFFF000000000000L) >> 48;
+            ulong v2 = (v & 0x0000FFFF00000000L) >> 32;
+            ulong v3 = (v & 0x00000000FFFF0000L) >> 16;
+            ulong v4 = (v & 0x000000000000FFFFL);
+
+            if (v3 >= 15063) return true;
+            return false;
+        }
+
+        private bool isDesktop()
+        {
+            AnalyticsVersionInfo ai = AnalyticsInfo.VersionInfo;
+
+            if (ai.DeviceFamily.ToLower().Contains("desktop")) return true;
+            return false;
+        }
+
+        private bool isPhone()
+        {
+            AnalyticsVersionInfo ai = AnalyticsInfo.VersionInfo;
+
+            if (ai.DeviceFamily.ToLower().Contains("phone") || ai.DeviceFamily.ToLower().Contains("mobile")) return true;
+            return false;
         }
 
         private void applyAcrylicAccent(Panel e)
@@ -428,16 +463,17 @@ namespace Share_Across_Devices.Views
         #region Beauty and animations
         private void setTitleBar()
         {
-            CoreApplicationView coreView = CoreApplication.GetCurrentView();
-            CoreApplicationViewTitleBar coreTitleBar = coreView.TitleBar;
-            coreTitleBar.ExtendViewIntoTitleBar = false;
-            if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.ApplicationView"))
+            if (this.isDesktop())
             {
+                CoreApplicationView coreView = CoreApplication.GetCurrentView();
+                CoreApplicationViewTitleBar coreTitleBar = coreView.TitleBar;
                 ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
                 formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
+                formattableTitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+                formattableTitleBar.ButtonInactiveForegroundColor = Colors.White;
                 coreTitleBar.ExtendViewIntoTitleBar = true;
             }
-            if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+            if (this.isPhone())
             {
                 var statusBar = StatusBar.GetForCurrentView();
                 statusBar.BackgroundOpacity = 1;
