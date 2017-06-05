@@ -135,7 +135,7 @@ namespace Share_Across_Devices.Controls
             }
             else if (status == RemoteLaunchUriStatus.ProtocolUnavailable)
             {
-                await this.OpenStore();
+                await this.OpenStore(RemoteLaunch.MYAPP_STORE);
             }
             else
             {                
@@ -143,10 +143,10 @@ namespace Share_Across_Devices.Controls
             }
         }
 
-        private async Task OpenStore()
+        private async Task OpenStore(string storeURL)
         {
             this.NotifyEvent(this, new MyEventArgs("App not installed on target device..", messageType.Indefinite, false));
-            var status = await RemoteLaunch.TryOpenStoreToApp(this.remoteSystem);
+            var status = await RemoteLaunch.TryOpenStoreToApp(this.remoteSystem, storeURL);
         }
 
         public async void OpenLinkInBrowser(string url)
@@ -174,6 +174,10 @@ namespace Share_Across_Devices.Controls
             {
                 this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed, false));
             }
+            else if (status == RemoteLaunchUriStatus.ProtocolUnavailable)
+            {
+                await this.OpenStore(RemoteLaunch.TUBECAST_STORE);
+            }
             else
             {
                 this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Indefinite, false));
@@ -188,6 +192,10 @@ namespace Share_Across_Devices.Controls
             if (status == RemoteLaunchUriStatus.Success)
             {
                 this.NotifyEvent(this, new MyEventArgs(status.ToString(), messageType.Timed, false));
+            }
+            else if (status == RemoteLaunchUriStatus.ProtocolUnavailable)
+            {
+                await this.OpenStore(RemoteLaunch.MYTUBE_STORE);
             }
             else
             {
@@ -207,7 +215,7 @@ namespace Share_Across_Devices.Controls
                     this.fileToSend = files[0];
                     return this.fileToSend;
                 }
-                else
+                else if (files.Count > 1)
                 {
                     StorageFile collectionZip = await ApplicationData.Current.LocalFolder.CreateFileAsync("FileCollection.zip", CreationCollisionOption.ReplaceExisting);
                     foreach (StorageFile item in files)
@@ -227,6 +235,10 @@ namespace Share_Across_Devices.Controls
                     }
                     this.fileToSend = collectionZip;
                     return collectionZip;
+                }
+                else
+                {
+                    return null;
                 }
             }
             return null;

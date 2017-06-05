@@ -38,7 +38,7 @@ namespace Share_Across_Devices.Controls
         private async Task OpenStore()
         {
             this.NotifyEvent(this, new MyEventArgs("App not installed on target device..", messageType.Indefinite, false));
-            var status = await RemoteLaunch.TryOpenStoreToApp(this.RemoteSystem);
+            var status = await RemoteLaunch.TryOpenStoreToApp(this.RemoteSystem, RemoteLaunch.MYAPP_STORE);
         }
 
         public async void sendFile()
