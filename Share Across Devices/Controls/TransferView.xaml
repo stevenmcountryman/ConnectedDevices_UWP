@@ -6,41 +6,65 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="280"
-    d:DesignWidth="200">
+    d:DesignHeight="300"
+    d:DesignWidth="400">
 
-    <StackPanel Width="200" Margin="0,8,0,0">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="48"></RowDefinition>
+        </Grid.RowDefinitions>
         <FlipView x:Name="MediaFlip"
-                  MaxHeight="250"
+                  Grid.Row="0"
                   SelectionChanged="MediaFlip_SelectionChanged" Background="#00000000">
         </FlipView>
         
-        <StackPanel Orientation="Horizontal"
-                    HorizontalAlignment="Center">
+        <Grid HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
             <Button x:Name="OpenFileButton" 
                         Content="open" 
-                        Margin="8"
                         Padding="12"
                         Foreground="White"
                         FontWeight="Bold"
                         FontSize="14"
-                        HorizontalAlignment="Center"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Grid.Column="1"
                         Click="OpenFileButton_Click" 
                         BorderBrush="{x:Null}" 
                         Background="{ThemeResource SystemAccentColor}"
-                        Style="{StaticResource MyToggleButtonStyle}"  />
+                        Style="{StaticResource MyToggleButtonStyle}" />
             <Button x:Name="SaveFileButton" 
                         Content="save" 
-                        Margin="8"
                         Padding="12"
                         Foreground="White"
                         FontWeight="Bold"
                         FontSize="14"
-                        HorizontalAlignment="Center"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Grid.Column="2"
                         Click="SaveFileButton_Click" 
                         BorderBrush="{x:Null}" 
                         Background="{ThemeResource SystemAccentColor}"
-                        Style="{StaticResource MyToggleButtonStyle}"  />
-        </StackPanel>
-    </StackPanel>
+                        Style="{StaticResource MyToggleButtonStyle}" />
+            <Button x:Name="CancelFileButton" 
+                        Content="close" 
+                        Padding="12"
+                        Foreground="White"
+                        FontWeight="Bold"
+                        FontSize="14"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Grid.Column="0"
+                        BorderBrush="{x:Null}" 
+                        Background="{ThemeResource SystemAccentColor}"
+                        Style="{StaticResource MyToggleButtonStyle}" Click="CancelFileButton_Click" />
+        </Grid>
+    </Grid>
 </UserControl>

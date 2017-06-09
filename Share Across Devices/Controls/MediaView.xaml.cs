@@ -8,15 +8,15 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml;
+using Windows.UI.ViewManagement;
+using Share_Across_Devices.Views;
 
 namespace Share_Across_Devices.Controls
 {
     public sealed partial class MediaView : UserControl
     {
-        public delegate void CancelHandler(object sender, EventArgs e);
-        public event CancelHandler CancelEvent;
         private StorageFile file;
-        private List<string> imageTypes = new List<string>()
+        public static List<string> imageTypes = new List<string>()
         {
             ".tif",
             ".tiff",
@@ -27,7 +27,7 @@ namespace Share_Across_Devices.Controls
             ".bmp",
             ".ico"
         };
-        private List<string> mediaTypes = new List<string>()
+        public static List<string> mediaTypes = new List<string>()
         {
             ".mp4",
             ".wmv",
@@ -46,6 +46,7 @@ namespace Share_Across_Devices.Controls
             this.InitializeComponent();
             this.setUpCompositorStuff();
         }
+
         public MediaView(StorageFile file) : this()
         {
             this.DisplayFile(file);
@@ -63,7 +64,7 @@ namespace Share_Across_Devices.Controls
             this.file = file;
             this.FileNameBlock.Text = this.file.Name;
 
-            if (this.imageTypes.Contains(this.file.FileType))
+            if (imageTypes.Contains(this.file.FileType))
             {
                 using (var fileStream = await this.file.OpenReadAsync())
                 {
@@ -72,7 +73,7 @@ namespace Share_Across_Devices.Controls
                     this.ImageFileViewer.Source = bitmap;
                 }
             }
-            else if (this.mediaTypes.Contains(this.file.FileType))
+            else if (mediaTypes.Contains(this.file.FileType))
             {
                 this.VideoFileViewer.Visibility = Visibility.Visible;
                 var fileStream = await this.file.OpenReadAsync();
@@ -175,11 +176,6 @@ namespace Share_Across_Devices.Controls
 
             itemVisual.StartAnimation("Opacity", opacityAnimation);
             itemVisual.StartAnimation("Scale", scaleAnimation);
-        }
-
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.CancelEvent(this, new EventArgs());
         }
     }
 }

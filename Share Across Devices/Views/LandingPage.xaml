@@ -117,12 +117,13 @@
                            HamburgerHeight="48"
                            IsPaneOpen="True" 
                            Background="Transparent">
-            <RelativePanel Background="Transparent">
+            <RelativePanel Background="Transparent" 
+                           AllowDrop="True"
+                           DragOver="FileDragOver" Drop="FileDropAsync">
                 <Grid x:Name="MediaRetrieveViewGrid"
                       RelativePanel.AlignHorizontalCenterWithPanel="True"
                       RelativePanel.Below="NotificationGrid"
                       VerticalAlignment="Top"
-                      Width="300"
                       Canvas.ZIndex="8">
                 </Grid>
                 <Grid x:Name="NotificationGrid"
@@ -215,12 +216,11 @@
                                TextAlignment="Center"
                                Tapped="DevicePanel_Tapped"/>
                 </StackPanel>
-                <Grid x:Name="MediaSendViewGrid"
+                <StackPanel x:Name="MediaSendViewGrid"
                       RelativePanel.AlignHorizontalCenterWithPanel="True"
                       RelativePanel.Above="TypeAttachSendPanel"
-                      VerticalAlignment="Bottom"
-                      Width="300">
-                </Grid>
+                      VerticalAlignment="Bottom">
+                </StackPanel>
                 <Grid RelativePanel.Above="TypeAttachSendPanel"
                       HorizontalAlignment="Center"
                       RelativePanel.AlignHorizontalCenterWithPanel="True"
@@ -294,8 +294,9 @@
                             Background="Transparent"
                             BorderBrush="Transparent" 
                             Click="AttachButton_Click"
-                            Style="{StaticResource MyButtonStyle}" Foreground="White">
-                        <SymbolIcon Symbol="Attach" 
+                            Style="{StaticResource MyButtonStyle}" 
+                            Foreground="White">
+                        <SymbolIcon x:Name="AttachSymbol" Symbol="Attach" 
                                     Margin="4"/>
                     </Button>
                     <TextBox x:Name="MessageToSend"

@@ -33,6 +33,7 @@ using Windows.UI.Popups;
 using System.Collections.Specialized;
 using System.Windows.Input;
 using Windows.System.Profile;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace Share_Across_Devices.Views
 {
@@ -55,6 +56,7 @@ namespace Share_Across_Devices.Views
         private string ipAddress;
         private string textToCopy;
         private StorageFile file;
+        private Boolean wasDragged = true;
 
         ShareOperation shareOperation;
         private string sharedDataTitle;
@@ -98,7 +100,7 @@ namespace Share_Across_Devices.Views
 
 
 
-            if (this.isDesktop() && this.isCreatorsUpdate())
+            if (isDesktop() && isCreatorsUpdate())
             {
                 this.applyAcrylicAccent(BackgroundPanel);
             }
@@ -108,7 +110,7 @@ namespace Share_Across_Devices.Views
             }
         }
 
-        private bool isCreatorsUpdate()
+        public static bool isCreatorsUpdate()
         {
             AnalyticsVersionInfo ai = AnalyticsInfo.VersionInfo;
 
@@ -124,7 +126,7 @@ namespace Share_Across_Devices.Views
             return false;
         }
 
-        private bool isDesktop()
+        public static bool isDesktop()
         {
             AnalyticsVersionInfo ai = AnalyticsInfo.VersionInfo;
 
@@ -160,6 +162,9 @@ namespace Share_Across_Devices.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
+
+            if (e.Parameter == null) return;
+
             if (e.Parameter.GetType() == typeof(ShareOperation))
             {
                 this.sharingInitiated = true;
@@ -181,28 +186,36 @@ namespace Share_Across_Devices.Views
                     if (!protocolArgs.Uri.Query.StartsWith("?FileName="))
                     {
                         this.textToCopy = queryStrings.GetFirstValueByName("Text");
-                        try
+                        if (isCreatorsUpdate() && isDesktop())
                         {
-                            if (textToCopy.Length > 0)
-                            {
-                                DataPackage package = new DataPackage()
-                                {
-                                    RequestedOperation = DataPackageOperation.Copy
-                                };
-                                package.SetText(textToCopy);
-                                Clipboard.SetContent(package);
-                                Clipboard.Flush();
-                                this.NotificationText.Text = "Copied!";
-                                this.SelectedDeviceIcon.Glyph = "\uE166";
-                                this.SelectedDeviceName.Text = "Received!";
-                                this.animateShowNotification();
-                            }
+                            String[] message = { this.textToCopy };
+                            this.openTextRetrieval(message);
                         }
-                        catch
+                        else
                         {
-                            this.NotificationText.Text = "Manual copy required, tap here to copy";
-                            this.animateShowNotification();
-                            this.NotificationText.Tapped += NotificationText_Tapped;
+                            try
+                            {
+                                if (textToCopy.Length > 0)
+                                {
+                                    DataPackage package = new DataPackage()
+                                    {
+                                        RequestedOperation = DataPackageOperation.Copy
+                                    };
+                                    package.SetText(textToCopy);
+                                    Clipboard.SetContent(package);
+                                    Clipboard.Flush();
+                                    this.NotificationText.Text = "Copied!";
+                                    this.SelectedDeviceIcon.Glyph = "\uE166";
+                                    this.SelectedDeviceName.Text = "Received!";
+                                    this.animateShowNotification();
+                                }
+                            }
+                            catch
+                            {
+                                this.NotificationText.Text = "Manual copy required, tap here to copy";
+                                this.animateShowNotification();
+                                this.NotificationText.Tapped += NotificationText_Tapped;
+                            }
                         }
 
                     }
@@ -210,10 +223,35 @@ namespace Share_Across_Devices.Views
                     {
                         this.fileName = queryStrings.GetFirstValueByName("FileName");
                         this.ipAddress = queryStrings.GetFirstValueByName("IpAddress");
-                        this.beginListeningForFile();
+
+                        if (isCreatorsUpdate() && isDesktop())
+                        {
+                            String[] message = { this.fileName, this.ipAddress };
+                            this.openFileRetrieval(message);
+                        }
+                        else
+                        {
+                            this.beginListeningForFile();
+                        }
                     }
                 }
             }
+        }
+
+        private async void openFileRetrieval(String[] message)
+        {
+            ViewModePreferences compactOptions = ViewModePreferences.CreateDefault(ApplicationViewMode.CompactOverlay);
+            compactOptions.CustomSize = new Size(400, 500);
+            await ApplicationView.GetForCurrentView().TryEnterViewModeAsync(ApplicationViewMode.CompactOverlay, compactOptions);
+            this.Frame.Navigate(typeof(ReceivingPage), message);
+        }
+
+        private async void openTextRetrieval(String[] message)
+        {
+            ViewModePreferences compactOptions = ViewModePreferences.CreateDefault(ApplicationViewMode.CompactOverlay);
+            compactOptions.CustomSize = new Size(320, 200);
+            await ApplicationView.GetForCurrentView().TryEnterViewModeAsync(ApplicationViewMode.CompactOverlay);
+            this.Frame.Navigate(typeof(ReceivingPage), message);
         }
 
         #region Share Target
@@ -370,10 +408,12 @@ namespace Share_Across_Devices.Views
                         }
                         this.MessageToSend.Text = "attached file";
                         MediaView mediaView = new MediaView(file);
+                        mediaView.MaxHeight = 300;
                         this.MediaSendViewGrid.Children.Clear();
                         this.MediaSendViewGrid.Children.Add(mediaView);
                         this.showMediaViewGrid();
                         this.transferFile = true;
+                        this.AttachSymbol.Symbol = Symbol.Delete;
                     }
                 });
             });
@@ -442,7 +482,9 @@ namespace Share_Across_Devices.Views
                     this.SelectedDeviceName.Text = "Received!";
                     this.NotificationText.Text = "File received";
                     this.animateShowNotification();
+
                     TransferView transferView = new TransferView(this.file);
+                    transferView.MaxHeight = 300;
                     this.MediaRetrieveViewGrid.Children.Clear();
                     this.MediaRetrieveViewGrid.Children.Add(transferView);
                     this.showMediaRetrieveViewGrid();
@@ -463,7 +505,7 @@ namespace Share_Across_Devices.Views
         #region Beauty and animations
         private void setTitleBar()
         {
-            if (this.isDesktop())
+            if (isDesktop())
             {
                 CoreApplicationView coreView = CoreApplication.GetCurrentView();
                 CoreApplicationViewTitleBar coreTitleBar = coreView.TitleBar;
@@ -884,17 +926,6 @@ namespace Share_Across_Devices.Views
         {
             this.hideMediaRetrieveViewGrid();
         }
-        private void MediaViewer_CancelEvent(object sender, EventArgs e)
-        {
-            if (this.sharingInitiated)
-            {
-                this.shareOperation.DismissUI();
-            }
-            else
-            {
-                this.resetView();
-            }
-        }
 
         private void MessageToSend_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -976,6 +1007,8 @@ namespace Share_Across_Devices.Views
                 else if (this.transferFile)
                 {
                     this.selectedDevice.SendFile();
+                    this.AttachSymbol.Symbol = Symbol.Attach;
+                    if (this.wasDragged == true) this.sharingInitiated = false;
                 }
                 else
                 {
@@ -985,22 +1018,38 @@ namespace Share_Across_Devices.Views
         }
         private async void AttachButton_Click(object sender, RoutedEventArgs e)
         {
-            var file = await this.selectedDevice.OpenFileToSend();
-            if (file != null)
+            if (this.AttachSymbol.Symbol == Symbol.Attach)
             {
-                this.transferFile = true;
-                this.openInBrowser = false;
-                this.openInMyTube = false;
-                this.openInTubeCast = false;
-                this.SendButton.IsEnabled = true;
-                this.hideSendOptionsPanel();
-                var mediaViewer = new MediaView(file);
-                this.selectedDevice.SetFileToSend(file);
-                mediaViewer.CancelEvent += MediaViewer_CancelEvent;
-                this.MediaSendViewGrid.Children.Clear();
-                this.MediaSendViewGrid.Children.Add(mediaViewer);
-                this.showMediaViewGrid();
-                this.MessageToSend.Text = "attached file";
+                var file = await this.selectedDevice.OpenFileToSend();
+                if (file != null)
+                {
+                    this.transferFile = true;
+                    this.openInBrowser = false;
+                    this.openInMyTube = false;
+                    this.openInTubeCast = false;
+                    this.SendButton.IsEnabled = true;
+                    this.hideSendOptionsPanel();
+                    var mediaViewer = new MediaView(file);
+                    mediaViewer.MaxHeight = 300;
+                    this.selectedDevice.SetFileToSend(file);
+                    this.MediaSendViewGrid.Children.Clear();
+                    this.MediaSendViewGrid.Children.Add(mediaViewer);
+                    this.showMediaViewGrid();
+                    this.MessageToSend.Text = "attached file";
+                    this.AttachSymbol.Symbol = Symbol.Delete;
+                }
+            }
+            else
+            {
+                if (this.sharingInitiated && !this.wasDragged)
+                {
+                    this.shareOperation.DismissUI();
+                }
+                else
+                {
+                    this.resetView();
+                }
+                this.AttachSymbol.Symbol = Symbol.Attach;
             }
         }
         private void OpenInGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1092,7 +1141,7 @@ namespace Share_Across_Devices.Views
             await Task.Delay(1000);
             this.resetView();
             this.validateTextAndButtons();
-            if (this.sharingInitiated)
+            if (this.sharingInitiated && this.shareOperation != null)
             {
                 this.shareOperation.DismissUI();
             }
@@ -1106,12 +1155,13 @@ namespace Share_Across_Devices.Views
         }
         private void validateTextAndButtons()
         {
-            if (this.sharingInitiated)
+            if (this.sharingInitiated && !this.wasDragged)
             {
                 this.MessageToSend.IsEnabled = false;
                 this.AttachButton.IsEnabled = false;
                 if (this.selectedDevice != null)
                 {
+                    if (this.FavoritesPanel.Visibility == Visibility.Visible) this.FavoritesPanel.Visibility = Visibility.Collapsed;
                     if (this.remoteSystemIsLocal() && this.transferFile)
                     {
                         this.SendButton.IsEnabled = true;
@@ -1148,6 +1198,7 @@ namespace Share_Across_Devices.Views
             {
                 if (this.selectedDevice != null)
                 {
+                    if (this.FavoritesPanel.Visibility == Visibility.Visible) this.FavoritesPanel.Visibility = Visibility.Collapsed;
                     if (this.remoteSystemIsLocal())
                     {
                         this.AttachButton.IsEnabled = true;
@@ -1357,6 +1408,75 @@ namespace Share_Across_Devices.Views
                 this.HamburgerMenu.ItemsSource = FavoritesList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName).Concat(DeviceList.OrderBy(d => d.RemoteSystem.Kind).ThenBy(d => d.DeviceName));
                 this.SelectedDeviceName.Text = this.selectedDevice.DeviceName;
             }
+        }
+
+        private void FileDragOver(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = DataPackageOperation.Copy;
+        }
+
+        private async void FileDropAsync(object sender, DragEventArgs e)
+        {
+            if (e.DataView.Contains(StandardDataFormats.StorageItems))
+            {
+                var items = await e.DataView.GetStorageItemsAsync();
+
+                var file = await this.ProcessStorageItems(items);
+                if (file != null)
+                {
+                    this.file = file;
+                    if (this.selectedDevice != null) this.selectedDevice.SetFileToSend(file);
+                    this.transferFile = true;
+                    this.sharingInitiated = true;
+                    this.wasDragged = true;
+                    this.openInBrowser = false;
+                    this.openInMyTube = false;
+                    this.openInTubeCast = false;
+                    this.SendButton.IsEnabled = true;
+                    this.hideSendOptionsPanel();
+                    var mediaViewer = new MediaView(file);
+                    mediaViewer.MaxHeight = 300;
+                    this.MediaSendViewGrid.Children.Clear();
+                    this.MediaSendViewGrid.Children.Add(mediaViewer);
+                    this.showMediaViewGrid();
+                    this.MessageToSend.Text = "attached file";
+                    this.AttachSymbol.Symbol = Symbol.Delete;
+                }
+            }
+        }
+
+        private async Task<StorageFile> ProcessStorageItems(IReadOnlyList<IStorageItem> items)
+        {
+            StorageFile file;
+            if (items != null)
+            {
+                if (items.Count == 1)
+                {
+                    var newFile = await(items[0] as StorageFile).CopyAsync(ApplicationData.Current.LocalFolder, items[0].Name, NameCollisionOption.ReplaceExisting);
+                    return await StorageFile.GetFileFromPathAsync(newFile.Path);
+                }
+                else
+                {
+                    StorageFile collectionZip = await ApplicationData.Current.LocalFolder.CreateFileAsync("FileCollection.zip", CreationCollisionOption.ReplaceExisting);
+                    foreach (StorageFile item in items)
+                    {
+                        var newFile = await item.CopyAsync(ApplicationData.Current.LocalFolder, item.Name, NameCollisionOption.ReplaceExisting);
+                        await Task.Run(() =>
+                        {
+                            using (FileStream stream = new FileStream(collectionZip.Path, FileMode.Open))
+                            {
+                                using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Update))
+                                {
+                                    archive.CreateEntryFromFile(newFile.Path, newFile.Name);
+                                }
+                            }
+                        });
+                        await newFile.DeleteAsync();
+                    }
+                    return collectionZip;
+                }
+            }
+            return null;
         }
     }
 }

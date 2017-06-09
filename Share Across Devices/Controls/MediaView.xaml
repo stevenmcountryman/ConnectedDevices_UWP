@@ -9,9 +9,12 @@
     d:DesignHeight="260"
     d:DesignWidth="200">
 
-    <StackPanel Width="200">
-        <RelativePanel Height="200"
-                           Width="200">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="48"></RowDefinition>
+        </Grid.RowDefinitions>
+        <RelativePanel>
             <Image x:Name="ImageFileViewer"
                        Stretch="Uniform"
                        RelativePanel.AlignBottomWithPanel="True"
@@ -55,31 +58,18 @@
                                IsHitTestVisible="False"/>
                 </Grid>
             </Grid>
-            <Button x:Name="CancelButton" 
-                Content="&#xE711;" 
-                FontFamily="Segoe MDL2 Assets"
-                Padding="12"
-                Foreground="White"
-                FontWeight="Bold"
-                FontSize="16"
-                HorizontalAlignment="Center"
-                Click="CancelButton_Click"
-                BorderBrush="{x:Null}" 
-                Style="{StaticResource MyButtonStyle}"
-                Background="#4C000000"
-                RelativePanel.AlignTopWithPanel="True"
-                RelativePanel.AlignRightWithPanel="True"/>
         </RelativePanel>
         <TextBlock x:Name="FileNameBlock"
-                       Foreground="White"
-                       FontWeight="Bold"
-                       Text="filename.ext"
-                       TextAlignment="Center"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       TextWrapping="Wrap"
-                       FontSize="14"
-                       MaxLines="2"
-                       Margin="8"/>
-    </StackPanel>
+                    Grid.Row="1"
+                    Foreground="White"
+                    FontWeight="Bold"
+                    Text="filename.ext"
+                    TextAlignment="Center"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    TextWrapping="Wrap"
+                    FontSize="14"
+                    MaxLines="2"
+                    Margin="8"/>
+    </Grid>
 </UserControl>

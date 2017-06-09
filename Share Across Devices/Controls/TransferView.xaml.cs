@@ -38,7 +38,6 @@ namespace Share_Across_Devices.Controls
                 this.file = file;
                 MediaView mediaView = new MediaView(file);
                 mediaView.DisplayFile(file);
-                mediaView.CancelEvent += MediaViewer_CancelEvent;
                 this.MediaFlip.Items.Add(mediaView);
             }
         }
@@ -62,7 +61,6 @@ namespace Share_Across_Devices.Controls
             {
                 MediaView mediaView = new MediaView(item);
                 mediaView.DisplayFile(item);
-                mediaView.CancelEvent += MediaViewer_CancelEvent;
                 this.MediaFlip.Items.Add(mediaView);
             }
         }
@@ -122,17 +120,17 @@ namespace Share_Across_Devices.Controls
 
         }
 
-        private void MediaViewer_CancelEvent(object sender, EventArgs e)
-        {
-            this.close();
-        }
-
         private void MediaFlip_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (this.files != null)
             {
                 this.file = this.files[this.MediaFlip.SelectedIndex];
             }
+        }
+
+        private void CancelFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.close();
         }
     }
 }

@@ -1,1 +1,1 @@
-C:\Users\steve\Source\Repos\Share-Across-Devices\Share Across Devices\AppPackages\Share Across Devices_4.2.0.0\Share Across Devices_4.2.0.0_x86_x64_arm.appxbundle
+C:\Users\steve\Source\Repos\ConnectedDevices_UWP\Share Across Devices\AppPackages\Share Across Devices_4.2.5.0\Share Across Devices_4.2.5.0_x86_x64_arm.appxbundle
