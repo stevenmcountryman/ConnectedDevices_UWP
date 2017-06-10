@@ -1043,7 +1043,7 @@ namespace Share_Across_Devices.Views
             {
                 if (this.sharingInitiated && !this.wasDragged)
                 {
-                    this.shareOperation.DismissUI();
+                    CoreApplication.GetCurrentView().CoreWindow.Close();
                 }
                 else
                 {
@@ -1143,7 +1143,7 @@ namespace Share_Across_Devices.Views
             this.validateTextAndButtons();
             if (this.sharingInitiated && this.shareOperation != null)
             {
-                this.shareOperation.DismissUI();
+                CoreApplication.GetCurrentView().CoreWindow.Close();
             }
         }
 
