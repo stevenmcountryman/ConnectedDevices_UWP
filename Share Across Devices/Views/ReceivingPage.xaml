@@ -7,16 +7,19 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <RelativePanel x:Name="Background" Background="#FF919191">
-        <Grid x:Name="Blur" RelativePanel.AlignBottomWithPanel="True"
+    <RelativePanel x:Name="Background">
+        <RelativePanel x:Name="Blur" 
+                       RelativePanel.AlignBottomWithPanel="True"
               RelativePanel.AlignLeftWithPanel="True"
               RelativePanel.AlignRightWithPanel="True"
-              RelativePanel.AlignTopWithPanel="True"/>
+              RelativePanel.AlignTopWithPanel="True"
+                       SizeChanged="Page_SizeChanged"/>
         <Grid x:Name="MediaRetrieveViewGrid"
                 RelativePanel.AlignLeftWithPanel="True"
                 RelativePanel.AlignRightWithPanel="True"
                 RelativePanel.AlignTopWithPanel="True"
-                RelativePanel.AlignBottomWithPanel="True">
+                RelativePanel.AlignBottomWithPanel="True"
+              Margin="0,28,0,0">
         </Grid>
         <Grid x:Name="NotificationGrid"
                           RelativePanel.AlignLeftWithPanel="True"

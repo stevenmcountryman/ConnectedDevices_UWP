@@ -34,6 +34,7 @@ using System.Collections.Specialized;
 using System.Windows.Input;
 using Windows.System.Profile;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.System.Display;
 
 namespace Share_Across_Devices.Views
 {
@@ -41,6 +42,7 @@ namespace Share_Across_Devices.Views
     {
         private RemoteSystemWatcher deviceWatcher;
         private Compositor _compositor;
+        private DisplayRequest displayRequest;
         SpriteVisual _hostSprite;
         private RemoteDeviceObject selectedDevice;
         private bool sendOptionsHidden = true;
@@ -231,6 +233,8 @@ namespace Share_Across_Devices.Views
                         }
                         else
                         {
+                            displayRequest = new DisplayRequest();
+                            displayRequest.RequestActive();
                             this.beginListeningForFile();
                         }
                     }
@@ -478,6 +482,10 @@ namespace Share_Across_Devices.Views
 
                 await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                 {
+                    if (displayRequest != null)
+                    {
+                        displayRequest.RequestRelease();
+                    }
                     this.SelectedDeviceIcon.Glyph = "\uE166";
                     this.SelectedDeviceName.Text = "Received!";
                     this.NotificationText.Text = "File received";
@@ -963,14 +971,29 @@ namespace Share_Across_Devices.Views
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                 {
                     var message = e.Message;
-                    this.NotificationText.Text = message;
-                    if (e.MessageType == MyEventArgs.messageType.Indefinite)
+                    if (message == "KEEP_ALIVE")
                     {
-                        this.animateShowNotification();
+                        displayRequest = new DisplayRequest();
+                        displayRequest.RequestActive();
+                    }
+                    else if (message == "CANCEL_KEEP_ALIVE")
+                    {
+                        if (displayRequest != null)
+                        {
+                            displayRequest.RequestActive();
+                        }
                     }
                     else
                     {
-                        this.animateShowNotificationTimed();
+                        this.NotificationText.Text = message;
+                        if (e.MessageType == MyEventArgs.messageType.Indefinite)
+                        {
+                            this.animateShowNotification();
+                        }
+                        else
+                        {
+                            this.animateShowNotificationTimed();
+                        }
                     }
                 });
             }

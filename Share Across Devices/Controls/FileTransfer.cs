@@ -10,6 +10,7 @@ using Windows.Networking.Sockets;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System;
+using Windows.System.Display;
 using Windows.System.RemoteSystems;
 using Windows.UI.Xaml;
 using static Share_Across_Devices.Controls.MyEventArgs;
@@ -23,6 +24,7 @@ namespace Share_Across_Devices.Controls
         private RemoteSystem RemoteSystem;
         private StorageFile FileToSend;
         private StreamSocketListener socketListener;
+        private DisplayRequest displayRequest;
 
         public delegate void NotifyHandler(object sender, MyEventArgs e);
         public event NotifyHandler NotifyEvent;

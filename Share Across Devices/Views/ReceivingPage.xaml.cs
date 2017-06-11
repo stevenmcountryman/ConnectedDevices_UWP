@@ -55,16 +55,12 @@ namespace Share_Across_Devices.Views
             _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
             var notificationVisual = ElementCompositionPreview.GetElementVisual(this.NotificationPanel);
             notificationVisual.Opacity = 0f;
+            this.applyAcrylicAccent(this.Blur);
         }
 
         protected async override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-
-            await CoreApplication.GetCurrentView().CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-            {
-                this.applyAcrylicAccent(this.Blur);
-            });
 
             var parameter = e.Parameter;
 
@@ -83,6 +79,12 @@ namespace Share_Across_Devices.Views
                     this.beginListeningForFile();
                 }
             }
+        }
+
+        private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (_hostSprite != null)
+                _hostSprite.Size = e.NewSize.ToVector2();
         }
 
         private async void returnToLandingPage()
@@ -218,12 +220,10 @@ namespace Share_Across_Devices.Views
 
         private void applyAcrylicAccent(Panel e)
         {
-            _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
             _hostSprite = _compositor.CreateSpriteVisual();
             _hostSprite.Size = new Vector2((float)e.ActualWidth, (float)e.ActualHeight);
 
-            ElementCompositionPreview.SetElementChildVisual(
-                    e, _hostSprite);
+            ElementCompositionPreview.SetElementChildVisual(e, _hostSprite);
             _hostSprite.Brush = _compositor.CreateHostBackdropBrush();
         }
         private async void TransferView_CancelEvent(object sender, EventArgs e)
