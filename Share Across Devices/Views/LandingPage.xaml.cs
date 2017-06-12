@@ -1436,6 +1436,7 @@ namespace Share_Across_Devices.Views
         private void FileDragOver(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Copy;
+            e.DragUIOverride.Caption = "Attach";
         }
 
         private async void FileDropAsync(object sender, DragEventArgs e)
